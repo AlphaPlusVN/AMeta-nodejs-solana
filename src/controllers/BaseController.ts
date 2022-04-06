@@ -5,12 +5,15 @@ import express from "express";
 import { connection, getProgram, getProvider } from "../outer-space/SolOuterSpace";
 import { createAssociatedTokenAccountInstruction, getAtaForMint, getMetadata, getOuterSpace, TOKEN_METADATA_PROGRAM_ID } from "../outer-space/SolUtils";
 
+export interface BaseInput{
+    refNo: string,
+}
 export default abstract class BaseController {
 
     public router = express.Router();
     public abstract intializeRoutes: () => void;
 
-    createNft = async (payer: web3.PublicKey) => {
+    createNft = async (payer: web3.PublicKey, name: string, symbol: string, uri: string) => {
         let mint = Keypair.generate();
         const [outerSpacePDA, bump] = await getOuterSpace();
         const metadataAddress = await getMetadata(mint.publicKey);
@@ -48,7 +51,7 @@ export default abstract class BaseController {
                 [],
                 1,
             ),
-            await program.instruction.mintNftBox(bump, {
+            await program.instruction.mintNftBox(bump, name, symbol, uri, {
                 accounts: {
                     outerSpace: outerSpacePDA,
                     payer: payer,

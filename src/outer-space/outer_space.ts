@@ -60,6 +60,18 @@ export type OuterSpace = {
         {
           "name": "creatorBump",
           "type": "u8"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "symbol",
+          "type": "string"
+        },
+        {
+          "name": "uri",
+          "type": "string"
         }
       ]
     },
@@ -296,6 +308,18 @@ export const IDL: OuterSpace = {
         {
           "name": "creatorBump",
           "type": "u8"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "symbol",
+          "type": "string"
+        },
+        {
+          "name": "uri",
+          "type": "string"
         }
       ]
     },
