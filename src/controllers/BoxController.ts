@@ -27,6 +27,11 @@ class BuyBoxController extends BaseController {
         this.router.post('/buyBox', this.buyBox);
         this.router.post('/boxesForSale', [AuthMiddleWare.verifyToken], this.getBoxesForSale);
         this.router.post('/openBox', [AuthMiddleWare.verifyToken], this.openBox);
+        this.router.post('/test', [AuthMiddleWare.verifyToken], this.openBox);
+    }
+
+    test = async (req: Request, res: Response) => {
+        buildResponse('input.refNo', res, SUCCESS, {});
     }
 
     getBoxesForSale = async (req: Request, res: Response) => {
