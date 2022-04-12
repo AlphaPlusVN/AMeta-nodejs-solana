@@ -10,7 +10,7 @@ import AuthMiddleWare from "../middleware/AuthMiddleWare";
 import { User } from "../models/User";
 import { isValidMessage } from "../outer-space/SolUtils";
 import BaseController, { BaseInput } from "./BaseController";
-import {genSalt, hash} from 'bcrypt';
+var bcrypt = require('bcryptjs');
 
 interface GeTokenInput extends BaseInput {
     walletAddress: string,
@@ -129,9 +129,9 @@ export default class AuthController extends BaseController {
             buildResponse(input.refNo, res, WALLET_NOT_EXIST, {});
             return;
         }
-        let salt = await genSalt(10);
+        let salt = await bcrypt.genSalt(10);
         let passwordPlainText = genRandomString(9);
-        let hashPassword = await hash(passwordPlainText, salt);
+        let hashPassword = await bcrypt.hash(passwordPlainText, salt);
         let newUser = {
             $set: {
                 userName: input.userName,
