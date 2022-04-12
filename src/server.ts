@@ -24,8 +24,7 @@ const app = new App(
         new AuthController(),
         new BoxController(),
         // new BoxForSaleController(),
-    ],
-    3000,
+    ],    
     appExpress
 )
 

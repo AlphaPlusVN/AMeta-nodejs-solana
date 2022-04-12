@@ -5,9 +5,9 @@ class App {
   public app: express.Application;
   public port: number;
  
-  constructor(controllers: any[], port: number, app: express.Express) {
+  constructor(controllers: any[], app: express.Express) {
     this.app = app;
-    this.port = port;
+    // this.port = port;
  
     this.initializeMiddlewares();
     this.initializeControllers(controllers);
@@ -24,8 +24,8 @@ class App {
   }
  
   public listen() {
-    this.app.listen(this.port, () => {
-      console.log(`App listening on the port ${this.port}`);
+    this.app.listen(process.env.PORT || 3000, () => {
+      console.log(`App listening on the port ${process.env.PORT || 3000}`);
     });
   }
 }
