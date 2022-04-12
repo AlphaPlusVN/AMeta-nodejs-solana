@@ -11,7 +11,7 @@ export interface BaseInput{
 export default abstract class BaseController {
 
     public router = express.Router();
-    public abstract intializeRoutes: () => void;
+    public abstract initializeRoutes: () => void;
 
     createNft = async (payer: web3.PublicKey, name: string, symbol: string, uri: string) => {
         let mint = Keypair.generate();

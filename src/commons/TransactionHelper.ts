@@ -1,6 +1,6 @@
 import { ConfirmedTransaction, TokenBalance, TransactionResponse } from "@solana/web3.js";
 import moment from "moment";
-import { collection } from "./mongo";
+import { closeDb, collection } from "./mongo";
 import { MktTransaction } from "../models/MktTransaction";
 import { connection } from "../outer-space/SolOuterSpace";
 import { OwnerWallet, TokenMint } from "../outer-space/OPConfig";
@@ -48,6 +48,7 @@ class TransactionController {
         });
         console.log('transaction', transaction);
         if (transaction) {
+            closeDb();
             return transaction;
         } else {
             let transactionResponse = await this.getTransaction(sig);
@@ -58,9 +59,11 @@ class TransactionController {
                 transactionResponse: JSON.stringify(transactionResponse),
             }
             await mkt_transaction.insertOne(newTransaction);
-
+            closeDb();
+            
             return newTransaction
         }
+        
     }
 }
 

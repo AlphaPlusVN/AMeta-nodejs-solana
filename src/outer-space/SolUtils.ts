@@ -1,5 +1,6 @@
 import * as anchor from '@project-serum/anchor';
 import { web3 } from '@project-serum/anchor';
+import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import {
   Keypair,
@@ -9,6 +10,7 @@ import {
 } from '@solana/web3.js';
 import fs from 'fs'
 import { getProgram } from './SolOuterSpace';
+import { sign } from 'tweetnacl';
 export const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID =
   new anchor.web3.PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
 const PREFIX = 'outer_space';
@@ -95,3 +97,12 @@ export  const getMetadata = async (
     )
   )[0];
 };
+
+export const isValidMessage =  (msg: string, walletAddress: string, sig: string) => {
+  const message = new TextEncoder().encode(msg);
+  const sigDecode =  bs58.decode(sig);
+  const wallet = new PublicKey(walletAddress);
+  // console.log(message, new Uint8Array(sig), wallet);
+  let verified = sign.detached.verify(message, new Uint8Array(sigDecode), wallet.toBytes())
+  return verified;
+}
