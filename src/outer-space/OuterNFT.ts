@@ -34,14 +34,10 @@ class OuterNFT extends NFT {
         super(NFTType.Outer)
     }
 
-    getNextId = (): string => {
-        let nextId = '#OUTER' + String(OuterCount).padStart(9, '0');
-        OuterCount++;
-        return nextId;
-    };
+   
 
-    generate = (payerWallet: string): NFTTokenMetadata => {
-        let name = this.getNextId();
+    generate = async (payerWallet: string): Promise<NFTTokenMetadata> => {
+        let name = await this.getNextId();
         let energy = this.getRandomEnergy();
         let power = this.getRandomPower();
         let speed = this.getRandomSpeed();

@@ -5,5 +5,6 @@ export interface MktBoxesForSale extends Document{
    price: string,
    avatar: string,
    status: "0" | "1",
-
+   name: string,
+   symbol: string,
 }

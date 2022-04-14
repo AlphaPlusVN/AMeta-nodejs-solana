@@ -1,5 +1,7 @@
 import { createHash } from "crypto";
+import { create } from "ipfs-http-client";
 import { min } from "moment";
+import { closeDb, collection } from "../commons/mongo";
 
 export interface NFTAttribute {
     trait_type: string,
@@ -41,11 +43,20 @@ export default abstract class NFT {
         this.type = type;
     }
 
-    abstract getNextId: () => string;
+    // abstract getNextId: () => string;
 
-    abstract generate: (payerWallet: string) => NFTTokenMetadata;
+    abstract generate: (payerWallet: string) => Promise<NFTTokenMetadata>;
     upload = async (): Promise<string> => {
-        return '';
+        if (!this.tokenMetadata) return null;
+        let ipfs = await create({
+            host: 'ipfs.infura.io',
+            port: 5001,
+            protocol: 'https'
+        })
+        // let data = OuterNFT.generate('8f9G9mnpWw3m3zPaQxHAc4doqsqs5ctwakjo6mXGJKxb');
+        let result = await ipfs.add({ path: `${this.tokenMetadata.name}.json`, content: JSON.stringify(this.tokenMetadata) });
+        console.log(result.cid.toString());
+        return `https://ipfs.io/ipfs/${result.cid.toString()}`;
     }
 
     getRandomNumber = (min: number, max: number): number => {
@@ -69,4 +80,21 @@ export default abstract class NFT {
         this.hashADN = createHash('md5').update(this.getADN()).digest('hex').toUpperCase();
         return this.hashADN;
     }
+
+    getCurrentCount = async (): Promise<Number> => {
+        let mkt_cnf_collection = await collection('mkt_cnf');
+        let mkt_cnf = await mkt_cnf_collection.findOne();
+        if (mkt_cnf) {
+            let nftCount = Number(mkt_cnf.nftCount);
+            await mkt_cnf_collection.updateOne({ _id: mkt_cnf._id }, { $set: { nftCount: nftCount += 1 } })
+            closeDb();
+            return nftCount
+        }
+        return 0;
+    }
+    getNextId = async (): Promise<string> => {
+        let count = await this.getCurrentCount();
+        let nextId = `#${this.type}${String(count).padStart(9, '0')}`;
+        return nextId;
+    };
 }

@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
 import { ResponseDic } from "../config/ErrorCodeConfig";
 
-export const buildResponse = (refNo: string, res: Response, responseDic: ResponseDic, data: any) => {
+export const buildResponse = (refNo: string, res: Response, responseDic: ResponseDic, data: any, customMsg?: string) => {
     let responseObj = {
         refNo: refNo,
         responseCode: responseDic.responseCode,
-        msg: responseDic.msg,
+        msg: customMsg ? customMsg : responseDic.msg,
         data: data
     }
 

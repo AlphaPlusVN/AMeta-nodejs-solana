@@ -3,15 +3,19 @@ import BaseController, { BaseInput } from "./BaseController";
 import { Request, Response } from 'express';
 import { connection } from "../outer-space/SolOuterSpace";
 import { PublicKey } from "@solana/web3.js";
-import { buildResponse } from "../commons/Utils";
+import { buildResponse, isNullOrEmptyString } from "../commons/Utils";
 
 import AuthMiddleWare from "../middleware/AuthMiddleWare";
 import { closeDb, collection } from "../commons/mongo";
 import { MktBoxesForSale } from "../models/MktBoxForSale";
-import { SUCCESS } from "../config/ErrorCodeConfig";
+import { BOXID_IS_INVALID, PARAMS_INVALID, SUCCESS, TRANSACTION_FAILED, TRANSFER_SIG_IS_INVALID, WALLET_IS_INVALID } from "../config/ErrorCodeConfig";
+import BoxNFT from "../outer-space/BoxNFT";
+import TransactionHelper from "../commons/TransactionHelper";
 
 interface BuyBoxInput extends BaseInput {
-    payer: string
+    payer: string,
+    transferSig: string,
+    boxId: string,
 }
 interface BoxForSaleInput extends BaseInput {
 
@@ -35,7 +39,7 @@ class BuyBoxController extends BaseController {
     }
 
     getBoxesForSale = async (req: Request, res: Response) => {
-        let input : BoxForSaleInput = req.body;
+        let input: BoxForSaleInput = req.body;
         let mkt_box_for_sale = await collection('mkt_box_for_sale');
         let boxesForSale: MktBoxesForSale[] = await mkt_box_for_sale.find<MktBoxesForSale>({}).toArray();
         closeDb();
@@ -44,15 +48,53 @@ class BuyBoxController extends BaseController {
     }
 
     buyBox = async (req: Request, res: Response) => {
-        let buyBoxInput: BuyBoxInput = req.body;
-        let sig = await this.createNft(
-            new PublicKey(buyBoxInput.payer),
-            'Starter Box',
-            'BOX1',
-            'http://referral-mb.herokuapp.com/box1.json'
-        );
-        console.log(await connection.getTransaction(sig));
-        buildResponse(buyBoxInput.refNo, res, SUCCESS, { sig })
+        let input: BuyBoxInput = req.body;
+        if (isNullOrEmptyString(input.payer)
+            || isNullOrEmptyString(input.boxId)
+            || isNullOrEmptyString(input.transferSig)
+        ) {
+            buildResponse(input.refNo, res, PARAMS_INVALID, {});
+            return;
+        }
+        let walletPayer: PublicKey = null;
+        try {
+            walletPayer = new PublicKey(input.payer);
+        } catch (err) {
+            buildResponse(input.refNo, res, WALLET_IS_INVALID, {});
+            return;
+        }
+
+        const mkt_box_for_sale_collection = await collection('mkt_box_for_sale');
+        const box : MktBoxesForSale = await mkt_box_for_sale_collection.findOne<MktBoxesForSale>({boxId: input.boxId, status: '1'});
+        closeDb();
+        if(!box){
+            buildResponse(input.refNo, res, BOXID_IS_INVALID, {});
+            return;
+        }
+
+        if(!TransactionHelper.isValidTransferTokenSig(input.transferSig, input.payer, Number(box.price))){
+            buildResponse(input.refNo, res, TRANSFER_SIG_IS_INVALID, {});
+            return;
+        }
+
+        try {
+            let boxNft = new BoxNFT();
+            let metadata = await boxNft.generate(input.payer);
+            let url = await boxNft.upload();
+            console.log(url);
+            let sig = await this.createNft(
+                walletPayer,
+                box.name,
+                box.symbol,
+                url
+            );
+            console.log(await connection.getTransaction(sig));
+        } catch (err) {
+            console.log(err.message);
+            buildResponse(input.refNo, res, TRANSACTION_FAILED, {error: err.message}, err.message);
+            return;
+        }
+        buildResponse(input.refNo, res, SUCCESS, {})
     }
 
     openBox = async (req: Request, res: Response) => {
@@ -62,3 +104,4 @@ class BuyBoxController extends BaseController {
 }
 
 export default BuyBoxController
+

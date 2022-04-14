@@ -34,7 +34,7 @@ export default class AuthController extends BaseController {
     initializeRoutes = () => {
         this.router.post('/getToken', this.getToken);
         this.router.post('/getNonce', this.getNonce);
-        this.router.post('/updateUser', this.updateUser);
+        this.router.post('/updateUser', [AuthMiddleWare.verifyToken], this.updateUser);
     }
 
     getToken = async (req: Request, res: Response) => {

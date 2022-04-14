@@ -1,0 +1,33 @@
+host: https://outer-space-mkt.herokuapp.com
+
+POST /getNonce
+
+input {
+    refNo: '12345',
+    walletAddress: 'asdasd123123
+}
+
+POST /getToken
+
+input {
+     refNo: '12345',
+     walletAddress: string,
+    sig: string,
+}
+
+POST /updateUser
+
+auth Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIi...
+
+input {
+    refNo: '12345',
+     walletAddress: string,
+    email: string,
+    userName: string,
+}
+
+POST /boxesForSale 
+auth Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIi...
+{
+    refNo: '12345',
+}

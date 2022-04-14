@@ -7,6 +7,10 @@ export const SUCCESS : ResponseDic = {
     responseCode: '00',
     msg: 'ok'
 }
+export const TRANSACTION_FAILED : ResponseDic = {
+    responseCode: '99',
+    msg: 'Transaction failed'
+}
 export const AUTH_FAILD : ResponseDic = {
     responseCode: '401',
     msg: 'Token invalid'
@@ -30,4 +34,18 @@ export const USERNAME_EXIST : ResponseDic = {
 export const WALLET_NOT_EXIST : ResponseDic = {
     responseCode: '102',
     msg: 'Wallet address is not exist'
+}
+
+export const WALLET_IS_INVALID : ResponseDic = {
+    responseCode: '103',
+    msg: 'Wallet address is invalid'
+}
+
+export const BOXID_IS_INVALID : ResponseDic = {
+    responseCode: '103',
+    msg: 'BoxId is invalid'
+}
+export const TRANSFER_SIG_IS_INVALID : ResponseDic = {
+    responseCode: '103',
+    msg: 'Transfer sig is invalid'
 }
