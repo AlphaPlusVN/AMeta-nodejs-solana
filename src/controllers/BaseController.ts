@@ -2,10 +2,11 @@ import { Provider, web3 } from "@project-serum/anchor";
 import { MintLayout, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { Keypair, SystemProgram, Transaction } from "@solana/web3.js";
 import express from "express";
-import { connection, getProgram, getProvider } from "../outer-space/SolOuterSpace";
+import OuterNFT from "../outer-space/OuterNFT";
+import { connection, createNFTInstructionArray, getProgram, getProvider } from "../outer-space/SolOuterSpace";
 import { createAssociatedTokenAccountInstruction, getAtaForMint, getMetadata, getOuterSpace, TOKEN_METADATA_PROGRAM_ID } from "../outer-space/SolUtils";
 
-export interface BaseInput{
+export interface BaseInput {
     refNo: string,
 }
 export default abstract class BaseController {
@@ -70,4 +71,7 @@ export default abstract class BaseController {
         let provider: Provider = await getProvider();
         return await provider.send(create_nft_tx, [mint]);
     }
+
+   
+
 }

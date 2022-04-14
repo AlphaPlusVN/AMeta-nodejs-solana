@@ -1,7 +1,7 @@
 import { MY_WALLET } from "../outer-space/SolUtils";
 import BaseController, { BaseInput } from "./BaseController";
 import { Request, Response } from 'express';
-import { connection } from "../outer-space/SolOuterSpace";
+import { connection, openBox } from "../outer-space/SolOuterSpace";
 import { PublicKey } from "@solana/web3.js";
 import { buildResponse, isNullOrEmptyString } from "../commons/Utils";
 
@@ -17,8 +17,13 @@ interface BuyBoxInput extends BaseInput {
     transferSig: string,
     boxId: string,
 }
-interface BoxForSaleInput extends BaseInput {
+interface BuyBoxInput extends BaseInput {
+    payer: string,    
+    boxId: string,
+}
 
+interface OpenBoxInput extends BaseInput {
+    payer: string,
 }
 
 class BuyBoxController extends BaseController {
@@ -28,10 +33,10 @@ class BuyBoxController extends BaseController {
     }
 
     initializeRoutes = () => {
-        this.router.post('/buyBox', this.buyBox);
+        this.router.post('/buyBox',[AuthMiddleWare.verifyToken], this.buyBox);
         this.router.post('/boxesForSale', [AuthMiddleWare.verifyToken], this.getBoxesForSale);
-        this.router.post('/openBox', [AuthMiddleWare.verifyToken], this.openBox);
-        this.router.post('/test', this.test);
+        // this.router.post('/openBox', [AuthMiddleWare.verifyToken], this.openBox);
+        this.router.post('/openBox', this.openBox);
     }
 
     test = async (req: Request, res: Response) => {
@@ -39,7 +44,7 @@ class BuyBoxController extends BaseController {
     }
 
     getBoxesForSale = async (req: Request, res: Response) => {
-        let input: BoxForSaleInput = req.body;
+        let input: BaseInput = req.body;
         let mkt_box_for_sale = await collection('mkt_box_for_sale');
         let boxesForSale: MktBoxesForSale[] = await mkt_box_for_sale.find<MktBoxesForSale>({}).toArray();
         closeDb();
@@ -98,7 +103,10 @@ class BuyBoxController extends BaseController {
     }
 
     openBox = async (req: Request, res: Response) => {
+        let input: OpenBoxInput = req.body;
+        await openBox(input.payer)
 
+        buildResponse(input.refNo, res, SUCCESS, {})
     }
 
 }

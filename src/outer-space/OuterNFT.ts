@@ -1,5 +1,6 @@
 import NFT, { NFTAttribute, NFTTokenMetadata, NFTType } from "./NFT";
-
+import { readFileSync } from 'fs';
+import * as path from 'path';
 export enum OuterRank {
     C = 'C',
     B = 'B',
@@ -34,7 +35,7 @@ class OuterNFT extends NFT {
         super(NFTType.Outer)
     }
 
-   
+
 
     generate = async (payerWallet: string): Promise<NFTTokenMetadata> => {
         let name = await this.getNextId();
@@ -77,27 +78,32 @@ class OuterNFT extends NFT {
                 value: skill.toString(),
             },
         ]
+        try {
+            let imgUri = await this.getImageUri();
 
-        let outerMetadata: NFTTokenMetadata = {
-            name: name,
-            symbol: 'OUTER',
-            description: 'Outer of Outer Space NFT game',
-            seller_fee_basis_points: 1,
-            attributes: attributes,
-            image: this.getImageUri(),
-            properties: {
-                creators: [{ address: payerWallet, share: 100 }],
-                files: [{ uri: this.getImageUri(), type: 'image/png' }]
-            },
-            collection: { name: 'Outer', family: 'Outer Space' }
+            this.tokenMetadata = {
+                name: name,
+                symbol: 'OUTER',
+                description: 'Outer of Outer Space NFT game',
+                seller_fee_basis_points: 1,
+                attributes: attributes,
+                image: imgUri,
+                properties: {
+                    creators: [{ address: payerWallet, share: 100 }],
+                    files: [{ uri: imgUri, type: 'image/png' }]
+                },
+                collection: { name: 'Outer', family: 'Outer Space' }
+            }
 
+            this.tokenMetadata.attributes.push({
+                trait_type: 'ADN',
+                value: this.getHashADN()
+            })
+        } catch (err) {
+            return null;
         }
-        this.tokenMetadata = outerMetadata;
-        outerMetadata.attributes.push({
-            trait_type: 'ADN',
-            value: this.getHashADN()
-        })
-        return outerMetadata;
+
+        return this.tokenMetadata;
     }
 
     getRandomEnergy = () => {
@@ -118,10 +124,17 @@ class OuterNFT extends NFT {
         return randomTraits;
     }
 
-    getImageUri = (): string => {
-        return ''
+    getImageUri = async (): Promise<string> => {
+        try {
+            let img = readFileSync(path.resolve(__dirname, './outer.png'));
+            let imgUri = await this.uploadToIpfs(img);
+            return imgUri;
+        } catch (err) {
+            throw new Error('upload image failed');
+        }
+
     }
 
 }
 
-export default new OuterNFT();
+export default OuterNFT;

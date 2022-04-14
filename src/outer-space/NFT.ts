@@ -46,17 +46,21 @@ export default abstract class NFT {
     // abstract getNextId: () => string;
 
     abstract generate: (payerWallet: string) => Promise<NFTTokenMetadata>;
-    upload = async (): Promise<string> => {
-        if (!this.tokenMetadata) return null;
+    uploadToIpfs = async (entry: any, options?: any): Promise<string> => {
         let ipfs = await create({
             host: 'ipfs.infura.io',
             port: 5001,
             protocol: 'https'
         })
         // let data = OuterNFT.generate('8f9G9mnpWw3m3zPaQxHAc4doqsqs5ctwakjo6mXGJKxb');
-        let result = await ipfs.add({ path: `${this.tokenMetadata.name}.json`, content: JSON.stringify(this.tokenMetadata) });
-        console.log(result.cid.toString());
+        let result = await ipfs.add(entry);
         return `https://ipfs.io/ipfs/${result.cid.toString()}`;
+    }
+    upload = async (): Promise<string> => {
+        if (!this.tokenMetadata) return null;
+        let url = await this.uploadToIpfs({ path: `${this.tokenMetadata.name}.json`, content: JSON.stringify(this.tokenMetadata) });
+        console.log(url);
+        return url;
     }
 
     getRandomNumber = (min: number, max: number): number => {

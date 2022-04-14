@@ -10,14 +10,15 @@ import { collection } from './commons/mongo';
 
 import { createHash } from 'crypto';
 import OuterNFT from './outer-space/OuterNFT';
-import { create } from 'ipfs-http-client';
+import { create, urlSource } from 'ipfs-http-client';
 import { sign } from 'tweetnacl';
 import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes';
 import { PublicKey } from '@solana/web3.js';
 import { genRandomString } from './commons/Utils';
 import BoxNFT from './outer-space/BoxNFT';
 
-
+import { readFileSync } from 'fs'
+import { getProgram } from './outer-space/SolOuterSpace';
 const appExpress: Express = express();
 // const port = process.env.PORT;
 const app = new App(
@@ -30,30 +31,22 @@ const app = new App(
 )
 
 let test = async () => {
-    // console.log(await TransactionHelper.isValidTransferTokenSig(
-    //     '2jpLe4x8FQPfe1Edu5T3tiD78t45KPHkaUoEyiDPMhke9sSJeUSVHTZkU9vXSbc6v5zY1JrXqFuD1YMtPTqtP9bF',
-    //     '8f9G9mnpWw3m3zPaQxHAc4doqsqs5ctwakjo6mXGJKxb',
-    //     1234
-    // ))
-    // console.log(await TransactionHelper.isValidTransferTokenSig(
-    //     '2jpLe4x8FQPfe1Edu5T3tiD78t45KPHkaUoEyiDPMhke9sSJeUSVHTZkU9vXSbc6v5zY1JrXqFuD1YMtPTqtP9bF',
-    //     '8f9G9mnpWw3m3zPaQxHAc4doqsqs5ctwakjo6mXGJKxb2',
-    //     1234
-    // ))
-    // console.log(await TransactionHelper.isValidTransferTokenSig(
-    //     '2jpLe4x8FQPfe1Edu5T3tiD78t45KPHkaUoEyiDPMhke9sSJeUSVHTZkU9vXSbc6v5zY1JrXqFuD1YMtPTqtP9bF',
-    //     '8f9G9mnpWw3m3zPaQxHAc4doqsqs5ctwakjo6mXGJKxb',
-    //     1233
-    // ))
-    // let mkt_transaction = await collection('mkt_transaction');
-    // let transaction = await mkt_transaction.findOne();
-    // console.log('transaction', transaction);
+    // let ipfs = await create({
+    //     host: 'ipfs.infura.io',
+    //     port: 5001,
+    //     protocol: 'https'
+    // })
+    // // console.log(__dirname);
+    // const img =readFileSync(__dirname + '/outer.png');
+    // console.log(img);
+    // // let data = OuterNFT.generate('8f9G9mnpWw3m3zPaQxHAc4doqsqs5ctwakjo6mXGJKxb');
+    // let result = await ipfs.add(img);
+    // console.log(result);
 
-    // let boxNft = new BoxNFT();
-    // let data = await boxNft.generate('8f9G9mnpWw3m3zPaQxHAc4doqsqs5ctwakjo6mXGJKxb');
-    // boxNft.upload();
-
-
+    // let outer = new OuterNFT();
+    // let data = await outer.generate('8f9G9mnpWw3m3zPaQxHAc4doqsqs5ctwakjo6mXGJKxb');
+    // await outer.upload();
+    console.log(getProgram());
 }
 
 test();
