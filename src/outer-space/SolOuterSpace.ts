@@ -117,21 +117,21 @@ export const createNFTInstructionArray = async (mint: Keypair, payer: web3.Publi
       [],
       1,
     ),
-    await program.instruction.mintNftBox(bump, name, symbol, uri, {
-      accounts: {
-        outerSpace: outerSpacePDA,
-        payer: payer,
-        mint: mint.publicKey,
-        metadata: metadataAddress,
-        mintAuthority: payer,
-        tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        systemProgram: SystemProgram.programId,
-        rent: web3.SYSVAR_RENT_PUBKEY,
+    // await program.instruction.mintNftBox(bump, name, symbol, uri, {
+    //   accounts: {
+    //     outerSpace: outerSpacePDA,
+    //     payer: payer,
+    //     mint: mint.publicKey,
+    //     metadata: metadataAddress,
+    //     mintAuthority: payer,
+    //     tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
+    //     tokenProgram: TOKEN_PROGRAM_ID,
+    //     systemProgram: SystemProgram.programId,
+    //     rent: web3.SYSVAR_RENT_PUBKEY,
 
-        wallet: program.provider.wallet.publicKey
-      }
-    })
+    //     wallet: program.provider.wallet.publicKey
+    //   }
+    // })
   );
 
   return instructionArray;

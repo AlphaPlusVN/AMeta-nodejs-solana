@@ -46,10 +46,12 @@ let test = async () => {
     // let outer = new OuterNFT();
     // let data = await outer.generate('8f9G9mnpWw3m3zPaQxHAc4doqsqs5ctwakjo6mXGJKxb');
     // await outer.upload();
-    console.log(getProgram());
+    // console.log(getProgram());
+
+    console.log(await TransactionHelper.getTransaction('3zxYYTk1sGu6x9TMW9Ytv6t4MLiffYu4aueCZGCdEE2i8ZzYfBsGRUPUeg6DAffiBBz3REJB5s2ao41chVgmk1Yn'));
 }
 
 test();
-// console.log(TransactionHelper.getTransaction('2jpLe4x8FQPfe1Edu5T3tiD78t45KPHkaUoEyiDPMhke9sSJeUSVHTZkU9vXSbc6v5zY1JrXqFuD1YMtPTqtP9bF'));
+
 
 app.listen();

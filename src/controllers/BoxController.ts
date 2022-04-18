@@ -33,6 +33,7 @@ class BuyBoxController extends BaseController {
     }
 
     initializeRoutes = () => {
+        this.router.get('/test', this.test);
         this.router.post('/buyBox',[AuthMiddleWare.verifyToken], this.buyBox);
         this.router.post('/boxesForSale', [AuthMiddleWare.verifyToken], this.getBoxesForSale);
         // this.router.post('/openBox', [AuthMiddleWare.verifyToken], this.openBox);
