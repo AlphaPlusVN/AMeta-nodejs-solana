@@ -1,24 +1,12 @@
 import express, { Express, Request, Response } from 'express';
-import * as anchor from '@project-serum/anchor';
+
 import App from './app';
 import BoxController from './controllers/BoxController';
-import TransactionController from './commons/TransactionHelper';
+
 import AuthController from './controllers/AuthController';
-import TransactionHelper from './commons/TransactionHelper';
-import { MktTransaction } from './models/MktTransaction';
-import { collection } from './commons/mongo';
+import { initOuterSpace } from './outer-space/SolOuterSpace';
+import { validateBoxAddress } from './outer-space/SolUtils';
 
-import { createHash } from 'crypto';
-import OuterNFT from './outer-space/OuterNFT';
-import { create, urlSource } from 'ipfs-http-client';
-import { sign } from 'tweetnacl';
-import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes';
-import { PublicKey } from '@solana/web3.js';
-import { genRandomString } from './commons/Utils';
-import BoxNFT from './outer-space/BoxNFT';
-
-import { readFileSync } from 'fs'
-import { getProgram } from './outer-space/SolOuterSpace';
 const appExpress: Express = express();
 // const port = process.env.PORT;
 const app = new App(
@@ -30,25 +18,10 @@ const app = new App(
     appExpress
 )
 
+// initOuterSpace();
+
 let test = async () => {
-    // let ipfs = await create({
-    //     host: 'ipfs.infura.io',
-    //     port: 5001,
-    //     protocol: 'https'
-    // })
-    // // console.log(__dirname);
-    // const img =readFileSync(__dirname + '/outer.png');
-    // console.log(img);
-    // // let data = OuterNFT.generate('8f9G9mnpWw3m3zPaQxHAc4doqsqs5ctwakjo6mXGJKxb');
-    // let result = await ipfs.add(img);
-    // console.log(result);
-
-    // let outer = new OuterNFT();
-    // let data = await outer.generate('8f9G9mnpWw3m3zPaQxHAc4doqsqs5ctwakjo6mXGJKxb');
-    // await outer.upload();
-    // console.log(getProgram());
-
-    console.log(await TransactionHelper.getTransaction('3zxYYTk1sGu6x9TMW9Ytv6t4MLiffYu4aueCZGCdEE2i8ZzYfBsGRUPUeg6DAffiBBz3REJB5s2ao41chVgmk1Yn'));
+    await validateBoxAddress('Ex1PGrbFm7NHJMoZ2VotTVX4Znms9kC6Cj7XqAvzUhGG2', 'HMdeNmvEKAfJHtDWHB82fk2Ddk7BHySZzQe1R5DRqevx');
 }
 
 test();

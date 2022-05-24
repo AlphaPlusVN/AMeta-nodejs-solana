@@ -1,51 +1,113 @@
+import { buildResponse } from "../commons/Utils";
+import { Request, Response } from 'express';
 export interface ResponseDic {
     responseCode: string,
     msg: string,
 }
-
-export const SUCCESS : ResponseDic = {
+export const SUCCESS: ResponseDic = {
     responseCode: '00',
-    msg: 'ok'
+    msg: 'ok',
 }
-export const TRANSACTION_FAILED : ResponseDic = {
-    responseCode: '99',
-    msg: 'Transaction failed'
-}
-export const AUTH_FAILD : ResponseDic = {
+export const AUTH_FAILED: ResponseDic = {
     responseCode: '401',
-    msg: 'Token invalid'
+    msg: 'Token invalid',
 }
-export const PARAMS_INVALID : ResponseDic = {
-    responseCode: '100',
-    msg: 'Params is invalid'
-}
-export const MESSAGE_INVALID : ResponseDic = {
-    responseCode: '101',
-    msg: 'Message is invalid'
-}
-export const EMAIL_EXIST : ResponseDic = {
-    responseCode: '102',
-    msg: 'Email is exist'
-}
-export const USERNAME_EXIST : ResponseDic = {
-    responseCode: '102',
-    msg: 'User name is exist'
-}
-export const WALLET_NOT_EXIST : ResponseDic = {
-    responseCode: '102',
-    msg: 'Wallet address is not exist'
+export enum ErrorCode {
+    OK = 'ok',
+    TransactionFailed = 'TransactionFailed',
+    AuthFailed = 'AuthFailed',
+    ParamsIsInvalid = 'ParamsIsInvalid',
+    MessageIsInvalid = 'MessageIsInvalid',
+    EmailIsExist = 'EmailIsExist',
+    UserNameIsExist = 'UserNameIsExist',
+    WalletAddressIsNotExist = 'WalletAddressIsNotExist',
+    WalletAddressIsInvalid = 'WalletAddressIsInvalid',
+    BoxIDIsInvalid = 'BoxIDIsInvalid',
+    TransferSigIsInvalid = 'TransferSigIsInvalid',
+    WalletNotOwnBox = 'WalletNotOwnBox',
+    InvalidBoxType = 'InvalidBoxType',
+    InvalidNFTAddress = 'InvalidNFTAddress',
 }
 
-export const WALLET_IS_INVALID : ResponseDic = {
-    responseCode: '103',
-    msg: 'Wallet address is invalid'
+export const HandleErrorException = (input: any, res: Response, error: string) => {
+    //@ts-ignore
+    const errorDetail: ResponseDic = getError(error);
+
+    buildResponse(input.refNo, res, errorDetail, {});
+
 }
 
-export const BOXID_IS_INVALID : ResponseDic = {
-    responseCode: '103',
-    msg: 'BoxId is invalid'
-}
-export const TRANSFER_SIG_IS_INVALID : ResponseDic = {
-    responseCode: '103',
-    msg: 'Transfer sig is invalid'
+export const getError = (error: ErrorCode): ResponseDic => {
+    let errorDetail: ResponseDic | null = null;
+    switch (error) {
+        case ErrorCode.OK: errorDetail = SUCCESS; break;
+        case ErrorCode.TransactionFailed: errorDetail = {
+            responseCode: '99',
+            msg: 'Transaction failed',
+
+        }; break;
+        case ErrorCode.AuthFailed: errorDetail = AUTH_FAILED; break;
+        case ErrorCode.ParamsIsInvalid: errorDetail = {
+            responseCode: '100',
+            msg: 'Params is invalid',
+
+        }; break;
+        case ErrorCode.MessageIsInvalid: errorDetail = {
+            responseCode: '101',
+            msg: 'Message is invalid',
+
+        }; break;
+        case ErrorCode.EmailIsExist: errorDetail = {
+            responseCode: '102',
+            msg: 'Email is exist',
+
+        }; break;
+        case ErrorCode.UserNameIsExist: errorDetail = {
+            responseCode: '102',
+            msg: 'User name is exist',
+
+        }; break;
+        case ErrorCode.WalletAddressIsNotExist: errorDetail = {
+            responseCode: '102',
+            msg: 'Wallet address is not exist',
+
+        }; break;
+        case ErrorCode.WalletAddressIsInvalid: errorDetail = {
+            responseCode: '103',
+            msg: 'Wallet address is invalid',
+
+        }; break;
+        case ErrorCode.BoxIDIsInvalid: errorDetail = {
+            responseCode: '103',
+            msg: 'BoxId is invalid',
+
+        }; break;
+        case ErrorCode.TransferSigIsInvalid: errorDetail = {
+            responseCode: '103',
+            msg: 'Transfer sig is invalid',
+
+        }; break;
+        case ErrorCode.InvalidNFTAddress: errorDetail = {
+            responseCode: '104',
+            msg: 'Invalid NFT address',
+
+        }; break;
+        case ErrorCode.WalletNotOwnBox: errorDetail = {
+            responseCode: '105',
+            msg: 'Wallet not own Box',
+
+        }; break;
+        case ErrorCode.InvalidBoxType: errorDetail = {
+            responseCode: '106',
+            msg: 'Invalid Box type',
+
+        }; break;
+       
+        default: errorDetail = {
+            responseCode: '999',
+            msg: 'Unknown Error'
+        }
+
+    }
+    return errorDetail;
 }

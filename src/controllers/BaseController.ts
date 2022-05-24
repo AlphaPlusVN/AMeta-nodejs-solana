@@ -8,6 +8,7 @@ import { createAssociatedTokenAccountInstruction, getAtaForMint, getMetadata, ge
 
 export interface BaseInput {
     refNo: string,
+    
 }
 export default abstract class BaseController {
 

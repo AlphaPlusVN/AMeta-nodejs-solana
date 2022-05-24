@@ -5,7 +5,8 @@ import { sign } from "jsonwebtoken";
 import { closeDb, collection } from "../commons/mongo";
 import { buildResponse, genRandomString, isNullOrEmptyString } from "../commons/Utils";
 import { SECRET } from "../config/AuthConfig";
-import { EMAIL_EXIST, MESSAGE_INVALID, PARAMS_INVALID, SUCCESS, USERNAME_EXIST, WALLET_NOT_EXIST } from "../config/ErrorCodeConfig";
+import { ErrorCode, HandleErrorException, SUCCESS } from "../config/ErrorCodeConfig";
+
 import AuthMiddleWare from "../middleware/AuthMiddleWare";
 import { User } from "../models/User";
 import { isValidMessage } from "../outer-space/SolUtils";
@@ -39,116 +40,130 @@ export default class AuthController extends BaseController {
 
     getToken = async (req: Request, res: Response) => {
         let input: GeTokenInput = req.body;
-        if (isNullOrEmptyString(input.sig) || isNullOrEmptyString(input.walletAddress)) {
-            buildResponse(input.refNo, res, PARAMS_INVALID, {});
-            return;
-        }
+        try {
+            console.log(input);
+            if (isNullOrEmptyString(input.sig) || isNullOrEmptyString(input.walletAddress)) {
+                throw new Error(ErrorCode.ParamsIsInvalid);
 
-        let userCollection = await collection('user');
-        let user: User = await userCollection.findOne<User>({
-            walletAddress: input.walletAddress
-        });
-        closeDb();
-        if (!user || isNullOrEmptyString(user.nonce)) {
-            buildResponse(input.refNo, res, PARAMS_INVALID, {});
-            return;
-        }
-        let isValidMsg = isValidMessage(user.nonce, input.walletAddress, input.sig);
-        if (isValidMsg == false) {
-            buildResponse(input.refNo, res, MESSAGE_INVALID, {});
-            return;
-        }
+            }
 
-        let token = sign({ walletAddress: input.walletAddress }, SECRET, {
-            expiresIn: '365d' // 60 mins
-        });
+            let userCollection = await collection('user');
+            let user: User = await userCollection.findOne<User>({
+                walletAddress: input.walletAddress
+            });
+            if (!user || isNullOrEmptyString(user.nonce)) {
+                throw new Error(ErrorCode.ParamsIsInvalid);
 
-        buildResponse(input.refNo, res, SUCCESS, { token: token, user: { userName: user.userName } });
+            }
+            // let isValidMsg = isValidMessage(user.nonce, input.walletAddress, input.sig);
+            // if (isValidMsg == false) {
+            //     throw new Error(ErrorCode.MessageIsInvalid);
+            // }
+
+            let token = sign({ walletAddress: input.walletAddress }, SECRET, {
+                expiresIn: '365d' // 60 mins
+            });
+            buildResponse(input.refNo, res, SUCCESS, { token: token, user: { userName: user.userName } });
+        } catch (err) {
+            console.log(err);
+            HandleErrorException(input, res, err.message);
+        } finally {
+            closeDb();
+        }
     }
 
     getNonce = async (req: Request, res: Response) => {
         let getNonceInput: GeNonceInput = req.body;
-        if (isNullOrEmptyString(getNonceInput.walletAddress)) {
-            buildResponse(getNonceInput.refNo, res, PARAMS_INVALID, {});
-            return;
-        }
-        let nonce = genRandomString(6).toUpperCase();
-        let userCollection = await collection('user');
-        let user: User = await userCollection.findOne<User>({
-            walletAddress: getNonceInput.walletAddress
-        });
-        if (user) {
-            let newUser = { $set: { nonce: nonce } }
-            await userCollection.updateOne({ walletAddress: getNonceInput.walletAddress }, newUser);
-        } else {
-            user = {
-                nonce: nonce,
-                walletAddress: getNonceInput.walletAddress,
-                userName: '',
-                password: ''
+        try {
+            if (isNullOrEmptyString(getNonceInput.walletAddress)) {
+                throw new Error(ErrorCode.ParamsIsInvalid);
             }
-            user.walletAddress = getNonceInput.walletAddress;
-            await userCollection.insertOne(user);
+            let nonce = genRandomString(6).toUpperCase();
+            let userCollection = await collection('user');
+            let user: User = await userCollection.findOne<User>({
+                walletAddress: getNonceInput.walletAddress
+            });
+            if (user) {
+                let newUser = { $set: { nonce: nonce } }
+                await userCollection.updateOne({ walletAddress: getNonceInput.walletAddress }, newUser);
+            } else {
+                user = {
+                    nonce: nonce,
+                    walletAddress: getNonceInput.walletAddress,
+                    userName: '',
+                    password: ''
+                }
+                user.walletAddress = getNonceInput.walletAddress;
+                await userCollection.insertOne(user);
+            }
+
+            buildResponse(getNonceInput.refNo, res, SUCCESS, { nonce })
+        } catch (err) {
+            HandleErrorException(getNonceInput, res, err.message);
+        } finally {
+            console.log('Finnally');
+            closeDb();
         }
-
-        closeDb();
-
-        buildResponse(getNonceInput.refNo, res, SUCCESS, { nonce })
     }
 
     updateUser = async (req: Request, res: Response) => {
         let input: UpdateUserInput = req.body;
-        if (isNullOrEmptyString(input.walletAddress)
-            || isNullOrEmptyString(input.email)
-            || isNullOrEmptyString(input.userName)
-        ) {
-            buildResponse(input.refNo, res, PARAMS_INVALID, {});
-            return;
-        }
-        let userCollection = await collection('user');
-
-        let emailExist = await userCollection.findOne<User>({
-            email: input.email
-        });
-        if (emailExist) {
-            buildResponse(input.refNo, res, EMAIL_EXIST, {});
-            return;
-        }
-        let userExist = await userCollection.findOne<User>({
-            userName: input.userName
-        });
-        if (userExist) {
-            buildResponse(input.refNo, res, USERNAME_EXIST, {});
-            return;
-        }
-        let user: User = await userCollection.findOne<User>({
-            walletAddress: input.walletAddress
-        })
-
-        if (!user) {
-            buildResponse(input.refNo, res, WALLET_NOT_EXIST, {});
-            return;
-        }
-        let salt = await bcrypt.genSalt(10);
-        let passwordPlainText = genRandomString(9);
-        let hashPassword = await bcrypt.hash(passwordPlainText, salt);
-        let newUser = {
-            $set: {
-                userName: input.userName,
-                email: input.email,
-                password: hashPassword
+        try {
+            if (isNullOrEmptyString(input.walletAddress)
+                || isNullOrEmptyString(input.email)
+                || isNullOrEmptyString(input.userName)
+            ) {
+                throw new Error(ErrorCode.ParamsIsInvalid);
+                
             }
-        }
-        await userCollection.updateOne({ walletAddress: input.walletAddress }, newUser);
-        closeDb();
-        buildResponse(input.refNo, res, SUCCESS, {
-            user: {
-                userName: input.userName,
-                email: input.email,
-                walletAddress: input.walletAddress,
-                password: passwordPlainText
+            let userCollection = await collection('user');
+
+            let emailExist = await userCollection.findOne<User>({
+                email: input.email
+            });
+            if (emailExist) {
+                throw new Error(ErrorCode.EmailIsExist);
+                
             }
-        })
+            let userExist = await userCollection.findOne<User>({
+                userName: input.userName
+            });
+            if (userExist) {
+                throw new Error(ErrorCode.UserNameIsExist);
+                
+            }
+            let user: User = await userCollection.findOne<User>({
+                walletAddress: input.walletAddress
+            })
+
+            if (!user) {
+                throw new Error(ErrorCode.WalletAddressIsNotExist);                
+            }
+            let salt = await bcrypt.genSalt(10);
+            let passwordPlainText = genRandomString(9);
+            let hashPassword = await bcrypt.hash(passwordPlainText, salt);
+            let newUser = {
+                $set: {
+                    userName: input.userName,
+                    email: input.email,
+                    password: hashPassword
+                }
+            }
+            await userCollection.updateOne({ walletAddress: input.walletAddress }, newUser);
+            
+            buildResponse(input.refNo, res, SUCCESS, {
+                user: {
+                    userName: input.userName,
+                    email: input.email,
+                    walletAddress: input.walletAddress,
+                    password: passwordPlainText
+                }
+            })
+        } catch (err) {
+            HandleErrorException(input, res, err.message);
+        } finally{
+            closeDb();
+        }
     }
 }
 

@@ -27,8 +27,8 @@ class App {
   }
  
   public listen() {
-    this.app.listen(process.env.PORT || 3000, () => {
-      console.log(`App listening on the port ${process.env.PORT || 3000}`);
+    this.app.listen(process.env.PORT || 5000, () => {
+      console.log(`App listening on the port ${process.env.PORT || 5000}`);
     });
   }
 }

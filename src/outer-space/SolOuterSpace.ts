@@ -4,10 +4,11 @@ import {
 } from '@project-serum/anchor';
 import idl from './outer_space.json'
 import { OuterSpace } from './outer_space';
-import { createAssociatedTokenAccountInstruction, getAtaForMint, getMetadata, getOuterSpace, MY_WALLET, TOKEN_METADATA_PROGRAM_ID } from './SolUtils';
+import { createAssociatedTokenAccountInstruction, getAtaForMint, getMetadata, getOuterSpace, MY_WALLET, OuterSpaceData, TOKEN_METADATA_PROGRAM_ID } from './SolUtils';
 import { NodeWallet } from '@project-serum/anchor/dist/cjs/provider';
-import { MintLayout, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { ASSOCIATED_TOKEN_PROGRAM_ID, MintLayout, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import OuterNFT from './OuterNFT';
+import BoxNFT from './BoxNFT';
 
 const network = clusterApiUrl("devnet");
 
@@ -30,6 +31,44 @@ export const getProgram = (): Program<any> => {
   return new Program<any>(idl, programID, provider);
 }
 
+export const initOuterSpace = async () => {
+  const program = await getProgram();
+  const [outerSpacePDA, bump] = await getOuterSpace();
+  let outerSpaceData: OuterSpaceData = {
+    price: new BN(12),
+    symbol: 'OPG',
+  };
+  await program.rpc.initializeOuterSpace(outerSpaceData, {
+    accounts: {
+      outerSpace: outerSpacePDA,
+      authority: MY_WALLET.publicKey,
+      systemProgram: SystemProgram.programId,
+    },
+    signers: [MY_WALLET],
+
+  })
+  console.log("sdsdsadaasd==========", await program.account.outerSpace.fetch(outerSpacePDA));
+}
+
+export const buyBox = async (payer: string) => {
+  let boxNft = new BoxNFT();
+  let metadata = await boxNft.generate(payer);
+  let url = await boxNft.upload();
+  const boxMint = Keypair.generate();
+  let boxInstructions = await createNFTInstructionArray(
+    boxMint,
+    new web3.PublicKey(payer),
+    metadata.name,
+    'BOX',
+    url
+  )
+  let buy_box_tx = new Transaction().add(
+    ...boxInstructions,
+    
+  )
+  let provider: Provider = await getProvider();
+  return await provider.send(buy_box_tx, [boxMint]);
+}
 
 export const openBox = async (payer) => {
   let outer1 = new OuterNFT();
@@ -43,37 +82,37 @@ export const openBox = async (payer) => {
     'OUTER',
     outer1Uri);
 
-  // let outer2 = new OuterNFT();
-  // let outer2TokenMetadata = await outer2.generate(payer);
-  // let outer2Uri = await outer2.upload();
-  // let outer2Mint = Keypair.generate();
-  // let outer2Instructions = await createNFTInstructionArray(
-  //   outer2Mint,
-  //   new web3.PublicKey(payer),
-  //   outer2TokenMetadata.name,
-  //   'OUTER',
-  //   outer2Uri);
+  let outer2 = new OuterNFT();
+  let outer2TokenMetadata = await outer2.generate(payer);
+  let outer2Uri = await outer2.upload();
+  let outer2Mint = Keypair.generate();
+  let outer2Instructions = await createNFTInstructionArray(
+    outer2Mint,
+    new web3.PublicKey(payer),
+    outer2TokenMetadata.name,
+    'OUTER',
+    outer2Uri);
 
-  // let outer3 = new OuterNFT();
-  // let outer3TokenMetadata = await outer3.generate(payer);
-  // let outer3Uri = await outer3.upload();
-  // let outer3Mint = Keypair.generate();
-  // let outer3Instructions = await createNFTInstructionArray(
-  //   outer3Mint,
-  //   new web3.PublicKey(payer),
-  //   outer3TokenMetadata.name,
-  //   'OUTER',
-  //   outer3Uri);
+  let outer3 = new OuterNFT();
+  let outer3TokenMetadata = await outer3.generate(payer);
+  let outer3Uri = await outer3.upload();
+  let outer3Mint = Keypair.generate();
+  let outer3Instructions = await createNFTInstructionArray(
+    outer3Mint,
+    new web3.PublicKey(payer),
+    outer3TokenMetadata.name,
+    'OUTER',
+    outer3Uri);
 
   let open_box_tx = new Transaction().add(
     ...outer1Instructions,
-    // ...outer2Instructions,
-    // ...outer3Instructions
+    ...outer2Instructions,
+    ...outer3Instructions
   )
 
   let provider: Provider = await getProvider();
-  // return await provider.send(open_box_tx, [outer1Mint, outer2Mint, outer3Mint]);
-  return await provider.send(open_box_tx, [outer1Mint]);
+  return await provider.send(open_box_tx, [outer1Mint, outer2Mint, outer3Mint]);
+  // return await provider.send(open_box_tx, [outer1Mint]);
 }
 
 
@@ -87,51 +126,25 @@ export const createNFTInstructionArray = async (mint: Keypair, payer: web3.Publi
     await getAtaForMint(mint.publicKey, payer)
   )[0];
   const program = await getProgram();
-  let instructionArray = new Array(
-    SystemProgram.createAccount({
-      fromPubkey: payer,
-      newAccountPubkey: mint.publicKey,
-      space: MintLayout.span,
-      lamports: await Token.getMinBalanceRentForExemptMint(connection),
-      programId: TOKEN_PROGRAM_ID
-    }),
-    // init mint account
-    Token.createInitMintInstruction(
-      TOKEN_PROGRAM_ID, // always TOKEN_PROGRAM_ID
-      mint.publicKey, // mint pubkey
-      0, // decimals
-      payer, // mint authority
-      payer // freeze authority (if you don't need it, you can set `null`)
-    ),
-    createAssociatedTokenAccountInstruction(
-      userTokenAccountAddress,
-      payer,
-      payer,
-      mint.publicKey,
-    ),
-    Token.createMintToInstruction(
-      TOKEN_PROGRAM_ID,
-      mint.publicKey,
-      userTokenAccountAddress,
-      payer,
-      [],
-      1,
-    ),
-    // await program.instruction.mintNftBox(bump, name, symbol, uri, {
-    //   accounts: {
-    //     outerSpace: outerSpacePDA,
-    //     payer: payer,
-    //     mint: mint.publicKey,
-    //     metadata: metadataAddress,
-    //     mintAuthority: payer,
-    //     tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
-    //     tokenProgram: TOKEN_PROGRAM_ID,
-    //     systemProgram: SystemProgram.programId,
-    //     rent: web3.SYSVAR_RENT_PUBKEY,
+  let vault = await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mint.publicKey, program.provider.wallet.publicKey);
 
-    //     wallet: program.provider.wallet.publicKey
-    //   }
-    // })
+  let instructionArray = new Array(
+
+    await program.instruction.openBox(bump, name, symbol, uri, {
+      accounts: {
+        outerSpace: outerSpacePDA,
+        payer: payer,
+        mint: mint.publicKey,
+        mintAuthority: payer,
+        vault: vault,
+        metadata: metadataAddress,
+        tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        rent: web3.SYSVAR_RENT_PUBKEY,
+        systemProgram: web3.SystemProgram.programId,
+      },
+    })
   );
 
   return instructionArray;

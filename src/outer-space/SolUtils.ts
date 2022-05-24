@@ -9,11 +9,16 @@ import {
   AccountInfo,
 } from '@solana/web3.js';
 import fs from 'fs'
-import { getProgram } from './SolOuterSpace';
+import { connection, getProgram } from './SolOuterSpace';
 import { sign } from 'tweetnacl';
+// import { Metadata } from '@metaplex-foundation/mpl-token-metadata';
+import { Connection, programs } from '@metaplex/js';
+const { metadata: { Metadata } } = programs;
+import { deserializeUnchecked } from 'borsh';
+import { ErrorCode } from '../config/ErrorCodeConfig';
 export const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID =
   new anchor.web3.PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
-const PREFIX = 'outer_space';
+const PREFIX = 'outer_space2';
 
 
 export const TOKEN_METADATA_PROGRAM_ID = new anchor.web3.PublicKey(
@@ -40,16 +45,16 @@ export interface OuterSpaceData {
 
 export const getOuterSpace = async () => {
   let outerProgram = await getProgram();
-    return await PublicKey.findProgramAddress(
+  return await PublicKey.findProgramAddress(
     [Buffer.from(PREFIX)],
     outerProgram.programId
   )
 
 }
 
-export const MY_WALLET : Keypair = web3.Keypair.fromSecretKey(
+export const MY_WALLET: Keypair = web3.Keypair.fromSecretKey(
   new Uint8Array(
-    JSON.parse(fs.readFileSync(__dirname + '/keypair3.json').toString())
+    JSON.parse(fs.readFileSync(__dirname + '/keypair5.json').toString())
   )
 )
 
@@ -83,7 +88,7 @@ export const createAssociatedTokenAccountInstruction = (
   });
 };
 
-export  const getMetadata = async (
+export const getMetadata = async (
   mint: anchor.web3.PublicKey,
 ): Promise<anchor.web3.PublicKey> => {
   return (
@@ -98,11 +103,30 @@ export  const getMetadata = async (
   )[0];
 };
 
-export const isValidMessage =  (msg: string, walletAddress: string, sig: string) => {
+export const isValidMessage = (msg: string, walletAddress: string, sig: string) => {
   const message = new TextEncoder().encode(msg);
-  const sigDecode =  bs58.decode(sig);
+  const sigDecode = bs58.decode(sig);
   const wallet = new PublicKey(walletAddress);
   // console.log(message, new Uint8Array(sig), wallet);
   let verified = sign.detached.verify(message, new Uint8Array(sigDecode), wallet.toBytes())
   return verified;
+}
+
+export const validateBoxAddress = async (boxAddress: string, walletAddress: string) => {
+  try {
+    const metadataPDA = await Metadata.getPDA(new PublicKey(boxAddress));
+    const tokenMetadata = await Metadata.load(connection, metadataPDA);
+    console.log(tokenMetadata);
+    let metadata: programs.metadata.MetadataData = tokenMetadata.data;
+    if(!metadata){
+      throw new Error(ErrorCode.InvalidNFTAddress)
+    }
+    if(metadata.updateAuthority != walletAddress) throw new Error(ErrorCode.WalletNotOwnBox);
+  } catch (err) {
+    console.log(err);
+    throw new Error(ErrorCode.InvalidNFTAddress)
+  }
+
+
+
 }

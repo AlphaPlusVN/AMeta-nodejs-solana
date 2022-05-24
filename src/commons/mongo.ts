@@ -7,6 +7,7 @@ export const collection = async (collection: string): Promise<Collection<Documen
 }
 
 export const closeDb = () => {
+    console.log('Close DB')
     if (mongoClient)
         mongoClient.close();
 }
