@@ -20,11 +20,11 @@ const app = new App(
 
 // initOuterSpace();
 
-let test = async () => {
-    await validateBoxAddress('Ex1PGrbFm7NHJMoZ2VotTVX4Znms9kC6Cj7XqAvzUhGG2', 'HMdeNmvEKAfJHtDWHB82fk2Ddk7BHySZzQe1R5DRqevx');
-}
+// let test = async () => {
+//     await validateBoxAddress('Ex1PGrbFm7NHJMoZ2VotTVX4Znms9kC6Cj7XqAvzUhGG2', 'HMdeNmvEKAfJHtDWHB82fk2Ddk7BHySZzQe1R5DRqevx');
+// }
 
-test();
+// test();
 
 
 app.listen();
