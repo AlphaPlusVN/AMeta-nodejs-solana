@@ -9,7 +9,7 @@ import {
   AccountInfo,
 } from '@solana/web3.js';
 import fs from 'fs'
-import { connection, getProgram } from './SolOuterSpace';
+import { connection, getProgram } from './SolAMeta';
 import { sign } from 'tweetnacl';
 // import { Metadata } from '@metaplex-foundation/mpl-token-metadata';
 import { Connection, programs } from '@metaplex/js';
@@ -18,7 +18,7 @@ import { deserializeUnchecked } from 'borsh';
 import { ErrorCode } from '../config/ErrorCodeConfig';
 export const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID =
   new anchor.web3.PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
-const PREFIX = 'outer_space2';
+const PREFIX = 'a_meta';
 
 
 export const TOKEN_METADATA_PROGRAM_ID = new anchor.web3.PublicKey(
@@ -36,25 +36,23 @@ export const getAtaForMint = async (
 };
 
 
-export interface OuterSpaceData {
-
+export interface AMetaData {
   symbol: string;
   price: anchor.BN;
-
 }
 
-export const getOuterSpace = async () => {
-  let outerProgram = await getProgram();
+export const getAMeta = async () => {
+  let aMetaProgram = await getProgram();
   return await PublicKey.findProgramAddress(
     [Buffer.from(PREFIX)],
-    outerProgram.programId
+    aMetaProgram.programId
   )
 
 }
 
 export const MY_WALLET: Keypair = web3.Keypair.fromSecretKey(
   new Uint8Array(
-    JSON.parse(fs.readFileSync(__dirname + '/keypair5.json').toString())
+    JSON.parse(fs.readFileSync(__dirname + '/ametakeypair.json').toString())
   )
 )
 

@@ -1,4 +1,4 @@
-host: https://outer-space-mkt.herokuapp.com
+host: http://13.250.95.20:5000
 
 POST /getNonce
 
@@ -21,7 +21,7 @@ auth Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIi...
 
 input {
     refNo: '12345',
-     walletAddress: string,
+    walletAddress: string,
     email: string,
     userName: string,
 }

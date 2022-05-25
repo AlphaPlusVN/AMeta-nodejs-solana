@@ -1,7 +1,7 @@
-import { MY_WALLET } from "../outer-space/SolUtils";
+import { MY_WALLET } from "../ameta/SolUtils";
 import BaseController, { BaseInput } from "./BaseController";
 import { Request, Response } from 'express';
-import { buyBox, connection, openBox } from "../outer-space/SolOuterSpace";
+import { buyBox, connection, openBox } from "../ameta/SolAMeta";
 import { PublicKey } from "@solana/web3.js";
 import { buildResponse, isNullOrEmptyString } from "../commons/Utils";
 
@@ -9,7 +9,7 @@ import AuthMiddleWare from "../middleware/AuthMiddleWare";
 import { closeDb, collection } from "../commons/mongo";
 import { MktBoxesForSale } from "../models/MktBoxForSale";
 
-import BoxNFT from "../outer-space/BoxNFT";
+import BoxNFT from "../ameta/BoxNFT";
 import TransactionHelper from "../commons/TransactionHelper";
 import { ErrorCode, HandleErrorException, SUCCESS } from "../config/ErrorCodeConfig";
 
@@ -35,6 +35,7 @@ class BuyBoxController extends BaseController {
     initializeRoutes = () => {
         this.router.get('/test', this.test);
         this.router.post('/buyBox', [AuthMiddleWare.verifyToken], this.buyBox);
+        // this.router.post('/buyBox', this.buyBox);
         this.router.post('/boxesForSale', [AuthMiddleWare.verifyToken], this.getBoxesForSale);
         // this.router.post('/openBox', [AuthMiddleWare.verifyToken], this.openBox);
         this.router.post('/openBox', this.openBox);
@@ -66,6 +67,7 @@ class BuyBoxController extends BaseController {
             let walletPayer: PublicKey = null;
             //@ts-ignore
             const walletAddress = req.walletAddress;
+            // const walletAddress = 'BfvHGfacbqHe58NSD8mJQB9ZNqPb7ZG7gWHNRSAzwefh';
             try {
                 
                 console.log('walletAddress', walletAddress);
@@ -90,7 +92,8 @@ class BuyBoxController extends BaseController {
 
 
             let sig = await buyBox(walletAddress);
-            console.log(await connection.getTransaction(sig));
+            
+            console.log("getTransaction ", await connection.getTransaction(sig));
             buildResponse(input.refNo, res, SUCCESS, {})
 
         } catch (err) {

@@ -9,7 +9,7 @@ import { ErrorCode, HandleErrorException, SUCCESS } from "../config/ErrorCodeCon
 
 import AuthMiddleWare from "../middleware/AuthMiddleWare";
 import { User } from "../models/User";
-import { isValidMessage } from "../outer-space/SolUtils";
+import { isValidMessage } from "../ameta/SolUtils";
 import BaseController, { BaseInput } from "./BaseController";
 var bcrypt = require('bcryptjs');
 
@@ -23,7 +23,7 @@ interface GeNonceInput extends BaseInput {
 interface UpdateUserInput extends BaseInput {
     walletAddress: string,
     email: string,
-    userName: string,
+    username: string,
 }
 
 export default class AuthController extends BaseController {
@@ -63,7 +63,7 @@ export default class AuthController extends BaseController {
             let token = sign({ walletAddress: input.walletAddress }, SECRET, {
                 expiresIn: '365d' // 60 mins
             });
-            buildResponse(input.refNo, res, SUCCESS, { token: token, user: { userName: user.userName } });
+            buildResponse(input.refNo, res, SUCCESS, { token: token, user: { username: user.username } });
         } catch (err) {
             console.log(err);
             HandleErrorException(input, res, err.message);
@@ -90,7 +90,7 @@ export default class AuthController extends BaseController {
                 user = {
                     nonce: nonce,
                     walletAddress: getNonceInput.walletAddress,
-                    userName: '',
+                    username: '',
                     password: ''
                 }
                 user.walletAddress = getNonceInput.walletAddress;
@@ -111,7 +111,7 @@ export default class AuthController extends BaseController {
         try {
             if (isNullOrEmptyString(input.walletAddress)
                 || isNullOrEmptyString(input.email)
-                || isNullOrEmptyString(input.userName)
+                || isNullOrEmptyString(input.username)
             ) {
                 throw new Error(ErrorCode.ParamsIsInvalid);
                 
@@ -126,7 +126,7 @@ export default class AuthController extends BaseController {
                 
             }
             let userExist = await userCollection.findOne<User>({
-                userName: input.userName
+                username: input.username
             });
             if (userExist) {
                 throw new Error(ErrorCode.UserNameIsExist);
@@ -144,7 +144,7 @@ export default class AuthController extends BaseController {
             let hashPassword = await bcrypt.hash(passwordPlainText, salt);
             let newUser = {
                 $set: {
-                    userName: input.userName,
+                    username: input.username,
                     email: input.email,
                     password: hashPassword
                 }
@@ -153,7 +153,7 @@ export default class AuthController extends BaseController {
             
             buildResponse(input.refNo, res, SUCCESS, {
                 user: {
-                    userName: input.userName,
+                    username: input.username,
                     email: input.email,
                     walletAddress: input.walletAddress,
                     password: passwordPlainText

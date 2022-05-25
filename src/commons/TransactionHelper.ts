@@ -2,8 +2,8 @@ import { ConfirmedTransaction, TokenBalance, TransactionResponse } from "@solana
 import moment from "moment";
 import { closeDb, collection } from "./mongo";
 import { MktTransaction } from "../models/MktTransaction";
-import { connection } from "../outer-space/SolOuterSpace";
-import { OwnerWallet, TokenMint } from "../outer-space/OPConfig";
+import { connection } from "../ameta/SolAMeta";
+import { OwnerWallet, TokenMint } from "../ameta/OPConfig";
 
 class TransactionController {
     getTransaction = async (sig: string): Promise<TransactionResponse> => {

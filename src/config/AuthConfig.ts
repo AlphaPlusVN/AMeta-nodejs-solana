@@ -1,1 +1,1 @@
-export const SECRET = 'outer-space-blockchain';
+export const SECRET = 'ameta-blockchain';

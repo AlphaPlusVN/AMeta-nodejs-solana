@@ -4,8 +4,8 @@ import App from './app';
 import BoxController from './controllers/BoxController';
 
 import AuthController from './controllers/AuthController';
-import { initOuterSpace } from './outer-space/SolOuterSpace';
-import { validateBoxAddress } from './outer-space/SolUtils';
+import { initAMeta } from './ameta/SolAMeta';
+import { validateBoxAddress } from './ameta/SolUtils';
 
 const appExpress: Express = express();
 // const port = process.env.PORT;
@@ -17,7 +17,7 @@ const app = new App(
     ],
     appExpress
 )
-
+// initAMeta();
 // initOuterSpace();
 
 // let test = async () => {

@@ -2,13 +2,14 @@ import { clusterApiUrl, Connection, PublicKey, LAMPORTS_PER_SOL, Keypair, System
 import {
   Program, Provider, web3, BN, Wallet
 } from '@project-serum/anchor';
-import idl from './outer_space.json'
-import { OuterSpace } from './outer_space';
-import { createAssociatedTokenAccountInstruction, getAtaForMint, getMetadata, getOuterSpace, MY_WALLET, OuterSpaceData, TOKEN_METADATA_PROGRAM_ID } from './SolUtils';
+// import idl from './ameta.json'
+import ametaIdl from './ameta.json';
+import { createAssociatedTokenAccountInstruction, getAtaForMint, getMetadata, getAMeta, MY_WALLET, AMetaData, TOKEN_METADATA_PROGRAM_ID } from './SolUtils';
 import { NodeWallet } from '@project-serum/anchor/dist/cjs/provider';
 import { ASSOCIATED_TOKEN_PROGRAM_ID, MintLayout, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import OuterNFT from './OuterNFT';
 import BoxNFT from './BoxNFT';
+import { Ameta } from './ameta';
 
 const network = clusterApiUrl("devnet");
 
@@ -18,7 +19,7 @@ export const preflightCommitment: web3.ConfirmOptions = {
 
 export const connection: Connection = new Connection(network, preflightCommitment.preflightCommitment);
 
-export const programID = new PublicKey(idl.metadata.address);
+export const programID = new PublicKey(ametaIdl.metadata.address);
 
 export const getProvider = (): Provider => {
 
@@ -28,46 +29,55 @@ export const getProvider = (): Provider => {
 
 export const getProgram = (): Program<any> => {
   const provider = getProvider();
-  return new Program<any>(idl, programID, provider);
+  //@ts-ignore
+  return new Program<Ameta>(ametaIdl, programID, provider);
 }
 
-export const initOuterSpace = async () => {
+export const initAMeta = async () => {
   const program = await getProgram();
-  const [outerSpacePDA, bump] = await getOuterSpace();
-  let outerSpaceData: OuterSpaceData = {
+  const [aMetaPDA, bump] = await getAMeta();
+  let aMetaData: AMetaData = {
     price: new BN(12),
-    symbol: 'OPG',
+    symbol: 'AMC',
   };
-  await program.rpc.initializeOuterSpace(outerSpaceData, {
+  await program.rpc.initializeGame(aMetaData, {
     accounts: {
-      outerSpace: outerSpacePDA,
+      aMeta: aMetaPDA,
       authority: MY_WALLET.publicKey,
       systemProgram: SystemProgram.programId,
     },
     signers: [MY_WALLET],
 
   })
-  console.log("sdsdsadaasd==========", await program.account.outerSpace.fetch(outerSpacePDA));
+  console.log("sdsdsadaasd==========", await program.account.aMeta.fetch(aMetaPDA));
 }
 
 export const buyBox = async (payer: string) => {
+  const [aMetaPDA, bump] = await getAMeta();
   let boxNft = new BoxNFT();
   let metadata = await boxNft.generate(payer);
   let url = await boxNft.upload();
   const boxMint = Keypair.generate();
-  let boxInstructions = await createNFTInstructionArray(
-    boxMint,
-    new web3.PublicKey(payer),
-    metadata.name,
-    'BOX',
-    url
-  )
-  let buy_box_tx = new Transaction().add(
-    ...boxInstructions,
-    
-  )
-  let provider: Provider = await getProvider();
-  return await provider.send(buy_box_tx, [boxMint]);
+  const program = await getProgram();
+  const convertPayer = new web3.PublicKey(payer);
+  let vault = await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, boxMint.publicKey, convertPayer);
+  const metadataAddress = await getMetadata(boxMint.publicKey);
+  let sig = await program.rpc.buyBox(bump, metadata.name, 'BOX', url, {
+    accounts: {
+      aMeta: aMetaPDA,
+      payer: convertPayer,
+      mint: boxMint.publicKey,
+      mintAuthority: convertPayer,
+      vault: vault,
+      metadata: metadataAddress,
+      tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
+      tokenProgram: TOKEN_PROGRAM_ID,
+      associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+      rent: web3.SYSVAR_RENT_PUBKEY,
+      systemProgram: web3.SystemProgram.programId,
+    }, signers: [boxMint]
+  })
+  return sig;
 }
 
 export const openBox = async (payer) => {
@@ -120,13 +130,13 @@ export const createNFTInstructionArray = async (mint: Keypair, payer: web3.Publi
   Transaction | TransactionInstruction | TransactionInstructionCtorFields
 >> => {
   // let mint = Keypair.generate();
-  const [outerSpacePDA, bump] = await getOuterSpace();
+  const [outerSpacePDA, bump] = await getAMeta();
   const metadataAddress = await getMetadata(mint.publicKey);
   const userTokenAccountAddress = (
     await getAtaForMint(mint.publicKey, payer)
   )[0];
   const program = await getProgram();
-  let vault = await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mint.publicKey, program.provider.wallet.publicKey);
+  let vault = await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mint.publicKey, payer);
 
   let instructionArray = new Array(
 

@@ -2,9 +2,9 @@ import { Provider, web3 } from "@project-serum/anchor";
 import { MintLayout, Token, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { Keypair, SystemProgram, Transaction } from "@solana/web3.js";
 import express from "express";
-import OuterNFT from "../outer-space/OuterNFT";
-import { connection, createNFTInstructionArray, getProgram, getProvider } from "../outer-space/SolOuterSpace";
-import { createAssociatedTokenAccountInstruction, getAtaForMint, getMetadata, getOuterSpace, TOKEN_METADATA_PROGRAM_ID } from "../outer-space/SolUtils";
+import OuterNFT from "../ameta/OuterNFT";
+import { connection, createNFTInstructionArray, getProgram, getProvider } from "../ameta/SolAMeta";
+import { createAssociatedTokenAccountInstruction, getAtaForMint, getMetadata, getAMeta, TOKEN_METADATA_PROGRAM_ID } from "../ameta/SolUtils";
 
 export interface BaseInput {
     refNo: string,
@@ -17,7 +17,7 @@ export default abstract class BaseController {
 
     createNft = async (payer: web3.PublicKey, name: string, symbol: string, uri: string) => {
         let mint = Keypair.generate();
-        const [outerSpacePDA, bump] = await getOuterSpace();
+        const [outerSpacePDA, bump] = await getAMeta();
         const metadataAddress = await getMetadata(mint.publicKey);
         const userTokenAccountAddress = (
             await getAtaForMint(mint.publicKey, payer)
