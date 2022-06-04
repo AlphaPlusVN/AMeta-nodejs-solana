@@ -31,3 +31,11 @@ auth Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIi...
 {
     refNo: '12345',
 }
+
+POST /openBox 
+auth Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIi...
+{
+    refNo: '12345',
+    boxAddress: string
+}
+

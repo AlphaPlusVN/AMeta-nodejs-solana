@@ -27,6 +27,7 @@ export enum ErrorCode {
     WalletNotOwnBox = 'WalletNotOwnBox',
     InvalidBoxType = 'InvalidBoxType',
     InvalidNFTAddress = 'InvalidNFTAddress',
+    
 }
 
 export const HandleErrorException = (input: any, res: Response, error: string) => {

@@ -23,13 +23,12 @@ export interface NFTTokenMetadata {
         creators: NFTCreators[],
         files: { uri: string, type: 'image/png' }[]
     },
-    collection: { name: "Box" | "Outer" | 'Planet', family: "Outer Space" }
+    collection: { name: "Box" | "Fishing rod", family: "AMeta" }
 }
 
 export enum NFTType {
-    Box = 'Box',
-    Outer = 'Outer',
-    Planet = 'Planet'
+    Box = 'Box',    
+    FishingRod = 'Fishing rod',
 }
 
 export default abstract class NFT {

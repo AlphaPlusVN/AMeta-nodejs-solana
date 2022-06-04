@@ -11,9 +11,72 @@ export type Ameta = {
           "isSigner": false
         },
         {
+          "name": "aMetaMint",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
           "name": "authority",
           "isMut": true,
           "isSigner": true
+        },
+        {
+          "name": "tokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "data",
+          "type": {
+            "defined": "AMetaData"
+          }
+        }
+      ]
+    },
+    {
+      "name": "updateGame",
+      "accounts": [
+        {
+          "name": "aMeta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "aMetaMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenAccount",
+          "isMut": false,
+          "isSigner": false
         },
         {
           "name": "systemProgram",
@@ -44,22 +107,27 @@ export type Ameta = {
           "isSigner": true
         },
         {
-          "name": "metadata",
+          "name": "boxMint",
           "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "mint",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "mintAuthority",
-          "isMut": false,
           "isSigner": true
         },
         {
           "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "buyerTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ownerTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "metadata",
           "isMut": true,
           "isSigner": false
         },
@@ -99,11 +167,86 @@ export type Ameta = {
           "type": "string"
         },
         {
-          "name": "symbol",
+          "name": "boxCode",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "openBox",
+      "accounts": [
+        {
+          "name": "aMeta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "boxMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "boxTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "metadata",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenMetadataProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "creatorBump",
+          "type": "u8"
+        },
+        {
+          "name": "fishingRodUri",
           "type": "string"
         },
         {
-          "name": "uri",
+          "name": "fishingRodName",
           "type": "string"
         }
       ]
@@ -143,6 +286,179 @@ export type Ameta = {
           "type": "string"
         }
       ]
+    },
+    {
+      "name": "initializeRentSystem",
+      "accounts": [
+        {
+          "name": "aMeta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "rentSystem",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rentSystemTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ownerTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "makeNewFishingRodRent",
+      "accounts": [
+        {
+          "name": "aMeta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rentSystem",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "fishingRodForRent",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "fishingRodOwner",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "fishingRodRentContract",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolFishingRod",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "profit",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "rentFishingRod",
+      "accounts": [
+        {
+          "name": "aMeta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "renter",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "fishingRodRentContract",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "fishingRodForRent",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -164,6 +480,54 @@ export type Ameta = {
             "type": {
               "defined": "AMetaData"
             }
+          },
+          {
+            "name": "tokenAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "mint",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "rentContract",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "publicKey"
+          },
+          {
+            "name": "nftAddress",
+            "type": "publicKey"
+          },
+          {
+            "name": "status",
+            "type": "string"
+          },
+          {
+            "name": "profit",
+            "type": "u8"
+          },
+          {
+            "name": "renter",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "rentSystem",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "rentSystemTokenAccount",
+            "type": "publicKey"
           }
         ]
       }
@@ -209,6 +573,43 @@ export type Ameta = {
           }
         ]
       }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "NotOwnerNFT",
+      "msg": "Not Owner NFT"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidBoxCode",
+      "msg": "Invalid box code"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidFishingRod",
+      "msg": "Invalid fishing rod"
+    },
+    {
+      "code": 6003,
+      "name": "RentContractNotAvailable",
+      "msg": "Rent Contract not available"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidTokenAccount",
+      "msg": "Invalid token account"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidOwnerTokenAccount",
+      "msg": "Invalid owner account"
+    },
+    {
+      "code": 6006,
+      "name": "NotEnoughToken",
+      "msg": "Not enough ameta token"
     }
   ]
 };
@@ -226,9 +627,72 @@ export const IDL: Ameta = {
           "isSigner": false
         },
         {
+          "name": "aMetaMint",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
           "name": "authority",
           "isMut": true,
           "isSigner": true
+        },
+        {
+          "name": "tokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "data",
+          "type": {
+            "defined": "AMetaData"
+          }
+        }
+      ]
+    },
+    {
+      "name": "updateGame",
+      "accounts": [
+        {
+          "name": "aMeta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "aMetaMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenAccount",
+          "isMut": false,
+          "isSigner": false
         },
         {
           "name": "systemProgram",
@@ -259,22 +723,27 @@ export const IDL: Ameta = {
           "isSigner": true
         },
         {
-          "name": "metadata",
+          "name": "boxMint",
           "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "mint",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "mintAuthority",
-          "isMut": false,
           "isSigner": true
         },
         {
           "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "buyerTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ownerTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "metadata",
           "isMut": true,
           "isSigner": false
         },
@@ -314,11 +783,86 @@ export const IDL: Ameta = {
           "type": "string"
         },
         {
-          "name": "symbol",
+          "name": "boxCode",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "openBox",
+      "accounts": [
+        {
+          "name": "aMeta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "boxMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "boxTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "metadata",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenMetadataProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "creatorBump",
+          "type": "u8"
+        },
+        {
+          "name": "fishingRodUri",
           "type": "string"
         },
         {
-          "name": "uri",
+          "name": "fishingRodName",
           "type": "string"
         }
       ]
@@ -358,6 +902,179 @@ export const IDL: Ameta = {
           "type": "string"
         }
       ]
+    },
+    {
+      "name": "initializeRentSystem",
+      "accounts": [
+        {
+          "name": "aMeta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "rentSystem",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rentSystemTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ownerTokenAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "makeNewFishingRodRent",
+      "accounts": [
+        {
+          "name": "aMeta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rentSystem",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "fishingRodForRent",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "fishingRodOwner",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "fishingRodRentContract",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolFishingRod",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "profit",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "rentFishingRod",
+      "accounts": [
+        {
+          "name": "aMeta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "renter",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "fishingRodRentContract",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "fishingRodForRent",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
     }
   ],
   "accounts": [
@@ -379,6 +1096,54 @@ export const IDL: Ameta = {
             "type": {
               "defined": "AMetaData"
             }
+          },
+          {
+            "name": "tokenAccount",
+            "type": "publicKey"
+          },
+          {
+            "name": "mint",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "rentContract",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "publicKey"
+          },
+          {
+            "name": "nftAddress",
+            "type": "publicKey"
+          },
+          {
+            "name": "status",
+            "type": "string"
+          },
+          {
+            "name": "profit",
+            "type": "u8"
+          },
+          {
+            "name": "renter",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "rentSystem",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "rentSystemTokenAccount",
+            "type": "publicKey"
           }
         ]
       }
@@ -424,6 +1189,43 @@ export const IDL: Ameta = {
           }
         ]
       }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "NotOwnerNFT",
+      "msg": "Not Owner NFT"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidBoxCode",
+      "msg": "Invalid box code"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidFishingRod",
+      "msg": "Invalid fishing rod"
+    },
+    {
+      "code": 6003,
+      "name": "RentContractNotAvailable",
+      "msg": "Rent Contract not available"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidTokenAccount",
+      "msg": "Invalid token account"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidOwnerTokenAccount",
+      "msg": "Invalid owner account"
+    },
+    {
+      "code": 6006,
+      "name": "NotEnoughToken",
+      "msg": "Not enough ameta token"
     }
   ]
 };

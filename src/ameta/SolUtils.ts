@@ -124,7 +124,18 @@ export const validateBoxAddress = async (boxAddress: string, walletAddress: stri
     console.log(err);
     throw new Error(ErrorCode.InvalidNFTAddress)
   }
+}
 
-
-
+export const findAssociatedTokenAddress = async(
+  walletAddress: PublicKey,
+  tokenMintAddress: PublicKey
+): Promise<PublicKey> => {
+  return (await PublicKey.findProgramAddress(
+      [
+          walletAddress.toBuffer(),
+          TOKEN_PROGRAM_ID.toBuffer(),
+          tokenMintAddress.toBuffer(),
+      ],
+      SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID
+  ))[0];
 }

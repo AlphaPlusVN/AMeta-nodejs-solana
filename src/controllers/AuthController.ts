@@ -83,6 +83,7 @@ export default class AuthController extends BaseController {
             let user: User = await userCollection.findOne<User>({
                 walletAddress: getNonceInput.walletAddress
             });
+            console.log('user', user);
             if (user) {
                 let newUser = { $set: { nonce: nonce } }
                 await userCollection.updateOne({ walletAddress: getNonceInput.walletAddress }, newUser);
@@ -94,7 +95,8 @@ export default class AuthController extends BaseController {
                     password: ''
                 }
                 user.walletAddress = getNonceInput.walletAddress;
-                await userCollection.insertOne(user);
+                let newUser = await userCollection.insertOne(user);
+                console.log('new user', newUser);
             }
 
             buildResponse(getNonceInput.refNo, res, SUCCESS, { nonce })
@@ -114,7 +116,7 @@ export default class AuthController extends BaseController {
                 || isNullOrEmptyString(input.username)
             ) {
                 throw new Error(ErrorCode.ParamsIsInvalid);
-                
+
             }
             let userCollection = await collection('user');
 
@@ -123,21 +125,21 @@ export default class AuthController extends BaseController {
             });
             if (emailExist) {
                 throw new Error(ErrorCode.EmailIsExist);
-                
+
             }
             let userExist = await userCollection.findOne<User>({
                 username: input.username
             });
             if (userExist) {
                 throw new Error(ErrorCode.UserNameIsExist);
-                
+
             }
             let user: User = await userCollection.findOne<User>({
                 walletAddress: input.walletAddress
             })
 
             if (!user) {
-                throw new Error(ErrorCode.WalletAddressIsNotExist);                
+                throw new Error(ErrorCode.WalletAddressIsNotExist);
             }
             let salt = await bcrypt.genSalt(10);
             let passwordPlainText = genRandomString(9);
@@ -150,7 +152,7 @@ export default class AuthController extends BaseController {
                 }
             }
             await userCollection.updateOne({ walletAddress: input.walletAddress }, newUser);
-            
+
             buildResponse(input.refNo, res, SUCCESS, {
                 user: {
                     username: input.username,
@@ -161,7 +163,7 @@ export default class AuthController extends BaseController {
             })
         } catch (err) {
             HandleErrorException(input, res, err.message);
-        } finally{
+        } finally {
             closeDb();
         }
     }
