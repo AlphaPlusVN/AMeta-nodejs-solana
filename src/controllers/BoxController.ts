@@ -37,8 +37,8 @@ class BuyBoxController extends BaseController {
         this.router.post('/buyBox', [AuthMiddleWare.verifyToken], this.buyBox);
         // this.router.post('/buyBox', this.buyBox);
         this.router.post('/boxesForSale', [AuthMiddleWare.verifyToken], this.getBoxesForSale);
-        this.router.post('/openBox', [AuthMiddleWare.verifyToken], this.openBox);
-        // this.router.post('/openBox', this.openBox);
+        // this.router.post('/openBox', [AuthMiddleWare.verifyToken], this.openBox);
+        this.router.post('/openBox', this.openBox);
     }
 
     test = async (req: Request, res: Response) => {
@@ -91,7 +91,7 @@ class BuyBoxController extends BaseController {
             }
 
 
-            let sig = await buyBox(walletAddress);
+            // let sig = await buyBox(walletAddress);
             
             // console.log("getTransaction ", await connection.getTransaction(sig));
             buildResponse(input.refNo, res, SUCCESS, {})

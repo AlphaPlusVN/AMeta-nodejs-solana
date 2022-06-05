@@ -32,10 +32,61 @@ auth Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIi...
     refNo: '12345',
 }
 
-POST /openBox 
-auth Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIi...
-{
-    refNo: '12345',
-    boxAddress: string
+============BUY BOX======================
+const PREFIX = 'a_meta';
+
+export const getAMeta = async () => {
+  let aMetaProgram = await getProgram();
+  return await PublicKey.findProgramAddress(
+    [Buffer.from(PREFIX)],
+    aMetaProgram.programId
+  )
+
 }
 
+export const findAssociatedTokenAddress = async(
+  walletAddress: PublicKey,
+  tokenMintAddress: PublicKey
+): Promise<PublicKey> => {
+  return (await PublicKey.findProgramAddress(
+      [
+          walletAddress.toBuffer(),
+          TOKEN_PROGRAM_ID.toBuffer(),
+          tokenMintAddress.toBuffer(),
+      ],
+      SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID
+  ))[0];
+}
+
+
+const [aMetaPDA, bump] = await getAMeta(program);
+const boxNft = Keypair.generate();
+const boxVault = await findAssociatedTokenAddress(buyerWallet.publicKey, boxNft.publicKey);
+const ownerTokenAccount = new PublicKey("6tMXz1dGBiFCpWbVYnr3nN8yHgzUzHLYRcrRdruRTfPe);
+const aMetaToken = new PublicKey("9ezfMjPwsPfRtRi41PER8xFpZDQCm2ccTj488uqGguT6);
+const buyerTokenAccount = await findAssociatedTokenAddress(buyerWallet.publicKey, aMetaToken);
+const boxCode = 'STARTER_BOX' // boxId lấy từ POST /boxesForSale 
+
+const boxName = 'Starter Box' //name  lấy từ POST /boxesForSale 
+
+await program.rpc.buyBox(bump, boxName, boxCode, {
+      accounts: {
+        aMeta: aMetaPDA,
+        payer: buyerWallet.publicKey,
+        boxMint: boxNft.publicKey,
+        // aMetaToken: aMetaToken.publicKey,
+        // mintAuthority: payer.publicKey,
+        buyerTokenAccount: buyerTokenAccount,
+        ownerTokenAccount: ownerTokenAccount,
+        vault: boxVault,
+        metadata: metadataAddress,
+        tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      }
+      , signers: [boxNft, buyerWallet]
+    })
+
+=========================================

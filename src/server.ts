@@ -4,11 +4,13 @@ import App from './app';
 import BoxController from './controllers/BoxController';
 
 import AuthController from './controllers/AuthController';
-import { getProgram, initAMeta } from './ameta/SolAMeta';
-import { AMetaData, findAssociatedTokenAddress, getAMeta, MY_WALLET, validateBoxAddress } from './ameta/SolUtils';
+import { buyBox, getProgram, initAMeta } from './ameta/SolAMeta';
+import { AMetaData, findAssociatedTokenAddress, getAMeta, getMetadata, MY_WALLET, TOKEN_METADATA_PROGRAM_ID, validateBoxAddress } from './ameta/SolUtils';
 import { BN, web3 } from '@project-serum/anchor';
-import { PublicKey, SystemProgram } from '@solana/web3.js';
-import { ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { Keypair, PublicKey, SystemProgram } from '@solana/web3.js';
+import { ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { User } from './models/User';
+import { closeDb, collection } from './commons/mongo';
 
 const appExpress: Express = express();
 // const port = process.env.PORT;
@@ -24,35 +26,8 @@ const app = new App(
 // initOuterSpace();
 
 let test = async () => {
+    // await buyBox()
     
-    // let outerSpaceData: AMetaData = {
-    //     price: new BN(1),
-    //     symbol: 'AMCCCC',
-    //   };
-      
-    //   const program  = await getProgram();
-    //   const [aMetaPDA, bump] = await getAMeta();
-    //   const aMetaToken = new PublicKey('9ezfMjPwsPfRtRi41PER8xFpZDQCm2ccTj488uqGguT6');
-    //   let ownerTokenAccount = await findAssociatedTokenAddress(MY_WALLET.publicKey, aMetaToken);
-      
-    //   let sig = await program.rpc.initializeGame(outerSpaceData, {
-    //     accounts: {
-    //       aMeta: aMetaPDA,
-    //       aMetaMint: aMetaToken,
-    //       tokenAccount: ownerTokenAccount,
-    //       tokenProgram: TOKEN_PROGRAM_ID,
-    //       rent: web3.SYSVAR_RENT_PUBKEY,
-    //       authority: MY_WALLET.publicKey,
-    //       associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-    //       systemProgram: SystemProgram.programId,
-    //     },
-    //     signers: [MY_WALLET],
-  
-    //   })
-  
-    //   console.log("aMetaPDA ==========", await program.account.aMeta.fetch(aMetaPDA));
-  
-      
 }
 
 test();
