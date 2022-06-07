@@ -4,9 +4,9 @@ import {
 } from '@project-serum/anchor';
 // import idl from './ameta.json'
 import ametaIdl from './ameta.json';
-import { createAssociatedTokenAccountInstruction, getAtaForMint, getMetadata, getAMeta, MY_WALLET, AMetaData, TOKEN_METADATA_PROGRAM_ID, findAssociatedTokenAddress } from './SolUtils';
-import { NodeWallet } from '@project-serum/anchor/dist/cjs/provider';
-import { ASSOCIATED_TOKEN_PROGRAM_ID, MintLayout, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { createAssociatedTokenAccountInstruction, getAtaForMint, getMetadata, getAMeta, MY_WALLET, AMetaData, TOKEN_METADATA_PROGRAM_ID, findAssociatedTokenAddress, initializeMint } from './SolUtils';
+
+import { AccountLayout, ASSOCIATED_TOKEN_PROGRAM_ID, MintLayout, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import OuterNFT from './OuterNFT';
 import BoxNFT from './BoxNFT';
 import { Ameta } from './ameta';
@@ -14,6 +14,7 @@ import FishingRodNFT from './FishingRodNFT';
 import { ErrorCode } from '../config/ErrorCodeConfig';
 import { closeDb, collection } from '../commons/mongo';
 import { User } from '../models/User';
+import { NodeWallet } from '@project-serum/anchor/dist/cjs/provider';
 
 const network = clusterApiUrl("devnet");
 
@@ -94,23 +95,49 @@ export const buyBox = async () => {
 export const openBox = async (payer: string, boxAddress: string) => {
   try {
     let fishingRod = new FishingRodNFT();
-    let fishingRodTokenMetadata = await fishingRod.generate(payer);
+    let fishingRodTokenMetadata = await fishingRod.generate(MY_WALLET.publicKey.toString());
     let fishingRodUri = await fishingRod.upload();
     let fishingRodMint = Keypair.generate();
     const [aMetaPDA, bump] = await getAMeta();
     const program = await getProgram();
     const buyerWallet = new web3.PublicKey(payer);
-    const boxVault = await findAssociatedTokenAddress(buyerWallet, new web3.PublicKey(boxAddress));
-    let fishingRodVault = await findAssociatedTokenAddress(buyerWallet, fishingRodMint.publicKey);
+    const boxVault = await findAssociatedTokenAddress(MY_WALLET.publicKey, new web3.PublicKey(boxAddress));
+    let ownerVault = await findAssociatedTokenAddress(MY_WALLET.publicKey, fishingRodMint.publicKey);
     const metadataAddress = await getMetadata(fishingRodMint.publicKey);
+
+    let buyerVault = Keypair.generate();
+    await initializeMint(0, fishingRodMint);
+    console.log('Mint  ' + await program.provider.connection.getAccountInfo(fishingRodMint.publicKey))
+    let create_buyer_token_tx = new Transaction().add(
+
+      SystemProgram.createAccount({
+        fromPubkey: program.provider.wallet.publicKey,
+        newAccountPubkey: buyerVault.publicKey,
+        space: AccountLayout.span,
+        lamports: await Token.getMinBalanceRentForExemptAccount(program.provider.connection),
+        programId: TOKEN_PROGRAM_ID,
+      }),
+      // init mint account
+      Token.createInitAccountInstruction(
+        TOKEN_PROGRAM_ID, // always TOKEN_PROGRAM_ID
+        fishingRodMint.publicKey, // mint
+        buyerVault.publicKey, // token account
+        buyerWallet // owner of token account
+      ),
+
+    );
+
+    await program.provider.send(create_buyer_token_tx, [buyerVault]);
+    console.log("buyerVault balance: ", (await program.provider.connection.getTokenAccountBalance(buyerVault.publicKey)).value.uiAmount);
     let sig = await program.rpc.openBox(bump, fishingRodUri, fishingRodTokenMetadata.name, {
       accounts: {
         aMeta: aMetaPDA,
-        user: buyerWallet,
+        owner: MY_WALLET.publicKey,
         boxMint: new web3.PublicKey(boxAddress),
         boxTokenAccount: boxVault,
-        mint: fishingRodMint.publicKey,
-        vault: fishingRodVault,
+        fishingRodMint: fishingRodMint.publicKey,
+        ownerVault: ownerVault,
+        buyerVault: buyerVault.publicKey,
         tokenProgram: TOKEN_PROGRAM_ID,
         tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
         metadata: metadataAddress,
@@ -119,7 +146,7 @@ export const openBox = async (payer: string, boxAddress: string) => {
         systemProgram: web3.SystemProgram.programId,
       },
       signers: [
-        fishingRodMint,
+        // fishingRodMint,
         MY_WALLET
       ]
     })

@@ -90,3 +90,13 @@ await program.rpc.buyBox(bump, boxName, boxCode, {
     })
 
 =========================================
+
+POST /openBox 
+auth Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIi...
+
+{
+    "refNo": "123456abcd",
+    "walletAddress": "J6wxcpJYGLeD192VXjYRejooB7kEGbZMq8jdGLcY3fmR",
+    "boxAddress": "2Sxvp7thwJVakdEJABh7L4TaCqi2U9fWSdSrJTViaULy", //Box NFT address
+    "transferSig" : "66e3GisHS2g1zkb1wvVjLXTAYdZm3piFv4AXN7HbuPHdQihfBixLjqi9zE7aN8F6WAw5YY8GDd7yF3ewdgpvQHpS" //sig transfer box
+}

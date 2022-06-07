@@ -1,12 +1,13 @@
 import * as anchor from '@project-serum/anchor';
-import { web3 } from '@project-serum/anchor';
+import { web3} from '@project-serum/anchor';
 import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes';
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { MintLayout, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import {
   Keypair,
   PublicKey,
   SystemProgram,
   AccountInfo,
+  Transaction,
 } from '@solana/web3.js';
 import fs from 'fs'
 import { connection, getProgram } from './SolAMeta';
@@ -145,4 +146,31 @@ export const findAssociatedTokenAddress = async(
       ],
       SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID
   ))[0];
+}
+
+export const initializeMint = async (
+  decimals: number,
+  token: web3.Keypair,  
+) => {
+  const program = await getProgram();
+  let create_mint_tx = new Transaction().add(
+    // create mint account
+    SystemProgram.createAccount({
+      fromPubkey: program.provider.wallet.publicKey,
+      newAccountPubkey: token.publicKey,
+      space: MintLayout.span,
+      lamports: await Token.getMinBalanceRentForExemptMint(program.provider.connection),
+      programId: TOKEN_PROGRAM_ID,
+    }),
+    // init mint account
+    Token.createInitMintInstruction(
+      TOKEN_PROGRAM_ID, // always TOKEN_PROGRAM_ID
+      token.publicKey, // mint pubkey
+      decimals, // decimals
+      program.provider.wallet.publicKey, // mint authority
+      program.provider.wallet.publicKey // freeze authority (if you don't need it, you can set `null`)
+    )
+  );
+
+  await program.provider.send(create_mint_tx, [token]);
 }

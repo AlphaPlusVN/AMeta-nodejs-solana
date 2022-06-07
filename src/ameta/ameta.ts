@@ -12,8 +12,8 @@ export type Ameta = {
         },
         {
           "name": "aMetaMint",
-          "isMut": true,
-          "isSigner": true
+          "isMut": false,
+          "isSigner": false
         },
         {
           "name": "authority",
@@ -22,7 +22,7 @@ export type Ameta = {
         },
         {
           "name": "tokenAccount",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -181,7 +181,7 @@ export type Ameta = {
           "isSigner": false
         },
         {
-          "name": "user",
+          "name": "owner",
           "isMut": true,
           "isSigner": true
         },
@@ -196,12 +196,17 @@ export type Ameta = {
           "isSigner": false
         },
         {
-          "name": "mint",
+          "name": "fishingRodMint",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
-          "name": "vault",
+          "name": "buyerVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ownerVault",
           "isMut": true,
           "isSigner": false
         },
@@ -610,6 +615,11 @@ export type Ameta = {
       "code": 6006,
       "name": "NotEnoughToken",
       "msg": "Not enough ameta token"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidMint",
+      "msg": "Invalid mint"
     }
   ]
 };
@@ -628,8 +638,8 @@ export const IDL: Ameta = {
         },
         {
           "name": "aMetaMint",
-          "isMut": true,
-          "isSigner": true
+          "isMut": false,
+          "isSigner": false
         },
         {
           "name": "authority",
@@ -638,7 +648,7 @@ export const IDL: Ameta = {
         },
         {
           "name": "tokenAccount",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -797,7 +807,7 @@ export const IDL: Ameta = {
           "isSigner": false
         },
         {
-          "name": "user",
+          "name": "owner",
           "isMut": true,
           "isSigner": true
         },
@@ -812,12 +822,17 @@ export const IDL: Ameta = {
           "isSigner": false
         },
         {
-          "name": "mint",
+          "name": "fishingRodMint",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
-          "name": "vault",
+          "name": "buyerVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ownerVault",
           "isMut": true,
           "isSigner": false
         },
@@ -1226,6 +1241,11 @@ export const IDL: Ameta = {
       "code": 6006,
       "name": "NotEnoughToken",
       "msg": "Not enough ameta token"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidMint",
+      "msg": "Invalid mint"
     }
   ]
 };

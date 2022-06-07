@@ -46,6 +46,7 @@ export default abstract class NFT {
 
     abstract generate: (payerWallet: string) => Promise<NFTTokenMetadata>;
     uploadToIpfs = async (entry: any, options?: any): Promise<string> => {
+        console.log("=====Uploading to IPFS======")
         let ipfs = await create({
             host: 'ipfs.infura.io',
             port: 5001,
@@ -56,6 +57,7 @@ export default abstract class NFT {
         return `https://ipfs.io/ipfs/${result.cid.toString()}`;
     }
     upload = async (): Promise<string> => {
+        
         if (!this.tokenMetadata) return null;
         let url = await this.uploadToIpfs({ path: `${this.tokenMetadata.name}.json`, content: JSON.stringify(this.tokenMetadata) });
         console.log(url);
