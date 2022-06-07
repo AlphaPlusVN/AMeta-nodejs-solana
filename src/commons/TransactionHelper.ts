@@ -46,7 +46,7 @@ class TransactionController {
             amountTransfer = amountTransfer * Math.pow(10, decimals);
             console.log(amountPost, amountPre, amountTransfer);
             if ((amountPre - amountPost) != amountTransfer) throw new Error(ErrorCode.TransferSigIsInvalid);
-            
+
         } catch (err) {
             throw new Error(ErrorCode.TransferSigIsInvalid);
         }
@@ -75,6 +75,15 @@ class TransactionController {
             return newTransaction
         }
 
+    }
+    markDoneTransferSig = async (sig: string) => {
+        let mkt_transaction = await collection('mkt_transaction');
+        let transaction: MktTransaction = await mkt_transaction.findOne<MktTransaction>({
+            txSignature: sig
+        });
+        let updateTransaction = { $set: { isHandled: true } }
+        await mkt_transaction.updateOne({ txSignature: sig }, updateTransaction);
+        closeDb();
     }
 }
 
