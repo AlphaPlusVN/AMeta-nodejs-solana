@@ -27,6 +27,7 @@ export enum ErrorCode {
     WalletNotOwnBox = 'WalletNotOwnBox',
     InvalidBoxType = 'InvalidBoxType',
     InvalidNFTAddress = 'InvalidNFTAddress',
+    InvalidTransferSig = 'InvalidTransferSig',
     
 }
 
@@ -103,6 +104,7 @@ export const getError = (error: ErrorCode): ResponseDic => {
             msg: 'Invalid Box type',
 
         }; break;
+        
        
         default: errorDetail = {
             responseCode: '999',

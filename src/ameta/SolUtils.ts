@@ -110,6 +110,13 @@ export const isValidMessage = (msg: string, walletAddress: string, sig: string) 
   return verified;
 }
 
+export const getMetadataNFT = async (address: string) => {
+  const metadataPDA = await Metadata.getPDA(new PublicKey(address));
+  const tokenMetadata = await Metadata.load(connection, metadataPDA);
+  let metadata: programs.metadata.MetadataData = tokenMetadata.data;
+  console.log(metadata);
+}
+
 export const validateBoxAddress = async (boxAddress: string, walletAddress: string) => {
   try {
     const metadataPDA = await Metadata.getPDA(new PublicKey(boxAddress));

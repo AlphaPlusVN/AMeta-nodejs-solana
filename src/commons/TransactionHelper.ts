@@ -1,44 +1,55 @@
 import { ConfirmedTransaction, TokenBalance, TransactionResponse } from "@solana/web3.js";
-import moment from "moment";
+import moment, { min } from "moment";
 import { closeDb, collection } from "./mongo";
 import { MktTransaction } from "../models/MktTransaction";
 import { connection } from "../ameta/SolAMeta";
-import { OwnerWallet, TokenMint } from "../ameta/OPConfig";
+import { OwnerWallet, TokenDecimals, TokenMint } from "../ameta/OPConfig";
+import { ErrorCode } from "../config/ErrorCodeConfig";
 
 class TransactionController {
     getTransaction = async (sig: string): Promise<TransactionResponse> => {
-        const transactionResponse: TransactionResponse = await connection.getTransaction(sig, { commitment: 'confirmed' });
+        try {
+            const transactionResponse: TransactionResponse = await connection.getTransaction(sig, { commitment: 'confirmed' });
+            return transactionResponse;
+        } catch (err) {
+            throw new Error(ErrorCode.TransferSigIsInvalid);
+        }
+        return null
 
-        return transactionResponse;
     }
 
-    isValidTransferTokenSig = async (sig: string, payerWallet: string, amountTransfer: number): Promise<boolean> => {
+    validateTransferTokenSig = async (sig: string, payerWallet: string, amountTransfer: number, mint: string, decimals = TokenDecimals) => {
+        try {
+            let transactionInDB = await this.getOrCreateTransactionFromDB(sig);
+            if (transactionInDB.isHandled == true) throw new Error(ErrorCode.TransferSigIsInvalid);
 
-        let transactionInDB = await this.getOrCreateTransactionFromDB(sig);
-        if (transactionInDB.isHandled == true) return false;
+            let transactionResponse: TransactionResponse = JSON.parse(transactionInDB.transactionResponse);
+            let postTokenBalances: TokenBalance[] = transactionResponse.meta.postTokenBalances;
+            let preTokenBalances: TokenBalance[] = transactionResponse.meta.preTokenBalances;
 
-        let transactionResponse: TransactionResponse = JSON.parse(transactionInDB.transactionResponse);
-        let postTokenBalances: TokenBalance[] = transactionResponse.meta.postTokenBalances;
-        let preTokenBalances: TokenBalance[] = transactionResponse.meta.preTokenBalances;
+            let payerInPost = postTokenBalances.find((value, index) => { return value.owner == payerWallet && value.mint == mint });
 
-        let payerInPost = postTokenBalances.find((value, index) => { return value.owner == payerWallet && value.mint == TokenMint });
+            if (!payerInPost) throw new Error(ErrorCode.TransferSigIsInvalid);
 
-        if (!payerInPost) return false;
+            let ownerInPost = postTokenBalances.find((value, index) => { return value.owner == OwnerWallet && value.mint == mint });
 
-        let ownerInPost = postTokenBalances.find((value, index) => { return value.owner == OwnerWallet && value.mint == TokenMint });
+            if (!ownerInPost) throw new Error(ErrorCode.TransferSigIsInvalid);
 
-        if (!ownerInPost) return false;
+            let payerInPre = preTokenBalances.find((value, index) => { return value.owner == payerWallet && value.mint == mint });
 
-        let payerInPre = preTokenBalances.find((value, index) => { return value.owner == payerWallet && value.mint == TokenMint });
+            if (!payerInPre) throw new Error(ErrorCode.TransferSigIsInvalid);
 
-        if (!payerInPre) return false;
 
-        let amountPre = Number(payerInPre.uiTokenAmount.amount);
-        let amountPost = Number(payerInPost.uiTokenAmount.amount);
-        amountTransfer = amountTransfer * Math.pow(10, 9);
-        console.log(amountPost, amountPre, amountTransfer);
-        if ((amountPre - amountPost) != amountTransfer) return false;
-        return true;
+            let amountPre = Number(payerInPre.uiTokenAmount.amount);
+            let amountPost = Number(payerInPost.uiTokenAmount.amount);
+
+            amountTransfer = amountTransfer * Math.pow(10, decimals);
+            console.log(amountPost, amountPre, amountTransfer);
+            if ((amountPre - amountPost) != amountTransfer) throw new Error(ErrorCode.TransferSigIsInvalid);
+            
+        } catch (err) {
+            throw new Error(ErrorCode.TransferSigIsInvalid);
+        }
     }
 
     getOrCreateTransactionFromDB = async (sig: string): Promise<MktTransaction> => {
@@ -60,10 +71,10 @@ class TransactionController {
             }
             await mkt_transaction.insertOne(newTransaction);
             closeDb();
-            
+
             return newTransaction
         }
-        
+
     }
 }
 

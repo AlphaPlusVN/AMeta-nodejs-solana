@@ -120,7 +120,7 @@ export const openBox = async (payer: string, boxAddress: string) => {
       },
       signers: [
         fishingRodMint,
-        // buyerWallet
+        MY_WALLET
       ]
     })
     const mkt_user_collection = await collection('user');

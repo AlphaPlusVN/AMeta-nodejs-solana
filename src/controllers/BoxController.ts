@@ -13,10 +13,7 @@ import BoxNFT from "../ameta/BoxNFT";
 import TransactionHelper from "../commons/TransactionHelper";
 import { ErrorCode, HandleErrorException, SUCCESS } from "../config/ErrorCodeConfig";
 
-interface BuyBoxInput extends BaseInput {    
-    transferSig: string,
-    boxId: string,
-}
+
 interface BuyBoxInput extends BaseInput {
     boxId: string,
     transferSig: string,
@@ -24,6 +21,7 @@ interface BuyBoxInput extends BaseInput {
 
 interface OpenBoxInput extends BaseInput {    
     boxAddress: string,
+    transferSig: string,
 }
 
 class BuyBoxController extends BaseController {
@@ -86,9 +84,9 @@ class BuyBoxController extends BaseController {
 
             }
 
-            if (!TransactionHelper.isValidTransferTokenSig(input.transferSig, walletAddress, Number(box.price))) {
-                throw new Error(ErrorCode.TransferSigIsInvalid)
-            }
+            // if (!TransactionHelper.isValidTransferTokenSig(input.transferSig, walletAddress, Number(box.price))) {
+            //     throw new Error(ErrorCode.TransferSigIsInvalid)
+            // }
 
 
             // let sig = await buyBox(walletAddress);
@@ -108,13 +106,16 @@ class BuyBoxController extends BaseController {
         let input: OpenBoxInput = req.body;
         try{
             //@ts-ignore
-            const walletAddress = req.walletAddress;
-            // const walletAddress = req.body.walletAddress;
-            if(isNullOrEmptyString(input.boxAddress)){
+            // const walletAddress = req.walletAddress;
+            const walletAddress = req.body.walletAddress;
+            if(isNullOrEmptyString(input.boxAddress)
+            || isNullOrEmptyString(input.transferSig)
+            ){
                 throw new Error(ErrorCode.ParamsIsInvalid);
             }
-            // const sig = await openBox(walletAddress);
-            let sig = await openBox(walletAddress, input.boxAddress);
+            await TransactionHelper.validateTransferTokenSig(input.transferSig, walletAddress, 1, input.boxAddress, 0);
+            
+            const sig = await openBox(walletAddress, input.boxAddress);
             console.log("getTransaction ", await connection.getTransaction(sig));
             buildResponse(input.refNo, res, SUCCESS, {})
         }catch(err){
