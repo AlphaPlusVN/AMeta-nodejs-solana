@@ -23,7 +23,7 @@ export interface NFTTokenMetadata {
         creators: NFTCreators[],
         files: { uri: string, type: 'image/png' }[]
     },
-    collection: { name: "Box" | "Fishing rod", family: "AMeta" }
+    collection: { name: string, family: string }
 }
 
 export enum NFTType {

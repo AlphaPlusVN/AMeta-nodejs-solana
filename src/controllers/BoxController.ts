@@ -97,7 +97,7 @@ class BuyBoxController extends BaseController {
         } catch (err) {
             HandleErrorException(input, res, err.message);
         } finally{
-            closeDb();
+            closeDb(); 
         }
         
     }

@@ -1,5 +1,5 @@
 import { bs58 } from "@project-serum/anchor/dist/cjs/utils/bytes";
-import { PublicKey } from "@solana/web3.js";
+import { PublicKey, Keypair, SystemProgram } from '@solana/web3.js';
 import { Request, Response } from "express";
 import { sign } from "jsonwebtoken";
 import { closeDb, collection } from "../commons/mongo";
@@ -8,9 +8,11 @@ import { SECRET } from "../config/AuthConfig";
 import { ErrorCode, HandleErrorException, SUCCESS } from "../config/ErrorCodeConfig";
 
 import AuthMiddleWare from "../middleware/AuthMiddleWare";
-import { User } from "../models/User";
-import { isValidMessage } from "../ameta/SolUtils";
+import { User } from '../models/User';
+import { isValidMessage, createAccount } from '../ameta/SolUtils';
 import BaseController, { BaseInput } from "./BaseController";
+import { web3 } from '@project-serum/anchor';
+import { WalletCache } from '../models/WalletCache';
 var bcrypt = require('bcryptjs');
 
 interface GeTokenInput extends BaseInput {
@@ -36,6 +38,7 @@ export default class AuthController extends BaseController {
         this.router.post('/getToken', this.getToken);
         this.router.post('/getNonce', this.getNonce);
         this.router.post('/updateUser', [AuthMiddleWare.verifyToken], this.updateUser);
+        this.router.post('/createWalletAccount', this.generateKeypair);
     }
 
     getToken = async (req: Request, res: Response) => {
@@ -157,8 +160,7 @@ export default class AuthController extends BaseController {
                 user: {
                     username: input.username,
                     email: input.email,
-                    walletAddress: input.walletAddress,
-                    password: passwordPlainText
+                    walletAddress: input.walletAddress
                 }
             })
         } catch (err) {
@@ -167,5 +169,35 @@ export default class AuthController extends BaseController {
             closeDb();
         }
     }
+    generateKeypair = async (req: Request, res: Response) => {
+        let input = req.body;
+        try {
+            let keypair = Keypair.generate();
+            //create wallet account
+            await createAccount(keypair);
+            //save to db
+            let userCollection = await collection('user');
+            let walletRepo = await collection('wallet_cache');
+            let user: User = {
+                username: "ameta",
+                walletAddress: keypair.publicKey.toString()
+            }
+            await userCollection.insertOne(user);
+
+            let wallet: WalletCache = {
+                walletAddress: keypair.publicKey.toString(),
+                secretKey: keypair.secretKey.toString()
+            }
+            await walletRepo.insertOne(wallet);
+            buildResponse(input.refNo, res, SUCCESS, {
+                user
+            });
+        } catch (err) {
+            HandleErrorException(input, res, err.message);
+        } finally {
+            closeDb();
+        }
+    };
+
 }
 

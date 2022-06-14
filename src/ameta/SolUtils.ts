@@ -1,7 +1,7 @@
 import * as anchor from '@project-serum/anchor';
-import { web3} from '@project-serum/anchor';
+import { web3 } from '@project-serum/anchor';
 import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes';
-import { MintLayout, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { MintLayout, Token, TOKEN_PROGRAM_ID, AccountLayout } from '@solana/spl-token';
 import {
   Keypair,
   PublicKey,
@@ -124,33 +124,33 @@ export const validateBoxAddress = async (boxAddress: string, walletAddress: stri
     const tokenMetadata = await Metadata.load(connection, metadataPDA);
     console.log(tokenMetadata);
     let metadata: programs.metadata.MetadataData = tokenMetadata.data;
-    if(!metadata){
+    if (!metadata) {
       throw new Error(ErrorCode.InvalidNFTAddress)
     }
-    if(metadata.updateAuthority != walletAddress) throw new Error(ErrorCode.WalletNotOwnBox);
+    if (metadata.updateAuthority != walletAddress) throw new Error(ErrorCode.WalletNotOwnBox);
   } catch (err) {
     console.log(err);
     throw new Error(ErrorCode.InvalidNFTAddress)
   }
 }
 
-export const findAssociatedTokenAddress = async(
+export const findAssociatedTokenAddress = async (
   walletAddress: PublicKey,
   tokenMintAddress: PublicKey
 ): Promise<PublicKey> => {
   return (await PublicKey.findProgramAddress(
-      [
-          walletAddress.toBuffer(),
-          TOKEN_PROGRAM_ID.toBuffer(),
-          tokenMintAddress.toBuffer(),
-      ],
-      SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID
+    [
+      walletAddress.toBuffer(),
+      TOKEN_PROGRAM_ID.toBuffer(),
+      tokenMintAddress.toBuffer(),
+    ],
+    SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID
   ))[0];
 }
 
 export const initializeMint = async (
   decimals: number,
-  token: web3.Keypair,  
+  token: web3.Keypair,
 ) => {
   const program = await getProgram();
   let create_mint_tx = new Transaction().add(
@@ -173,4 +173,14 @@ export const initializeMint = async (
   );
 
   await program.provider.send(create_mint_tx, [token]);
+}
+export const createAccount = async (keypair: Keypair) => {
+  const program = await getProgram();
+  SystemProgram.createAccount({
+    fromPubkey: program.provider.wallet.publicKey,
+    newAccountPubkey: keypair.publicKey,
+    space: AccountLayout.span,
+    lamports: await Token.getMinBalanceRentForExemptAccount(program.provider.connection),
+    programId: TOKEN_PROGRAM_ID,
+  })
 }
