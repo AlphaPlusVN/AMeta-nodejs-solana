@@ -10,9 +10,10 @@ import { AccountLayout, ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } f
 import { Ameta } from './ameta';
 import FishingRodNFT from './FishingRodNFT';
 import { ErrorCode } from '../config/ErrorCodeConfig';
-import { closeDb, collection } from '../commons/mongo';
-import { User } from '../models/User';
 import { NodeWallet } from '@project-serum/anchor/dist/cjs/provider';
+import { DI } from '../configdb/database.config';
+import { User } from '../entities/User';
+import { Item } from '../entities/ItemEntity';
 
 const network = clusterApiUrl("devnet");
 
@@ -62,11 +63,11 @@ export const buyBox = async () => {
   const boxNft = Keypair.generate();
   const ametaToken = new web3.PublicKey('9ezfMjPwsPfRtRi41PER8xFpZDQCm2ccTj488uqGguT6');
   const buyerTokenAccount = await findAssociatedTokenAddress(buyerWallet, ametaToken);
-   const ownerTokenAccount = new web3.PublicKey('BfvHGfacbqHe58NSD8mJQB9ZNqPb7ZG7gWHNRSAzwefh');
+  const ownerTokenAccount = new web3.PublicKey('BfvHGfacbqHe58NSD8mJQB9ZNqPb7ZG7gWHNRSAzwefh');
   // const ownerTokenAccount = new web3.PublicKey('BfvHGfacbqHe58NSD8mJQB9ZNqPb7ZG7gWHNRSAzwefh');
   const boxVault = await findAssociatedTokenAddress(buyerWallet, boxNft.publicKey);
   const metadataAddress = await getMetadata(boxNft.publicKey);
-  
+
   console.log("buyerTokenAccount balance: ", (await program.provider.connection.getTokenAccountBalance(buyerTokenAccount)).value.uiAmount);
 
   await program.rpc.buyBox(bump, 'BOX1', 'STARTER_BOX', {
@@ -148,18 +149,16 @@ export const openBox = async (payer: string, boxAddress: string) => {
         MY_WALLET
       ]
     })
-    const mkt_user_collection = await collection('user');
-    const mkt_item_collection = await collection('item');
-    const user: User = await mkt_user_collection.findOne<User>({ walletAddress: payer });
-    const newFishingRod = await mkt_item_collection.insertOne({
+    const userRepo = DI.em.fork().getRepository(User);
+    const itemRepo = DI.em.fork().getRepository(Item);
+    const user: User = await userRepo.findOne({ walletAddress: payer });
+    const newFishingRod = await itemRepo.create({
       owner: user._id.toString(),
       itemType: 3,
       name: 'FISHING_ROD',
       description: 'Fishing-Rod, relax with fishing',
     })
-    closeDb();
-
-
+    itemRepo.persistAndFlush(itemRepo);
     return sig;
   } catch (err) {
     console.log(err);

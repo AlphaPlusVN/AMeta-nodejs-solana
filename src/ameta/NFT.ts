@@ -1,8 +1,7 @@
 import { createHash } from "crypto";
 import { create } from "ipfs-http-client";
-import { min } from "moment";
-import { closeDb, collection } from "../commons/mongo";
-
+import { DI } from "../configdb/database.config";
+import { MarKetConfig } from '../entities/MarketConfig';
 export interface NFTAttribute {
     trait_type: string,
     value: string
@@ -27,7 +26,7 @@ export interface NFTTokenMetadata {
 }
 
 export enum NFTType {
-    Box = 'Box',    
+    Box = 'Box',
     FishingRod = 'Fishing rod',
 }
 
@@ -57,7 +56,7 @@ export default abstract class NFT {
         return `https://ipfs.io/ipfs/${result.cid.toString()}`;
     }
     upload = async (): Promise<string> => {
-        
+
         if (!this.tokenMetadata) return null;
         let url = await this.uploadToIpfs({ path: `${this.tokenMetadata.name}.json`, content: JSON.stringify(this.tokenMetadata) });
         console.log(url);
@@ -87,13 +86,12 @@ export default abstract class NFT {
     }
 
     getCurrentCount = async (): Promise<Number> => {
-        let mkt_cnf_collection = await collection('mkt_cnf');
-        let mkt_cnf = await mkt_cnf_collection.findOne();
-        if (mkt_cnf) {
-            let nftCount = Number(mkt_cnf.nftCount);
-            await mkt_cnf_collection.updateOne({ _id: mkt_cnf._id }, { $set: { nftCount: nftCount += 1 } })
-            closeDb();
-            return nftCount
+        const mktCnfRepo = DI.em.fork().getRepository(MarKetConfig);
+        let mktCnf = await mktCnfRepo.findOne({});
+        if (mktCnf) {
+            mktCnf.nftCount += 1;
+            await mktCnfRepo.persistAndFlush(mktCnf)
+            return mktCnf.nftCount;
         }
         return 0;
     }

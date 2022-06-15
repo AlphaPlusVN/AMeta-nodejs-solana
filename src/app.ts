@@ -36,6 +36,7 @@ class App {
     this.app.listen(process.env.PORT || 5000, () => {
       console.log(`App listening on the port ${process.env.PORT || 5000}`);
       connect();
+      console.log("Database connected!");
     });
   }
 }
