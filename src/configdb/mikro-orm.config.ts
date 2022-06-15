@@ -1,5 +1,9 @@
 import { Options } from '@mikro-orm/core';
 import { User } from '../entities/User';
+import { MarKetConfig } from '../entities/MarketConfig';
+import { MktBoxesForSale } from '../entities/MktBoxForSale';
+import { MktTransaction } from '../entities/MktTransaction';
+import { WalletCache } from '../entities/WalletCache';
 
 /** 
  * Mikro ORM Connection options object
@@ -8,7 +12,7 @@ import { User } from '../entities/User';
  *  */
 const options: Options = {
   type: 'mongo',
-  entities: [User]
+  entities: [User, MarKetConfig, MktBoxesForSale, MktTransaction, WalletCache]
 };
 
 export default options;
