@@ -5,12 +5,10 @@ import { PublicKey } from "@solana/web3.js";
 import { buildResponse, isNullOrEmptyString } from "../commons/Utils";
 
 import AuthMiddleWare from "../middleware/AuthMiddleWare";
-import { closeDb, collection } from "../commons/mongo";
-import { MktBoxesForSale } from "../models/MktBoxForSale";
-
-import BoxNFT from "../ameta/BoxNFT";
 import TransactionHelper from "../commons/TransactionHelper";
 import { ErrorCode, HandleErrorException, SUCCESS } from "../config/ErrorCodeConfig";
+import { MktBoxesForSale } from "../entities/MktBoxForSale";
+import { DI } from '../configdb/database.config';
 
 
 interface BuyBoxInput extends BaseInput {
@@ -44,9 +42,8 @@ class BuyBoxController extends BaseController {
 
     getBoxesForSale = async (req: Request, res: Response) => {
         let input: BaseInput = req.body;
-        let mkt_box_for_sale = await collection('mkt_box_for_sale');
-        let boxesForSale: MktBoxesForSale[] = await mkt_box_for_sale.find<MktBoxesForSale>({}).toArray();
-        closeDb();
+        let mktBoxForSalRepo = DI.em.fork().getRepository(MktBoxesForSale);
+        let boxesForSale: MktBoxesForSale[] = await mktBoxForSalRepo.findAll();
         if (!boxesForSale) boxesForSale = [];
         buildResponse(input.refNo, res, SUCCESS, boxesForSale);
     }
@@ -75,9 +72,8 @@ class BuyBoxController extends BaseController {
 
             }
 
-            const mkt_box_for_sale_collection = await collection('mkt_box_for_sale');
-            const box: MktBoxesForSale = await mkt_box_for_sale_collection.findOne<MktBoxesForSale>({ boxId: input.boxId, status: '1' });
-            closeDb();
+            const mktBoxForSalRepo = DI.em.fork().getRepository(MktBoxesForSale);
+            let box: MktBoxesForSale = await mktBoxForSalRepo.findOne({ boxId: input.boxId, status: '1' });
             if (!box) {
                 throw new Error(ErrorCode.BoxIDIsInvalid);
 
@@ -95,8 +91,6 @@ class BuyBoxController extends BaseController {
 
         } catch (err) {
             HandleErrorException(input, res, err + "");
-        } finally{
-            closeDb(); 
         }
         
     }
@@ -120,8 +114,6 @@ class BuyBoxController extends BaseController {
             buildResponse(input.refNo, res, SUCCESS, {})
         }catch(err){
             HandleErrorException(input, res, err + "");
-        }finally{
-            closeDb();
         }
     }
 

@@ -1,14 +1,12 @@
-import { clusterApiUrl, Connection, PublicKey, LAMPORTS_PER_SOL, Keypair, SystemProgram, Transaction, sendAndConfirmTransaction, TransactionInstruction, TransactionInstructionCtorFields } from '@solana/web3.js';
+import { clusterApiUrl, Connection, PublicKey, Keypair, SystemProgram, Transaction } from '@solana/web3.js';
 import {
-  Program, Provider, web3, BN, Wallet
+  Program, Provider, web3, BN
 } from '@project-serum/anchor';
 // import idl from './ameta.json'
 import ametaIdl from './ameta.json';
-import { createAssociatedTokenAccountInstruction, getAtaForMint, getMetadata, getAMeta, MY_WALLET, AMetaData, TOKEN_METADATA_PROGRAM_ID, findAssociatedTokenAddress, initializeMint } from './SolUtils';
+import { getMetadata, getAMeta, MY_WALLET, AMetaData, TOKEN_METADATA_PROGRAM_ID, findAssociatedTokenAddress, initializeMint } from './SolUtils';
 
-import { AccountLayout, ASSOCIATED_TOKEN_PROGRAM_ID, MintLayout, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import OuterNFT from './OuterNFT';
-import BoxNFT from './BoxNFT';
+import { AccountLayout, ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { Ameta } from './ameta';
 import FishingRodNFT from './FishingRodNFT';
 import { ErrorCode } from '../config/ErrorCodeConfig';

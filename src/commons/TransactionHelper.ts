@@ -1,10 +1,10 @@
 import { ConfirmedTransaction, TokenBalance, TransactionResponse } from "@solana/web3.js";
 import moment, { min } from "moment";
-import { closeDb, collection } from "./mongo";
-import { MktTransaction } from "../models/MktTransaction";
 import { connection } from "../ameta/SolAMeta";
 import { OwnerWallet, TokenDecimals, TokenMint } from "../ameta/OPConfig";
 import { ErrorCode } from "../config/ErrorCodeConfig";
+import { MktTransaction } from "../entities/MktTransaction";
+import { DI } from '../configdb/database.config';
 
 class TransactionController {
     getTransaction = async (sig: string): Promise<TransactionResponse> => {
@@ -15,7 +15,6 @@ class TransactionController {
             throw new Error(ErrorCode.TransferSigIsInvalid);
         }
         return null
-
     }
 
     validateTransferTokenSig = async (sig: string, payerWallet: string, amountTransfer: number, mint: string, decimals = TokenDecimals) => {
@@ -53,37 +52,33 @@ class TransactionController {
     }
 
     getOrCreateTransactionFromDB = async (sig: string): Promise<MktTransaction> => {
-        let mkt_transaction = await collection('mkt_transaction');
-        let transaction: MktTransaction = await mkt_transaction.findOne<MktTransaction>({
+        const mktTransactionRepo = DI.em.fork().getRepository(MktTransaction);
+        let transaction: MktTransaction = await mktTransactionRepo.findOne({
             txSignature: sig
         });
         console.log('transaction', transaction);
         if (transaction) {
-            closeDb();
             return transaction;
         } else {
             let transactionResponse = await this.getTransaction(sig);
-            let newTransaction: MktTransaction = {
+            let newTransaction: MktTransaction = mktTransactionRepo.create({
                 txSignature: sig,
                 isHandled: false,
                 created: moment().format('YYYYMMDDHHmmSS'),
                 transactionResponse: JSON.stringify(transactionResponse),
-            }
-            await mkt_transaction.insertOne(newTransaction);
-            closeDb();
-
+            })
+            await mktTransactionRepo.persistAndFlush(newTransaction);
             return newTransaction
         }
 
     }
     markDoneTransferSig = async (sig: string) => {
-        let mkt_transaction = await collection('mkt_transaction');
-        let transaction: MktTransaction = await mkt_transaction.findOne<MktTransaction>({
+        const mktTransactionRepo = DI.em.fork().getRepository(MktTransaction);
+        let transaction: MktTransaction = await mktTransactionRepo.findOne({
             txSignature: sig
         });
-        let updateTransaction = { $set: { isHandled: true } }
-        await mkt_transaction.updateOne({ txSignature: sig }, updateTransaction);
-        closeDb();
+        transaction.isHandled = true;
+        await mktTransactionRepo.persistAndFlush(transaction);
     }
 }
 

@@ -1,7 +1,6 @@
 import { PublicKey, Keypair, SystemProgram } from '@solana/web3.js';
 import { Request, Response } from "express";
 import { sign } from "jsonwebtoken";
-import { closeDb, collection } from "../commons/mongo";
 import { buildResponse, genRandomString, isNullOrEmptyString } from "../commons/Utils";
 import { SECRET } from "../config/AuthConfig";
 import { ErrorCode, HandleErrorException, SUCCESS } from "../config/ErrorCodeConfig";
@@ -181,8 +180,6 @@ export default class AuthController extends BaseController {
             });
         } catch (err) {
             HandleErrorException(input, res, err + "");
-        } finally {
-            closeDb();
         }
     };
 
