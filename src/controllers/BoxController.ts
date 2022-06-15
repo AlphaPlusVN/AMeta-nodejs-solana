@@ -1,4 +1,3 @@
-import { MY_WALLET } from "../ameta/SolUtils";
 import BaseController, { BaseInput } from "./BaseController";
 import { Request, Response } from 'express';
 import { buyBox, connection, openBox } from "../ameta/SolAMeta";
@@ -95,7 +94,7 @@ class BuyBoxController extends BaseController {
             buildResponse(input.refNo, res, SUCCESS, {})
 
         } catch (err) {
-            HandleErrorException(input, res, err.message);
+            HandleErrorException(input, res, err + "");
         } finally{
             closeDb(); 
         }
@@ -120,7 +119,7 @@ class BuyBoxController extends BaseController {
             await TransactionHelper.markDoneTransferSig(input.transferSig);
             buildResponse(input.refNo, res, SUCCESS, {})
         }catch(err){
-            HandleErrorException(input, res, err.message);
+            HandleErrorException(input, res, err + "");
         }finally{
             closeDb();
         }

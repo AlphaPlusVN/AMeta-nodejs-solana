@@ -1,4 +1,3 @@
-import { bs58 } from "@project-serum/anchor/dist/cjs/utils/bytes";
 import { PublicKey, Keypair, SystemProgram } from '@solana/web3.js';
 import { Request, Response } from "express";
 import { sign } from "jsonwebtoken";
@@ -8,11 +7,11 @@ import { SECRET } from "../config/AuthConfig";
 import { ErrorCode, HandleErrorException, SUCCESS } from "../config/ErrorCodeConfig";
 
 import AuthMiddleWare from "../middleware/AuthMiddleWare";
-import { User } from '../models/User';
 import { isValidMessage, createAccount } from '../ameta/SolUtils';
 import BaseController, { BaseInput } from "./BaseController";
-import { web3 } from '@project-serum/anchor';
-import { WalletCache } from '../models/WalletCache';
+import { DI } from '../configdb/database.config';
+import { User } from '../entities/User';
+import { WalletCache } from '../entities/WalletCache';
 var bcrypt = require('bcryptjs');
 
 interface GeTokenInput extends BaseInput {
@@ -38,7 +37,7 @@ export default class AuthController extends BaseController {
         this.router.post('/getToken', this.getToken);
         this.router.post('/getNonce', this.getNonce);
         this.router.post('/updateUser', [AuthMiddleWare.verifyToken], this.updateUser);
-        this.router.post('/createWalletAccount', this.generateKeypair);
+        this.router.post('/createUserWallet', this.createUserWallet);
     }
 
     getToken = async (req: Request, res: Response) => {
@@ -49,9 +48,8 @@ export default class AuthController extends BaseController {
                 throw new Error(ErrorCode.ParamsIsInvalid);
 
             }
-
-            let userCollection = await collection('user');
-            let user: User = await userCollection.findOne<User>({
+            const userRepo = DI.em.fork().getRepository(User);
+            let user: User = await userRepo.findOne({
                 walletAddress: input.walletAddress
             });
             if (!user || isNullOrEmptyString(user.nonce)) {
@@ -69,9 +67,7 @@ export default class AuthController extends BaseController {
             buildResponse(input.refNo, res, SUCCESS, { token: token, user: { username: user.username } });
         } catch (err) {
             console.log(err);
-            HandleErrorException(input, res, err.message);
-        } finally {
-            closeDb();
+            HandleErrorException(input, res, err + "");
         }
     }
 
@@ -82,32 +78,28 @@ export default class AuthController extends BaseController {
                 throw new Error(ErrorCode.ParamsIsInvalid);
             }
             let nonce = genRandomString(6).toUpperCase();
-            let userCollection = await collection('user');
-            let user: User = await userCollection.findOne<User>({
+            const userRepo = DI.em.fork().getRepository(User);
+            let user: User = await userRepo.findOne({
                 walletAddress: getNonceInput.walletAddress
             });
             console.log('user', user);
             if (user) {
-                let newUser = { $set: { nonce: nonce } }
-                await userCollection.updateOne({ walletAddress: getNonceInput.walletAddress }, newUser);
+                user.nonce = nonce;
+                await userRepo.persistAndFlush(user);
             } else {
-                user = {
+                user = userRepo.create({
                     nonce: nonce,
                     walletAddress: getNonceInput.walletAddress,
                     username: '',
                     password: ''
-                }
-                user.walletAddress = getNonceInput.walletAddress;
-                let newUser = await userCollection.insertOne(user);
-                console.log('new user', newUser);
+                });
+                await userRepo.persistAndFlush(user);
+                console.log('new user', user);
             }
 
             buildResponse(getNonceInput.refNo, res, SUCCESS, { nonce })
         } catch (err) {
-            HandleErrorException(getNonceInput, res, err.message);
-        } finally {
-            console.log('Finnally');
-            closeDb();
+            HandleErrorException(getNonceInput, res, err + "");
         }
     }
 
@@ -121,23 +113,23 @@ export default class AuthController extends BaseController {
                 throw new Error(ErrorCode.ParamsIsInvalid);
 
             }
-            let userCollection = await collection('user');
+            let userRepo = DI.em.fork().getRepository(User);
 
-            let emailExist = await userCollection.findOne<User>({
+            let emailExist = await userRepo.findOne({
                 email: input.email
             });
             if (emailExist) {
                 throw new Error(ErrorCode.EmailIsExist);
 
             }
-            let userExist = await userCollection.findOne<User>({
+            let userExist = await userRepo.findOne({
                 username: input.username
             });
             if (userExist) {
                 throw new Error(ErrorCode.UserNameIsExist);
 
             }
-            let user: User = await userCollection.findOne<User>({
+            let user = await userRepo.findOne({
                 walletAddress: input.walletAddress
             })
 
@@ -147,14 +139,12 @@ export default class AuthController extends BaseController {
             let salt = await bcrypt.genSalt(10);
             let passwordPlainText = genRandomString(9);
             let hashPassword = await bcrypt.hash(passwordPlainText, salt);
-            let newUser = {
-                $set: {
-                    username: input.username,
-                    email: input.email,
-                    password: hashPassword
-                }
-            }
-            await userCollection.updateOne({ walletAddress: input.walletAddress }, newUser);
+            let newUser = userRepo.create({
+                username: input.username,
+                email: input.email,
+                password: hashPassword
+            });
+            await userRepo.persistAndFlush(newUser);
 
             buildResponse(input.refNo, res, SUCCESS, {
                 user: {
@@ -164,36 +154,33 @@ export default class AuthController extends BaseController {
                 }
             })
         } catch (err) {
-            HandleErrorException(input, res, err.message);
-        } finally {
-            closeDb();
+            HandleErrorException(input, res, err + "");
         }
     }
-    generateKeypair = async (req: Request, res: Response) => {
+    createUserWallet = async (req: Request, res: Response) => {
         let input = req.body;
         try {
             let keypair = Keypair.generate();
             //create wallet account
             await createAccount(keypair);
             //save to db
-            let userCollection = await collection('user');
-            let walletRepo = await collection('wallet_cache');
-            let user: User = {
-                username: "ameta",
-                walletAddress: keypair.publicKey.toString()
+            let userRepo = DI.em.fork().getRepository(User);
+            let walletRepo = DI.em.fork().getRepository(WalletCache);
+            let user = await userRepo.findOne({ username: input.userName });
+            if (user) {
+                user.walletAddress = keypair.publicKey.toString();
+                await userRepo.persistAndFlush(user);
+                let wallet = {
+                    walletAddress: keypair.publicKey.toString(),
+                    secretKey: keypair.secretKey.toString()
+                }
+                await walletRepo.persistAndFlush(wallet);
             }
-            await userCollection.insertOne(user);
-
-            let wallet: WalletCache = {
-                walletAddress: keypair.publicKey.toString(),
-                secretKey: keypair.secretKey.toString()
-            }
-            await walletRepo.insertOne(wallet);
             buildResponse(input.refNo, res, SUCCESS, {
                 user
             });
         } catch (err) {
-            HandleErrorException(input, res, err.message);
+            HandleErrorException(input, res, err + "");
         } finally {
             closeDb();
         }
