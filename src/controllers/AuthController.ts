@@ -157,6 +157,8 @@ export default class AuthController extends BaseController {
             HandleErrorException(input, res, err + "");
         }
     }
+
+    bs58 = require('bs58')
     createUserWallet = async (req: Request, res: Response) => {
         let input = req.body;
         console.log("Create wallet " + req.body.username);
@@ -169,14 +171,14 @@ export default class AuthController extends BaseController {
             let walletRepo = DI.em.fork().getRepository(WalletCache);
             let user = await userRepo.findOne({ username: input.username });
             console.log("update user " +  JSON.stringify(user));
-            console.log("wallet " + JSON.stringify(keypair));
+            const privateKey = this.bs58.encode(keypair.secretKey);
 
             if (user) {
-                user.walletAddress = keypair.publicKey.toString();
+                user.walletAddress = keypair.publicKey.toBase58();
                 await userRepo.persistAndFlush(user);
                 let wallet = {
-                    walletAddress: keypair.publicKey.toString(),
-                    secretKey: keypair.secretKey.toString()
+                    walletAddress: keypair.publicKey.toBase58(),
+                    secretKey: privateKey
                 }
                 await walletRepo.persistAndFlush(wallet);
             }
