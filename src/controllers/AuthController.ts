@@ -173,7 +173,7 @@ export default class AuthController extends BaseController {
             console.log("update user " + JSON.stringify(user));
             const privateKey = this.bs58.encode(keypair.secretKey);
 
-            if (user) {
+            if (user && isNullOrEmptyString(user.walletAddress)) {
                 user.walletAddress = keypair.publicKey.toBase58();
                 await userRepo.persistAndFlush(user);
                 let wallet = new WalletCache();
