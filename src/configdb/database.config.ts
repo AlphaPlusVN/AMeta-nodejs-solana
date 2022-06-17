@@ -15,7 +15,7 @@ export const DI = {} as {
  */
 export async function connect() {
 
-  options.clientUrl = process.env.DEMO_DATABASE
+  options.clientUrl = process.env.DEMO_DATABASE;
 
   DI.orm = await MikroORM.init(options);
 
