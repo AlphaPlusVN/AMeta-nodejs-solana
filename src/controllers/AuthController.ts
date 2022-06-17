@@ -168,6 +168,9 @@ export default class AuthController extends BaseController {
             let userRepo = DI.em.fork().getRepository(User);
             let walletRepo = DI.em.fork().getRepository(WalletCache);
             let user = await userRepo.findOne({ username: input.userName });
+            console.log("update user " +  JSON.stringify(user));
+            console.log("wallet " + JSON.stringify(keypair));
+
             if (user) {
                 user.walletAddress = keypair.publicKey.toString();
                 await userRepo.persistAndFlush(user);
