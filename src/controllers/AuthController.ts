@@ -11,6 +11,7 @@ import BaseController, { BaseInput } from "./BaseController";
 import { DI } from '../configdb/database.config';
 import { User } from '../entities/User';
 import { WalletCache } from '../entities/WalletCache';
+import { Logger } from 'mongodb';
 var bcrypt = require('bcryptjs');
 
 interface GeTokenInput extends BaseInput {
@@ -158,6 +159,7 @@ export default class AuthController extends BaseController {
     }
     createUserWallet = async (req: Request, res: Response) => {
         let input = req.body;
+        console.log("Create wallet " + req.body.username);
         try {
             let keypair = Keypair.generate();
             //create wallet account
@@ -179,6 +181,7 @@ export default class AuthController extends BaseController {
                 user
             });
         } catch (err) {
+            console.error(err);
             HandleErrorException(input, res, err + "");
         }
     };
