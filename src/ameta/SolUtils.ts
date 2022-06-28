@@ -19,6 +19,7 @@ import { deserializeUnchecked } from 'borsh';
 import { ErrorCode } from '../config/ErrorCodeConfig';
 import { assign } from '@mikro-orm/core';
 import { PROGRAM_ID } from '@metaplex-foundation/mpl-token-metadata';
+import { Logger } from 'mongodb';
 export const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID =
   new anchor.web3.PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
 const PREFIX = 'a_meta';
@@ -189,6 +190,7 @@ export const createAccount = async (keypair: Keypair) => {
     lamports: await Token.getMinBalanceRentForExemptAccount(program.provider.connection),
     programId: TOKEN_PROGRAM_ID,
   });
+  console.log("create wallet for " + keypair.publicKey);
   // create ata
   let tx = new Transaction().add(
     Token.createAssociatedTokenAccountInstruction(
