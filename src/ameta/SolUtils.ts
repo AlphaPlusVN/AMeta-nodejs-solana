@@ -1,7 +1,7 @@
 import * as anchor from '@project-serum/anchor';
 import { web3 } from '@project-serum/anchor';
 import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes';
-import { MintLayout, Token, TOKEN_PROGRAM_ID, AccountLayout } from '@solana/spl-token';
+import { MintLayout, Token, TOKEN_PROGRAM_ID, AccountLayout, ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import {
   Keypair,
   PublicKey,
@@ -18,6 +18,7 @@ const { metadata: { Metadata } } = programs;
 import { deserializeUnchecked } from 'borsh';
 import { ErrorCode } from '../config/ErrorCodeConfig';
 import { assign } from '@mikro-orm/core';
+import { PROGRAM_ID } from '@metaplex-foundation/mpl-token-metadata';
 export const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID =
   new anchor.web3.PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
 const PREFIX = 'a_meta';
@@ -187,5 +188,23 @@ export const createAccount = async (keypair: Keypair) => {
     space: AccountLayout.span,
     lamports: await Token.getMinBalanceRentForExemptAccount(program.provider.connection),
     programId: TOKEN_PROGRAM_ID,
-  })
+  });
+  // create ata
+  await Token.createAssociatedTokenAccountInstruction(
+    ASSOCIATED_TOKEN_PROGRAM_ID, // connection
+    TOKEN_PROGRAM_ID,
+    AMETA_TOKEN, // mint
+    SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID,
+    OWNER_TOKEN_ACCOUNT,
+    keypair.publicKey
+  );
+  //mint ameta to user
+  Token.createMintToInstruction(
+    PROGRAM_ID,
+    AMETA_TOKEN,
+    keypair.publicKey,
+    OWNER_TOKEN_ACCOUNT,
+    [],
+    1e11
+  )
 }
