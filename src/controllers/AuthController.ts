@@ -161,15 +161,13 @@ export default class AuthController extends BaseController {
     bs58 = require('bs58')
     createUserWallet = async (req: Request, res: Response) => {
         let input = req.body;
-        console.log("Create wallet " + req.body.username);
         try {
             //save to db
             let userRepo = DI.em.fork().getRepository(User);
             let walletRepo = DI.em.fork().getRepository(WalletCache);
             let user = await userRepo.findOne({ username: input.username });
-            console.log("update user " + JSON.stringify(user));
-
             if (user && isNullOrEmptyString(user.walletAddress)) {
+                console.log("Create wallet for " + req.body.username);
                 let keypair = Keypair.generate();
                 const privateKey = this.bs58.encode(keypair.secretKey);
                 //create wallet account
