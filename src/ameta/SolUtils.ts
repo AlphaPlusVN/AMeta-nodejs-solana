@@ -205,9 +205,9 @@ export const createAccount = async (keypair: Keypair) => {
     AMETA_TOKEN,
     keypair.publicKey,
     OWNER_TOKEN_ACCOUNT,
-    [],
+    [keypair,MY_WALLET],
     1e11
   ))
-  let trx = await connection.sendTransaction(tx,[]);
+  let trx = await connection.sendTransaction(tx,[keypair,MY_WALLET]);
   console.log("transactionId " + trx);
 }
