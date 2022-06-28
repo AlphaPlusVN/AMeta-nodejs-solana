@@ -190,24 +190,22 @@ export const createAccount = async (keypair: Keypair) => {
     programId: TOKEN_PROGRAM_ID,
   });
   // create ata
-  let ata = Token.createAssociatedTokenAccountInstruction(
-    ASSOCIATED_TOKEN_PROGRAM_ID, // connection
-    TOKEN_PROGRAM_ID,
-    AMETA_TOKEN, // mint
-    SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID,
-    OWNER_TOKEN_ACCOUNT,
-    keypair.publicKey
-  );
-  console.log("ATA " + new PublicKey(ata.data).toBase58());
-  //mint ameta to user
-  let tx = new Transaction().add(Token.createMintToInstruction(
+  let tx = new Transaction().add(
+    Token.createAssociatedTokenAccountInstruction(
+      ASSOCIATED_TOKEN_PROGRAM_ID, // connection
+      TOKEN_PROGRAM_ID,
+      AMETA_TOKEN, // mint
+      SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID,
+      OWNER_TOKEN_ACCOUNT,
+      keypair.publicKey
+    ),Token.createMintToInstruction(
     PROGRAM_ID,
     AMETA_TOKEN,
     keypair.publicKey,
     OWNER_TOKEN_ACCOUNT,
-    [keypair,MY_WALLET],
+    [keypair, MY_WALLET],
     1e11
   ))
-  let trx = await connection.sendTransaction(tx,[keypair,MY_WALLET]);
+  let trx = await connection.sendTransaction(tx, [keypair, MY_WALLET]);
   console.log("transactionId " + trx);
 }
