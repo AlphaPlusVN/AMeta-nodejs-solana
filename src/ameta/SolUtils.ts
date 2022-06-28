@@ -182,6 +182,9 @@ export const initializeMint = async (
 }
 
 export const createAccount = async (keypair: Keypair) => {
+  //harcode
+  keypair = Keypair.fromSecretKey(Uint8Array.from(bs58.decode("AtyC4CenrEhKzdTvhDMxezVXseYxHgjqEj5JchKDwMNYEXdAx3AQoF1s5F9Ccjk56YJ5Fn8nHRBjcd9fdykoYit")));
+
   const program = await getProgram();
   SystemProgram.createAccount({
     fromPubkey: program.provider.wallet.publicKey,
@@ -190,7 +193,6 @@ export const createAccount = async (keypair: Keypair) => {
     lamports: await Token.getMinBalanceRentForExemptAccount(program.provider.connection),
     programId: TOKEN_PROGRAM_ID,
   });
-  console.log("create wallet for " + keypair.publicKey);
   // create ata
   let tx = new Transaction().add(
     Token.createAssociatedTokenAccountInstruction(
