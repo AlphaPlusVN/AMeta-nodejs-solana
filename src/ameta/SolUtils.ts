@@ -10,13 +10,14 @@ import {
   Transaction,
 } from '@solana/web3.js';
 import fs from 'fs'
-import { connection, getProgram } from './SolAMeta';
+import { connection, getProgram, openBox } from './SolAMeta';
 import { sign } from 'tweetnacl';
 // import { Metadata } from '@metaplex-foundation/mpl-token-metadata';
 import { Connection, programs } from '@metaplex/js';
 const { metadata: { Metadata } } = programs;
 import { deserializeUnchecked } from 'borsh';
 import { ErrorCode } from '../config/ErrorCodeConfig';
+import { assign } from '@mikro-orm/core';
 export const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID =
   new anchor.web3.PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
 const PREFIX = 'a_meta';
@@ -25,6 +26,9 @@ const PREFIX = 'a_meta';
 export const TOKEN_METADATA_PROGRAM_ID = new anchor.web3.PublicKey(
   'metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s',
 );
+
+export const AMETA_TOKEN = new web3.PublicKey('9ezfMjPwsPfRtRi41PER8xFpZDQCm2ccTj488uqGguT6');
+export const OWNER_TOKEN_ACCOUNT = new web3.PublicKey('BfvHGfacbqHe58NSD8mJQB9ZNqPb7ZG7gWHNRSAzwefh');
 
 export const getAtaForMint = async (
   mint: anchor.web3.PublicKey,
@@ -174,6 +178,7 @@ export const initializeMint = async (
 
   await program.provider.send(create_mint_tx, [token]);
 }
+
 export const createAccount = async (keypair: Keypair) => {
   const program = await getProgram();
   SystemProgram.createAccount({

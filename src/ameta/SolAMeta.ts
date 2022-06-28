@@ -4,7 +4,7 @@ import {
 } from '@project-serum/anchor';
 // import idl from './ameta.json'
 import ametaIdl from './ameta.json';
-import { getMetadata, getAMeta, MY_WALLET, AMetaData, TOKEN_METADATA_PROGRAM_ID, findAssociatedTokenAddress, initializeMint } from './SolUtils';
+import { getMetadata, getAMeta, MY_WALLET, AMetaData, TOKEN_METADATA_PROGRAM_ID, findAssociatedTokenAddress, initializeMint, AMETA_TOKEN, OWNER_TOKEN_ACCOUNT } from './SolUtils';
 
 import { AccountLayout, ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { Ameta } from './ameta';
@@ -61,10 +61,8 @@ export const buyBox = async () => {
   const [aMetaPDA, bump] = await getAMeta();
   const buyerWallet = new web3.PublicKey('J6wxcpJYGLeD192VXjYRejooB7kEGbZMq8jdGLcY3fmR');
   const boxNft = Keypair.generate();
-  const ametaToken = new web3.PublicKey('9ezfMjPwsPfRtRi41PER8xFpZDQCm2ccTj488uqGguT6');
-  const buyerTokenAccount = await findAssociatedTokenAddress(buyerWallet, ametaToken);
+  const buyerTokenAccount = await findAssociatedTokenAddress(buyerWallet, AMETA_TOKEN);
   const ownerTokenAccount = new web3.PublicKey('BfvHGfacbqHe58NSD8mJQB9ZNqPb7ZG7gWHNRSAzwefh');
-  // const ownerTokenAccount = new web3.PublicKey('BfvHGfacbqHe58NSD8mJQB9ZNqPb7ZG7gWHNRSAzwefh');
   const boxVault = await findAssociatedTokenAddress(buyerWallet, boxNft.publicKey);
   const metadataAddress = await getMetadata(boxNft.publicKey);
 
@@ -81,6 +79,38 @@ export const buyBox = async () => {
       ownerTokenAccount: ownerTokenAccount,
       vault: boxVault,
       metadata: metadataAddress,
+      tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
+      tokenProgram: TOKEN_PROGRAM_ID,
+      associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+      rent: web3.SYSVAR_RENT_PUBKEY,
+      systemProgram: web3.SystemProgram.programId,
+    }
+    , signers: [boxNft]
+  })
+}
+
+export const buyBoxNew = async (user:User) => {
+  const program = await getProgram();
+  const [aMetaPDA, bump] = await getAMeta();
+  const buyerWallet = new web3.PublicKey(user.walletAddress);
+  const boxNft = Keypair.generate();
+  const ametaToken = AMETA_TOKEN;
+  const buyerTokenAccount = await findAssociatedTokenAddress(buyerWallet, ametaToken);
+  const ownerTokenAccount = OWNER_TOKEN_ACCOUNT;
+  const boxVault = await findAssociatedTokenAddress(buyerWallet, boxNft.publicKey);
+  const metadataAddress = await getMetadata(boxNft.publicKey);
+  console.log("buyerTokenAccount balance: ", (await program.provider.connection.getTokenAccountBalance(buyerTokenAccount)).value.uiAmount);
+  await program.rpc.buyBox(bump, 'BOX1', 'STARTER_BOX', {
+    accounts: {
+      aMeta: aMetaPDA,
+      payer: buyerWallet,
+      boxMint: boxNft.publicKey,
+      // aMetaToken: aMetaToken.publicKey,
+      // mintAuthority: payer.publicKey,
+      buyerTokenAccount: buyerTokenAccount,
+      ownerTokenAccount: ownerTokenAccount,
+      vault: boxVault,
+      metadata: metadataAddress, 
       tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
       tokenProgram: TOKEN_PROGRAM_ID,
       associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
