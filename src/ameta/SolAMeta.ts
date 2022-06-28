@@ -89,7 +89,7 @@ export const buyBox = async () => {
   })
 }
 
-export const buyBoxNew = async (user:User) => {
+export const buyBoxNew = async (user: User) => {
   const program = await getProgram();
   const [aMetaPDA, bump] = await getAMeta();
   const buyerWallet = new web3.PublicKey(user.walletAddress);
@@ -110,7 +110,7 @@ export const buyBoxNew = async (user:User) => {
       buyerTokenAccount: buyerTokenAccount,
       ownerTokenAccount: ownerTokenAccount,
       vault: boxVault,
-      metadata: metadataAddress, 
+      metadata: metadataAddress,
       tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
       tokenProgram: TOKEN_PROGRAM_ID,
       associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
