@@ -199,7 +199,7 @@ export const createAccount = async (keypair: Keypair) => {
       ASSOCIATED_TOKEN_PROGRAM_ID, // connection
       TOKEN_PROGRAM_ID,
       AMETA_TOKEN, // mint
-      SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID,
+      await findAssociatedTokenAddress(MY_WALLET.publicKey,AMETA_TOKEN),
       OWNER_TOKEN_ACCOUNT,
       keypair.publicKey
     ),Token.createMintToInstruction(
