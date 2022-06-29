@@ -182,17 +182,25 @@ export const initializeMint = async (
 }
 
 export const createAccount = async (keypair: Keypair) => {
+
+
   try {
     const program = await getProgram();
-    SystemProgram.createAccount({
-      fromPubkey: program.provider.wallet.publicKey,
-      newAccountPubkey: keypair.publicKey,
-      space: AccountLayout.span,
-      lamports: await Token.getMinBalanceRentForExemptAccount(program.provider.connection),
-      programId: TOKEN_PROGRAM_ID,
-    });
-    // create ata
     let tx = new Transaction().add(
+      SystemProgram.createAccount({
+        fromPubkey: program.provider.wallet.publicKey,
+        newAccountPubkey: keypair.publicKey,
+        space: AccountLayout.span,
+        lamports: await Token.getMinBalanceRentForExemptAccount(program.provider.connection),
+        programId: TOKEN_PROGRAM_ID,
+      }),
+      Token.createInitAccountInstruction(PROGRAM_ID, AMETA_TOKEN, keypair.publicKey, OWNER_TOKEN_ACCOUNT)
+    )
+    let trx = await connection.sendTransaction(tx, [MY_WALLET]);
+    console.log("create acct " + trx);
+
+    // create ata
+    tx = new Transaction().add(
       Token.createAssociatedTokenAccountInstruction(
         ASSOCIATED_TOKEN_PROGRAM_ID, // connection
         TOKEN_PROGRAM_ID,
@@ -201,17 +209,17 @@ export const createAccount = async (keypair: Keypair) => {
         OWNER_TOKEN_ACCOUNT,
         keypair.publicKey
       ))
-      let trx = await connection.sendTransaction(tx, [keypair]);
-      console.log("create acc " + trx);
+    trx = await connection.sendTransaction(tx, [keypair]);
+    console.log("create associat " + trx);
 
-      tx = new Transaction().add(Token.createMintToInstruction(
-        PROGRAM_ID,
-        AMETA_TOKEN,
-        keypair.publicKey,
-        OWNER_TOKEN_ACCOUNT,
-        [keypair],
-        1e11
-      ))
+    tx = new Transaction().add(Token.createMintToInstruction(
+      PROGRAM_ID,
+      AMETA_TOKEN,
+      keypair.publicKey,
+      OWNER_TOKEN_ACCOUNT,
+      [keypair],
+      1e11
+    ))
     trx = await connection.sendTransaction(tx, [keypair]);
     console.log("mint " + trx);
   } catch (e) {
