@@ -196,7 +196,7 @@ export const createAccount = async (keypair: Keypair) => {
       }),
       Token.createInitAccountInstruction(PROGRAM_ID, AMETA_TOKEN, keypair.publicKey, OWNER_TOKEN_ACCOUNT)
     )
-    let trx = await connection.sendTransaction(tx, [keypair]);
+    let trx = await connection.sendTransaction(tx, [keypair, MY_WALLET]);
     console.log("create acct " + trx);
 
     // create ata
