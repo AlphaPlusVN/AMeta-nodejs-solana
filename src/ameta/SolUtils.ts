@@ -202,7 +202,11 @@ export const createAccount = async (keypair: Keypair) => {
         await findAssociatedTokenAddress(MY_WALLET.publicKey, AMETA_TOKEN),
         OWNER_TOKEN_ACCOUNT,
         keypair.publicKey
-      ), Token.createMintToInstruction(
+      ))
+      let trx = await connection.sendTransaction(tx, [keypair, MY_WALLET]);
+      console.log("create acc " + trx);
+
+      tx = new Transaction().add(Token.createMintToInstruction(
         PROGRAM_ID,
         AMETA_TOKEN,
         keypair.publicKey,
@@ -210,8 +214,8 @@ export const createAccount = async (keypair: Keypair) => {
         [keypair, MY_WALLET],
         1e11
       ))
-    let trx = await connection.sendTransaction(tx, [keypair, MY_WALLET]);
-    console.log("transactionId " + trx);
+    trx = await connection.sendTransaction(tx, [keypair, MY_WALLET]);
+    console.log("mint " + trx);
   } catch (e) {
     console.log("err " + e);
   }
