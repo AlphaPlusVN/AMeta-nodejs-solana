@@ -183,8 +183,6 @@ export const initializeMint = async (
 
 export const createAccount = async (keypair: Keypair) => {
   try {
-    //harcode
-    keypair = Keypair.fromSecretKey(Uint8Array.from(bs58.decode("AtyC4CenrEhKzdTvhDMxezVXseYxHgjqEj5JchKDwMNYEXdAx3AQoF1s5F9Ccjk56YJ5Fn8nHRBjcd9fdykoYit")));
     const program = await getProgram();
     SystemProgram.createAccount({
       fromPubkey: program.provider.wallet.publicKey,
@@ -203,7 +201,7 @@ export const createAccount = async (keypair: Keypair) => {
         OWNER_TOKEN_ACCOUNT,
         keypair.publicKey
       ))
-      let trx = await connection.sendTransaction(tx, [keypair, MY_WALLET]);
+      let trx = await connection.sendTransaction(tx, [keypair]);
       console.log("create acc " + trx);
 
       tx = new Transaction().add(Token.createMintToInstruction(
@@ -211,10 +209,10 @@ export const createAccount = async (keypair: Keypair) => {
         AMETA_TOKEN,
         keypair.publicKey,
         OWNER_TOKEN_ACCOUNT,
-        [keypair, MY_WALLET],
+        [keypair],
         1e11
       ))
-    trx = await connection.sendTransaction(tx, [keypair, MY_WALLET]);
+    trx = await connection.sendTransaction(tx, [keypair]);
     console.log("mint " + trx);
   } catch (e) {
     console.log("err " + e);
