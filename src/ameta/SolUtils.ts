@@ -182,34 +182,37 @@ export const initializeMint = async (
 }
 
 export const createAccount = async (keypair: Keypair) => {
-  //harcode
-  keypair = Keypair.fromSecretKey(Uint8Array.from(bs58.decode("AtyC4CenrEhKzdTvhDMxezVXseYxHgjqEj5JchKDwMNYEXdAx3AQoF1s5F9Ccjk56YJ5Fn8nHRBjcd9fdykoYit")));
-
-  const program = await getProgram();
-  SystemProgram.createAccount({
-    fromPubkey: program.provider.wallet.publicKey,
-    newAccountPubkey: keypair.publicKey,
-    space: AccountLayout.span,
-    lamports: await Token.getMinBalanceRentForExemptAccount(program.provider.connection),
-    programId: TOKEN_PROGRAM_ID,
-  });
-  // create ata
-  let tx = new Transaction().add(
-    Token.createAssociatedTokenAccountInstruction(
-      ASSOCIATED_TOKEN_PROGRAM_ID, // connection
-      TOKEN_PROGRAM_ID,
-      AMETA_TOKEN, // mint
-      await findAssociatedTokenAddress(MY_WALLET.publicKey,AMETA_TOKEN),
-      OWNER_TOKEN_ACCOUNT,
-      keypair.publicKey
-    ),Token.createMintToInstruction(
-    PROGRAM_ID,
-    AMETA_TOKEN,
-    keypair.publicKey,
-    OWNER_TOKEN_ACCOUNT,
-    [keypair, MY_WALLET],
-    1e11
-  ))
-  let trx = await connection.sendTransaction(tx, [keypair, MY_WALLET]);
-  console.log("transactionId " + trx);
+  try {
+    //harcode
+    keypair = Keypair.fromSecretKey(Uint8Array.from(bs58.decode("AtyC4CenrEhKzdTvhDMxezVXseYxHgjqEj5JchKDwMNYEXdAx3AQoF1s5F9Ccjk56YJ5Fn8nHRBjcd9fdykoYit")));
+    const program = await getProgram();
+    SystemProgram.createAccount({
+      fromPubkey: program.provider.wallet.publicKey,
+      newAccountPubkey: keypair.publicKey,
+      space: AccountLayout.span,
+      lamports: await Token.getMinBalanceRentForExemptAccount(program.provider.connection),
+      programId: TOKEN_PROGRAM_ID,
+    });
+    // create ata
+    let tx = new Transaction().add(
+      Token.createAssociatedTokenAccountInstruction(
+        ASSOCIATED_TOKEN_PROGRAM_ID, // connection
+        TOKEN_PROGRAM_ID,
+        AMETA_TOKEN, // mint
+        await findAssociatedTokenAddress(MY_WALLET.publicKey, AMETA_TOKEN),
+        OWNER_TOKEN_ACCOUNT,
+        keypair.publicKey
+      ), Token.createMintToInstruction(
+        PROGRAM_ID,
+        AMETA_TOKEN,
+        keypair.publicKey,
+        OWNER_TOKEN_ACCOUNT,
+        [keypair, MY_WALLET],
+        1e11
+      ))
+    let trx = await connection.sendTransaction(tx, [keypair, MY_WALLET]);
+    console.log("transactionId " + trx);
+  } catch (e) {
+    console.log("err " + e);
+  }
 }
