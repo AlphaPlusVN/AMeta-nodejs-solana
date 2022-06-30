@@ -130,6 +130,7 @@ class BuyBoxController extends BaseController {
             }
             buyBoxNew(user);
         } catch (err) {
+            console.log(err);
             HandleErrorException(input, res, err + "");
         }
     }

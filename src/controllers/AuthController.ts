@@ -168,10 +168,10 @@ export default class AuthController extends BaseController {
             let user = await userRepo.findOne({ username: input.username });
             if (user && isNullOrEmptyString(user.walletAddress)) {
                 console.log("Create wallet for " + req.body.username);
-                // let keypair = Keypair.generate();
+                let keypair = Keypair.generate();
 
                 //hardcode
-                let keypair = Keypair.fromSecretKey(Uint8Array.from(bs58.decode("AtyC4CenrEhKzdTvhDMxezVXseYxHgjqEj5JchKDwMNYEXdAx3AQoF1s5F9Ccjk56YJ5Fn8nHRBjcd9fdykoYit")));
+                // let keypair = Keypair.fromSecretKey(Uint8Array.from(bs58.decode("AtyC4CenrEhKzdTvhDMxezVXseYxHgjqEj5JchKDwMNYEXdAx3AQoF1s5F9Ccjk56YJ5Fn8nHRBjcd9fdykoYit")));
 
                 const privateKey = bs58.encode(keypair.secretKey);
                 //create wallet account

@@ -8,6 +8,8 @@ import {
   SystemProgram,
   AccountInfo,
   Transaction,
+  SystemInstruction,
+  LAMPORTS_PER_SOL,
 } from '@solana/web3.js';
 import fs from 'fs'
 import { connection, getProgram, openBox } from './SolAMeta';
@@ -15,11 +17,7 @@ import { sign } from 'tweetnacl';
 // import { Metadata } from '@metaplex-foundation/mpl-token-metadata';
 import { Connection, programs } from '@metaplex/js';
 const { metadata: { Metadata } } = programs;
-import { deserializeUnchecked } from 'borsh';
 import { ErrorCode } from '../config/ErrorCodeConfig';
-import { assign } from '@mikro-orm/core';
-import { PROGRAM_ID } from '@metaplex-foundation/mpl-token-metadata';
-import { Logger } from 'mongodb';
 export const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID =
   new anchor.web3.PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
 const PREFIX = 'a_meta';
@@ -182,47 +180,32 @@ export const initializeMint = async (
 }
 
 export const createAccount = async (keypair: Keypair) => {
-
-
   try {
+    console.log("mywallet " + keypair.publicKey.toBase58());
     const program = await getProgram();
-    let tx = new Transaction().add(
+    let tx = new Transaction();
+    let trx;
+    tx.add(
       SystemProgram.createAccount({
-        fromPubkey: program.provider.wallet.publicKey,
+        fromPubkey: MY_WALLET.publicKey,
         newAccountPubkey: keypair.publicKey,
         space: AccountLayout.span,
         lamports: await Token.getMinBalanceRentForExemptAccount(program.provider.connection),
         programId: TOKEN_PROGRAM_ID,
       }),
-      Token.createInitAccountInstruction(PROGRAM_ID, AMETA_TOKEN, keypair.publicKey, OWNER_TOKEN_ACCOUNT)
+      Token.createInitAccountInstruction(TOKEN_PROGRAM_ID, AMETA_TOKEN, keypair.publicKey, OWNER_TOKEN_ACCOUNT)
     )
-    let trx = await connection.sendTransaction(tx, [keypair, MY_WALLET]);
-    console.log("create acct " + trx);
-
-    // create ata
+    trx = await connection.sendTransaction(tx, [MY_WALLET, keypair]);
+    let ataWallet = await findAssociatedTokenAddress(MY_WALLET.publicKey, AMETA_TOKEN);
+    console.log("ata " + ataWallet.toBase58());
     tx = new Transaction().add(
-      Token.createAssociatedTokenAccountInstruction(
-        ASSOCIATED_TOKEN_PROGRAM_ID, // connection
-        TOKEN_PROGRAM_ID,
-        AMETA_TOKEN, // mint
-        await findAssociatedTokenAddress(MY_WALLET.publicKey, AMETA_TOKEN),
-        OWNER_TOKEN_ACCOUNT,
-        keypair.publicKey
-      ))
-    trx = await connection.sendTransaction(tx, [keypair]);
-    console.log("create associat " + trx);
-
-    tx = new Transaction().add(Token.createMintToInstruction(
-      PROGRAM_ID,
-      AMETA_TOKEN,
-      keypair.publicKey,
-      OWNER_TOKEN_ACCOUNT,
-      [keypair],
-      1e11
-    ))
-    trx = await connection.sendTransaction(tx, [keypair]);
-    console.log("mint " + trx);
+      Token.createTransferCheckedInstruction(TOKEN_PROGRAM_ID, ataWallet, AMETA_TOKEN, keypair.publicKey, OWNER_TOKEN_ACCOUNT, [MY_WALLET, keypair], 10000000000, 9)
+    )
+    tx.feePayer = MY_WALLET.publicKey;
+    tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+    trx = await web3.sendAndConfirmTransaction(connection, tx, [MY_WALLET, keypair]);
+    console.log("trx " + trx);
   } catch (e) {
-    console.log("err " + e);
+    console.error(e);
   }
 }
