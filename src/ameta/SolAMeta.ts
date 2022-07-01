@@ -115,8 +115,6 @@ export const buyBoxNew = async (user: User) => {
         aMeta: aMetaPDA,
         payer: buyerWallet.publicKey,
         boxMint: boxNft.publicKey,
-        // aMetaToken: aMetaToken.publicKey,
-        // mintAuthority: payer.publicKey,
         buyerTokenAccount: buyerTokenAccount,
         ownerTokenAccount: ownerTokenAccount,
         vault: boxVault,
@@ -127,7 +125,7 @@ export const buyBoxNew = async (user: User) => {
         rent: web3.SYSVAR_RENT_PUBKEY,
         systemProgram: web3.SystemProgram.programId,
       }
-      , signers: [boxNft]
+      , signers: [buyerWallet,boxNft]
     })
   } catch (e) {
     console.log(e);
