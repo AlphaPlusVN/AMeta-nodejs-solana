@@ -22,7 +22,7 @@
         },
         {
           "name": "tokenAccount",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -181,7 +181,7 @@
           "isSigner": false
         },
         {
-          "name": "owner",
+          "name": "user",
           "isMut": true,
           "isSigner": true
         },
@@ -196,17 +196,12 @@
           "isSigner": false
         },
         {
-          "name": "fishingRodMint",
+          "name": "mint",
           "isMut": true,
-          "isSigner": false
+          "isSigner": true
         },
         {
-          "name": "buyerVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "ownerVault",
+          "name": "vault",
           "isMut": true,
           "isSigner": false
         },
@@ -615,11 +610,6 @@
       "code": 6006,
       "name": "NotEnoughToken",
       "msg": "Not enough ameta token"
-    },
-    {
-      "code": 6007,
-      "name": "InvalidMint",
-      "msg": "Invalid mint"
     }
   ],
   "metadata": {
