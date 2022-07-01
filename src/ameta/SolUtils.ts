@@ -214,7 +214,7 @@ export const createAccount = async (keypair: Keypair) => {
       Token.createTransferCheckedInstruction(TOKEN_PROGRAM_ID, ataWallet, AMETA_TOKEN, tokenAccount.publicKey, OWNER_TOKEN_ACCOUNT, [], 10000000000, 9)
     )
     trx = await connection.sendTransaction(tx, [MY_WALLET, keypair, tokenAccount]);
-    console.log("transfer Ameta " + trx);
+    console.log("create wallet & token acct " + trx);
   } catch (e) {
     console.error(e);
   }

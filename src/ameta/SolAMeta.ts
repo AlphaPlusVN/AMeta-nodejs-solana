@@ -4,7 +4,7 @@ import {
 } from '@project-serum/anchor';
 // import idl from './ameta.json'
 import ametaIdl from './ameta.json';
-import { getMetadata, getAMeta, MY_WALLET, AMetaData, TOKEN_METADATA_PROGRAM_ID, findAssociatedTokenAddress, initializeMint, AMETA_TOKEN, OWNER_TOKEN_ACCOUNT } from './SolUtils';
+import { getMetadata, getAMeta, MY_WALLET, AMetaData, TOKEN_METADATA_PROGRAM_ID, findAssociatedTokenAddress, initializeMint, AMETA_TOKEN, OWNER_TOKEN_ACCOUNT, SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID } from './SolUtils';
 
 import { AccountLayout, ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { Ameta } from './ameta';
@@ -98,19 +98,21 @@ export const buyBoxNew = async (user: User) => {
     const [aMetaPDA, bump] = await getAMeta();
     const walletCacheRepo = DI.em.fork().getRepository(WalletCache);
     let payerSecret = await walletCacheRepo.findOne({ walletAddress: user.walletAddress });
-
     const buyerWallet = Keypair.fromSecretKey(Uint8Array.from(bs58.decode(payerSecret.secretKey)));
 
     const boxNft = Keypair.generate();
 
     const ametaToken = AMETA_TOKEN;
-    const buyerTokenAccount =  buyerWallet.publicKey;
-    const ownerTokenAccount = OWNER_TOKEN_ACCOUNT;
+    console.log("buyer " + user.walletAddress);
+    const buyerTokenAccount = (await connection.getTokenAccountsByOwner(buyerWallet.publicKey, { mint: ametaToken })).value[0].pubkey;
+    // const ownerTokenAccount = (await connection.getTokenAccountsByOwner(OWNER_TOKEN_ACCOUNT, { mint: ametaToken })).value[0].pubkey;
+    const ownerTokenAccount = await findAssociatedTokenAddress(OWNER_TOKEN_ACCOUNT,ametaToken);
+
     console.log("get buyer acc " + buyerTokenAccount);
     const boxVault = await findAssociatedTokenAddress(buyerWallet.publicKey, boxNft.publicKey);
     const metadataAddress = await getMetadata(boxNft.publicKey);
     console.log("buyerTokenAccount balance: ", (await program.provider.connection.getTokenAccountBalance(buyerTokenAccount)).value.uiAmount);
-    await program.rpc.buyBox(bump, 'BOX1', 'STARTER_BOX', {
+    let buybox = await program.rpc.buyBox(bump, 'BOX1', 'STARTER_BOX', {
       accounts: {
         aMeta: aMetaPDA,
         payer: buyerWallet.publicKey,
@@ -125,8 +127,9 @@ export const buyBoxNew = async (user: User) => {
         rent: web3.SYSVAR_RENT_PUBKEY,
         systemProgram: web3.SystemProgram.programId,
       }
-      , signers: [buyerWallet,boxNft]
-    })
+      , signers: [buyerWallet, boxNft]
+    });
+    console.log("buybox " + buybox);
   } catch (e) {
     console.log(e);
     throw e;
