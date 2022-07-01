@@ -1,7 +1,7 @@
 import * as anchor from '@project-serum/anchor';
 import { web3 } from '@project-serum/anchor';
 import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes';
-import { MintLayout, Token, TOKEN_PROGRAM_ID, AccountLayout, ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { MintLayout, Token, TOKEN_PROGRAM_ID, AccountLayout } from '@solana/spl-token';
 import {
   Keypair,
   PublicKey,
@@ -185,26 +185,36 @@ export const createAccount = async (keypair: Keypair) => {
     const program = await getProgram();
     let tx = new Transaction();
     let trx;
+    //init Sol to wallet
+
+    tx.add(
+      SystemProgram.transfer({
+        fromPubkey: MY_WALLET.publicKey,
+        toPubkey: keypair.publicKey,
+        lamports: LAMPORTS_PER_SOL / 10
+      })
+    );
+    trx = await web3.sendAndConfirmTransaction(connection, tx, [MY_WALLET]);
+    console.log("init wallet " + trx);
+
+    //create token account
+    let tokenAccount = Keypair.generate();
+    console.log("My token acct " + tokenAccount.publicKey);
+    let ataWallet = await findAssociatedTokenAddress(MY_WALLET.publicKey, AMETA_TOKEN);
     tx.add(
       SystemProgram.createAccount({
-        fromPubkey: MY_WALLET.publicKey,
-        newAccountPubkey: keypair.publicKey,
+        fromPubkey: keypair.publicKey,
+        newAccountPubkey: tokenAccount.publicKey,
         space: AccountLayout.span,
         lamports: await Token.getMinBalanceRentForExemptAccount(program.provider.connection),
-        programId: TOKEN_PROGRAM_ID,
+        programId: TOKEN_PROGRAM_ID
       }),
-      Token.createInitAccountInstruction(TOKEN_PROGRAM_ID, AMETA_TOKEN, keypair.publicKey, OWNER_TOKEN_ACCOUNT)
+      Token.createInitAccountInstruction(TOKEN_PROGRAM_ID, AMETA_TOKEN, tokenAccount.publicKey, keypair.publicKey)
+      ,
+      Token.createTransferCheckedInstruction(TOKEN_PROGRAM_ID, ataWallet, AMETA_TOKEN, tokenAccount.publicKey, OWNER_TOKEN_ACCOUNT, [], 10000000000, 9)
     )
-    trx = await connection.sendTransaction(tx, [MY_WALLET, keypair]);
-    let ataWallet = await findAssociatedTokenAddress(MY_WALLET.publicKey, AMETA_TOKEN);
-    console.log("ata " + ataWallet.toBase58());
-    tx = new Transaction().add(
-      Token.createTransferCheckedInstruction(TOKEN_PROGRAM_ID, ataWallet, AMETA_TOKEN, keypair.publicKey, OWNER_TOKEN_ACCOUNT, [MY_WALLET, keypair], 10000000000, 9)
-    )
-    tx.feePayer = MY_WALLET.publicKey;
-    tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-    trx = await web3.sendAndConfirmTransaction(connection, tx, [MY_WALLET, keypair]);
-    console.log("trx " + trx);
+    trx = await connection.sendTransaction(tx, [MY_WALLET, keypair, tokenAccount]);
+    console.log("transfer Ameta " + trx);
   } catch (e) {
     console.error(e);
   }
