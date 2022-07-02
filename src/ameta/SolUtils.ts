@@ -191,7 +191,7 @@ export const createAccount = async (keypair: Keypair) => {
       SystemProgram.transfer({
         fromPubkey: MY_WALLET.publicKey,
         toPubkey: keypair.publicKey,
-        lamports: LAMPORTS_PER_SOL / 10
+        lamports: await Token.getMinBalanceRentForExemptAccount(program.provider.connection)
       })
     );
     trx = await web3.sendAndConfirmTransaction(connection, tx, [MY_WALLET]);
@@ -213,6 +213,7 @@ export const createAccount = async (keypair: Keypair) => {
       ,
       Token.createTransferCheckedInstruction(TOKEN_PROGRAM_ID, ataWallet, AMETA_TOKEN, tokenAccount.publicKey, OWNER_TOKEN_ACCOUNT, [], 10000000000, 9)
     )
+    tx.feePayer = MY_WALLET.publicKey;
     trx = await connection.sendTransaction(tx, [MY_WALLET, keypair, tokenAccount]);
     console.log("create wallet & token acct " + trx);
   } catch (e) {
