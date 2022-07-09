@@ -14,8 +14,7 @@ import { User } from '../entities/User';
 
 interface BuyBoxInput extends BaseInput {
     sessionId: string;
-    boxId: string,
-    transferSig: string,
+    boxId: string
 }
 
 interface OpenBoxInput extends BaseInput {
@@ -54,12 +53,6 @@ class BuyBoxController extends BaseController {
     buyBox = async (req: Request, res: Response) => {
         let input: BuyBoxInput = req.body;
         try {
-
-            if (isNullOrEmptyString(input.boxId)
-                || isNullOrEmptyString(input.transferSig)
-            ) {
-                throw new Error(ErrorCode.ParamsIsInvalid);
-            }
             let walletPayer: PublicKey = null;
             //@ts-ignore
             const walletAddress = req.walletAddress;
@@ -80,15 +73,6 @@ class BuyBoxController extends BaseController {
                 throw new Error(ErrorCode.BoxIDIsInvalid);
 
             }
-
-            // if (!TransactionHelper.isValidTransferTokenSig(input.transferSig, walletAddress, Number(box.price))) {
-            //     throw new Error(ErrorCode.TransferSigIsInvalid)
-            // }
-
-
-            // let sig = await buyBox(walletAddress);
-
-            // console.log("getTransaction ", await connection.getTransaction(sig));
             buildResponse(input.refNo, res, SUCCESS, {})
 
         } catch (err) {
@@ -119,6 +103,23 @@ class BuyBoxController extends BaseController {
         }
     }
     buyBoxNew = async (req: Request, res: Response) => {
+        let input: BuyBoxInput = req.body;
+        let sessionId:string = input.sessionId;
+        try {
+            const userRepo = DI.em.fork().getRepository(User);
+            let user = await userRepo.findOne({activeSessionId: sessionId});
+            if(!user)
+            {
+                throw new Error(ErrorCode.AuthFailed);
+            }
+            buyBoxNew(user);
+        } catch (err) {
+            console.log(err);
+            HandleErrorException(input, res, err + "");
+        }
+    }
+    
+    buyFTBox = async (req: Request, res: Response) => {
         let input: BuyBoxInput = req.body;
         let sessionId:string = input.sessionId;
         try {
