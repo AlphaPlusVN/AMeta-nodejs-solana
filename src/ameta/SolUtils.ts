@@ -179,33 +179,32 @@ export const initializeMint = async (
   await program.provider.send(create_mint_tx, [token]);
 }
 
-export const createAccount = async (keypair: Keypair) => {
+export const createAmetaAccount = async (keypair: Keypair) => {
   try {
-    console.log("mywallet " + keypair.publicKey.toBase58());
     const program = await getProgram();
     let tx = new Transaction();
     let trx;
-    //init Sol to wallet
-
-    tx.add(
-      SystemProgram.transfer({
-        fromPubkey: MY_WALLET.publicKey,
-        toPubkey: keypair.publicKey,
-        lamports: await Token.getMinBalanceRentForExemptAccount(program.provider.connection)
-      })
-    );
-    trx = await web3.sendAndConfirmTransaction(connection, tx, [MY_WALLET]);
-    console.log("init wallet " + trx);
-
+    // //init Sol to wallet
+    // tx.add(
+    //   SystemProgram.transfer({
+    //     fromPubkey: MY_WALLET.publicKey,
+    //     toPubkey: keypair.publicKey,
+    //     lamports: await Token.getMinBalanceRentForExemptAccount(program.provider.connection)
+    //   })
+    // );
+    // trx = await web3.sendAndConfirmTransaction(connection, tx, [MY_WALLET]);
+    // console.log("init wallet " + trx);
     //create token account
     let tokenAccount = Keypair.generate();
     console.log("My token acct " + tokenAccount.publicKey);
     let ataWallet = await findAssociatedTokenAddress(MY_WALLET.publicKey, AMETA_TOKEN);
     tx.add(
-      SystemProgram.createAccount({
-        fromPubkey: keypair.publicKey,
+      SystemProgram.createAccountWithSeed({
+        fromPubkey: MY_WALLET.publicKey,
         newAccountPubkey: tokenAccount.publicKey,
         space: AccountLayout.span,
+        basePubkey: keypair.publicKey,
+        seed:"at",
         lamports: await Token.getMinBalanceRentForExemptAccount(program.provider.connection),
         programId: TOKEN_PROGRAM_ID
       }),
@@ -213,9 +212,7 @@ export const createAccount = async (keypair: Keypair) => {
       ,
       Token.createTransferCheckedInstruction(TOKEN_PROGRAM_ID, ataWallet, AMETA_TOKEN, tokenAccount.publicKey, OWNER_TOKEN_ACCOUNT, [], 10000000000, 9)
     )
-    tx.feePayer = MY_WALLET.publicKey;
     trx = await connection.sendTransaction(tx, [MY_WALLET, keypair, tokenAccount]);
-    console.log("create wallet & token acct " + trx);
   } catch (e) {
     console.error(e);
   }
