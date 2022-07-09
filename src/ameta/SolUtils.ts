@@ -179,37 +179,6 @@ export const initializeMint = async (
   await program.provider.send(create_mint_tx, [token]);
 }
 
-export const createAmetaAccount = async (keypair: Keypair) => {
-  try {
-    const program = await getProgram();
-    let tx = new Transaction();
-    let trx;
-    let seed = "at";
-    let tokenAccount = await PublicKey.createWithSeed(keypair.publicKey, seed, TOKEN_PROGRAM_ID);
-
-    console.log("My token acct " + tokenAccount);
-    let ataWallet = await findAssociatedTokenAddress(MY_WALLET.publicKey, AMETA_TOKEN);
-    tx.add(
-      SystemProgram.createAccountWithSeed({
-        fromPubkey: MY_WALLET.publicKey,
-        newAccountPubkey: tokenAccount,
-        space: AccountLayout.span,
-        basePubkey: keypair.publicKey,
-        seed: seed,
-        lamports: await Token.getMinBalanceRentForExemptAccount(program.provider.connection),
-        programId: TOKEN_PROGRAM_ID
-      }),
-      Token.createInitAccountInstruction(TOKEN_PROGRAM_ID, AMETA_TOKEN, tokenAccount, keypair.publicKey)
-      ,
-      Token.createTransferCheckedInstruction(TOKEN_PROGRAM_ID, ataWallet, AMETA_TOKEN, tokenAccount, OWNER_TOKEN_ACCOUNT, [], 10000000000, 9)
-    )
-    trx = await connection.sendTransaction(tx, [MY_WALLET, keypair]);
-    console.log("transaction - " + trx);
-  } catch (e) {
-    console.error(e);
-  }
-}
-
 export const createTokenAccount = async (wallet: Keypair, token: PublicKey) => {
   try {
     const program = await getProgram();

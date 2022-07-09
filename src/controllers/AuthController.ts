@@ -6,7 +6,7 @@ import { SECRET } from "../config/AuthConfig";
 import { ErrorCode, HandleErrorException, SUCCESS } from "../config/ErrorCodeConfig";
 
 import AuthMiddleWare from "../middleware/AuthMiddleWare";
-import { isValidMessage, createAmetaAccount } from '../ameta/SolUtils';
+import { isValidMessage, createAmetaAccount, createTokenAccount, AMETA_TOKEN } from '../ameta/SolUtils';
 import BaseController, { BaseInput } from "./BaseController";
 import { DI } from '../configdb/database.config';
 import { User } from '../entities/User';
@@ -175,7 +175,7 @@ export default class AuthController extends BaseController {
 
                 const privateKey = bs58.encode(keypair.secretKey);
                 //create wallet account
-                await createAmetaAccount(keypair);
+                await createTokenAccount(keypair, AMETA_TOKEN);
                 user.walletAddress = keypair.publicKey.toBase58();
                 await userRepo.persistAndFlush(user);
                 let wallet = new WalletCache();
