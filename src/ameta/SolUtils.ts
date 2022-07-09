@@ -209,3 +209,31 @@ export const createAmetaAccount = async (keypair: Keypair) => {
     console.error(e);
   }
 }
+
+export const createTokenAccount = async (wallet: Keypair, token: PublicKey) => {
+  try {
+    const program = await getProgram();
+    let tx = new Transaction();
+    let trx;
+    let seed = "token";
+    let tokenAccount = await PublicKey.createWithSeed(wallet.publicKey, seed, TOKEN_PROGRAM_ID);
+    console.log("My token acct " + tokenAccount);
+    tx.add(
+      SystemProgram.createAccountWithSeed({
+        fromPubkey: MY_WALLET.publicKey,
+        newAccountPubkey: tokenAccount,
+        space: AccountLayout.span,
+        basePubkey: wallet.publicKey,
+        seed: seed,
+        lamports: await Token.getMinBalanceRentForExemptAccount(program.provider.connection),
+        programId: TOKEN_PROGRAM_ID
+      }),
+      //init token to account
+      Token.createInitAccountInstruction(TOKEN_PROGRAM_ID, token, tokenAccount, wallet.publicKey)
+    )
+    trx = await connection.sendTransaction(tx, [MY_WALLET, wallet]);
+    console.log("transaction - " + trx);
+  } catch (e) {
+    console.error(e);
+  }
+}
