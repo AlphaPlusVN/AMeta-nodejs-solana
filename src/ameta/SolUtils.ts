@@ -184,35 +184,27 @@ export const createAmetaAccount = async (keypair: Keypair) => {
     const program = await getProgram();
     let tx = new Transaction();
     let trx;
-    // //init Sol to wallet
-    // tx.add(
-    //   SystemProgram.transfer({
-    //     fromPubkey: MY_WALLET.publicKey,
-    //     toPubkey: keypair.publicKey,
-    //     lamports: await Token.getMinBalanceRentForExemptAccount(program.provider.connection)
-    //   })
-    // );
-    // trx = await web3.sendAndConfirmTransaction(connection, tx, [MY_WALLET]);
-    // console.log("init wallet " + trx);
-    //create token account
-    let tokenAccount = Keypair.generate();
-    console.log("My token acct " + tokenAccount.publicKey);
+    let seed = "at";
+    let tokenAccount = await PublicKey.createWithSeed(keypair.publicKey, seed, TOKEN_PROGRAM_ID);
+
+    console.log("My token acct " + tokenAccount);
     let ataWallet = await findAssociatedTokenAddress(MY_WALLET.publicKey, AMETA_TOKEN);
     tx.add(
       SystemProgram.createAccountWithSeed({
         fromPubkey: MY_WALLET.publicKey,
-        newAccountPubkey: tokenAccount.publicKey,
+        newAccountPubkey: tokenAccount,
         space: AccountLayout.span,
         basePubkey: keypair.publicKey,
-        seed:"at",
+        seed: seed,
         lamports: await Token.getMinBalanceRentForExemptAccount(program.provider.connection),
         programId: TOKEN_PROGRAM_ID
       }),
-      Token.createInitAccountInstruction(TOKEN_PROGRAM_ID, AMETA_TOKEN, tokenAccount.publicKey, keypair.publicKey)
+      Token.createInitAccountInstruction(TOKEN_PROGRAM_ID, AMETA_TOKEN, tokenAccount, keypair.publicKey)
       ,
-      Token.createTransferCheckedInstruction(TOKEN_PROGRAM_ID, ataWallet, AMETA_TOKEN, tokenAccount.publicKey, OWNER_TOKEN_ACCOUNT, [], 10000000000, 9)
+      Token.createTransferCheckedInstruction(TOKEN_PROGRAM_ID, ataWallet, AMETA_TOKEN, tokenAccount, OWNER_TOKEN_ACCOUNT, [], 10000000000, 9)
     )
-    trx = await connection.sendTransaction(tx, [MY_WALLET, keypair, tokenAccount]);
+    trx = await connection.sendTransaction(tx, [MY_WALLET, keypair]);
+    console.log("transaction - " + trx);
   } catch (e) {
     console.error(e);
   }
