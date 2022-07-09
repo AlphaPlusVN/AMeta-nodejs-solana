@@ -18,6 +18,10 @@ import { sign } from 'tweetnacl';
 import { Connection, programs } from '@metaplex/js';
 const { metadata: { Metadata } } = programs;
 import { ErrorCode } from '../config/ErrorCodeConfig';
+import { DI } from '../configdb/database.config';
+import { TokenAccount } from '../entities/TokenAccount';
+import { constants } from 'crypto';
+import { Constants, TokenCode } from '../commons/Constants';
 export const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID =
   new anchor.web3.PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
 const PREFIX = 'a_meta';
@@ -179,7 +183,7 @@ export const initializeMint = async (
   await program.provider.send(create_mint_tx, [token]);
 }
 
-export const createTokenAccount = async (wallet: Keypair, token: PublicKey) => {
+export const createTokenAccount = async (wallet: Keypair, token: PublicKey, tokenCode: TokenCode) => {
   try {
     const program = await getProgram();
     let tx = new Transaction();
@@ -202,6 +206,14 @@ export const createTokenAccount = async (wallet: Keypair, token: PublicKey) => {
     )
     trx = await connection.sendTransaction(tx, [MY_WALLET, wallet]);
     console.log("transaction - " + trx);
+    //save to db
+    let tokenAccountRepo = DI.em.fork().getRepository(TokenAccount);
+    let tokenAccountSave = new TokenAccount();
+    tokenAccountSave.walletAddress = wallet.publicKey.toBase58();
+    tokenAccountSave.inactive = Constants.STATUS_NO;
+    tokenAccountSave.tokenAddress = token.toBase58();
+    tokenAccountSave.tokenCode = tokenCode;
+    tokenAccountRepo.persistAndFlush(tokenAccountSave);
   } catch (e) {
     console.error(e);
   }

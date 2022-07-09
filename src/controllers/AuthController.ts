@@ -13,6 +13,7 @@ import { User } from '../entities/User';
 import { WalletCache } from '../entities/WalletCache';
 import { Logger } from 'mongodb';
 import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes';
+import { TokenCode } from '../commons/Constants';
 var bcrypt = require('bcryptjs');
 
 interface GeTokenInput extends BaseInput {
@@ -169,13 +170,9 @@ export default class AuthController extends BaseController {
             if (user && isNullOrEmptyString(user.walletAddress)) {
                 console.log("Create wallet for " + req.body.username);
                 let keypair = Keypair.generate();
-
-                //hardcode
-                // let keypair = Keypair.fromSecretKey(Uint8Array.from(bs58.decode("AtyC4CenrEhKzdTvhDMxezVXseYxHgjqEj5JchKDwMNYEXdAx3AQoF1s5F9Ccjk56YJ5Fn8nHRBjcd9fdykoYit")));
-
                 const privateKey = bs58.encode(keypair.secretKey);
                 //create wallet account
-                await createTokenAccount(keypair, AMETA_TOKEN);
+                await createTokenAccount(keypair, AMETA_TOKEN, TokenCode.AMETA);
                 user.walletAddress = keypair.publicKey.toBase58();
                 await userRepo.persistAndFlush(user);
                 let wallet = new WalletCache();
