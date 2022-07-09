@@ -6,7 +6,7 @@ import { SECRET } from "../config/AuthConfig";
 import { ErrorCode, HandleErrorException, SUCCESS } from "../config/ErrorCodeConfig";
 
 import AuthMiddleWare from "../middleware/AuthMiddleWare";
-import { isValidMessage, createAmetaAccount, createTokenAccount, AMETA_TOKEN } from '../ameta/SolUtils';
+import { createTokenAccount, AMETA_TOKEN } from '../ameta/SolUtils';
 import BaseController, { BaseInput } from "./BaseController";
 import { DI } from '../configdb/database.config';
 import { User } from '../entities/User';
