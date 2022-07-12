@@ -28,6 +28,9 @@ export enum ErrorCode {
     InvalidBoxType = 'InvalidBoxType',
     InvalidNFTAddress = 'InvalidNFTAddress',
     InvalidTransferSig = 'InvalidTransferSig',
+
+    PaymentMethodNotSupported = 'PaymentMethodNotSupported',
+    AmountNotEnough = 'AmountNotEnough',
     
 }
 

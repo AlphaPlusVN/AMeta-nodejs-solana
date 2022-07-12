@@ -14,6 +14,7 @@ import { WalletCache } from '../entities/WalletCache';
 import { Logger } from 'mongodb';
 import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes';
 import { TokenCode } from '../commons/Constants';
+import { connection } from '../ameta/SolAMeta';
 var bcrypt = require('bcryptjs');
 
 interface GeTokenInput extends BaseInput {
@@ -40,6 +41,7 @@ export default class AuthController extends BaseController {
         this.router.post('/getNonce', this.getNonce);
         this.router.post('/updateUser', [AuthMiddleWare.verifyToken], this.updateUser);
         this.router.post('/createUserWallet', this.createUserWallet);
+        this.router.get('/getAmetaBalance', this.getAmetaBalance);
     }
 
     getToken = async (req: Request, res: Response) => {
@@ -191,5 +193,20 @@ export default class AuthController extends BaseController {
         }
     };
 
+    getAmetaBalance = async (req: Request, res: Response) => {
+        console.log(req.query);
+        let refNo = req.query.refNo;
+        let walletAddress = req.query.walletAddress;
+        console.log("check balance of :" + walletAddress);
+        try {
+            let tokenAcct = (await connection.getTokenAccountsByOwner(new PublicKey(walletAddress), { mint: AMETA_TOKEN })).value[0].pubkey;
+            let balance = (await connection.getTokenAccountBalance(tokenAcct)).value.uiAmount;
+            buildResponse(refNo + "", res, SUCCESS, {
+                balance
+            });
+        } catch (err) {
+            console.error(err);
+            HandleErrorException(walletAddress, res, err + "");
+        }
+    }
 }
-

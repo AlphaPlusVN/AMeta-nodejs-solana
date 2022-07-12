@@ -5,6 +5,7 @@ import { MktBoxesForSale } from '../entities/MktBoxForSale';
 import { MktTransaction } from '../entities/MktTransaction';
 import { WalletCache } from '../entities/WalletCache';
 import { TokenAccount } from '../entities/TokenAccount';
+import { BoxConfig } from '../entities/BoxConfig';
 
 /** 
  * Mikro ORM Connection options object
@@ -13,7 +14,7 @@ import { TokenAccount } from '../entities/TokenAccount';
  *  */
 const options: Options = {
   type: 'mongo',
-  entities: [User, MarKetConfig, MktBoxesForSale, MktTransaction, WalletCache, TokenAccount]
+  entities: [User, MarKetConfig, MktBoxesForSale, MktTransaction, WalletCache, TokenAccount, BoxConfig]
 };
 
 export default options;

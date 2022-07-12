@@ -183,12 +183,12 @@ export const initializeMint = async (
   await program.provider.send(create_mint_tx, [token]);
 }
 
-export const createTokenAccount = async (wallet: Keypair, token: PublicKey, tokenCode: TokenCode) => {
+export const createTokenAccount = async (wallet: Keypair, token: PublicKey, tokenCode: string) => {
   try {
     const program = await getProgram();
     let tx = new Transaction();
     let trx;
-    let seed = "token";
+    let seed = tokenCode;
     let tokenAccount = await PublicKey.createWithSeed(wallet.publicKey, seed, TOKEN_PROGRAM_ID);
     console.log("My token acct " + tokenAccount);
     tx.add(

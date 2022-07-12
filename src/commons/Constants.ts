@@ -7,5 +7,6 @@ export class Constants
 
 export class TokenCode
 {
-    static readonly AMETA = "AMETA";
+    static readonly AMETA:string = "AMETA";
+    static readonly STARTER_BOX:string = "STARTER_BOX";
 }

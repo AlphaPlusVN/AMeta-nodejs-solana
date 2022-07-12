@@ -4,18 +4,20 @@ import {
 } from '@project-serum/anchor';
 // import idl from './ameta.json'
 import ametaIdl from './ameta.json';
-import { getMetadata, getAMeta, MY_WALLET, AMetaData, TOKEN_METADATA_PROGRAM_ID, findAssociatedTokenAddress, initializeMint, AMETA_TOKEN, OWNER_TOKEN_ACCOUNT, SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID } from './SolUtils';
+import { getMetadata, getAMeta, MY_WALLET, AMetaData, TOKEN_METADATA_PROGRAM_ID, findAssociatedTokenAddress, initializeMint, AMETA_TOKEN, OWNER_TOKEN_ACCOUNT, SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID, createTokenAccount } from './SolUtils';
 
 import { AccountLayout, ASSOCIATED_TOKEN_PROGRAM_ID, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { Ameta } from './ameta';
 import FishingRodNFT from './FishingRodNFT';
 import { ErrorCode } from '../config/ErrorCodeConfig';
 import { NodeWallet } from '@project-serum/anchor/dist/cjs/provider';
-import { DI } from '../configdb/database.config';
+import { connect, DI } from '../configdb/database.config';
 import { User } from '../entities/User';
 import { Item } from '../entities/ItemEntity';
 import { WalletCache } from '../entities/WalletCache';
 import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes';
+import { BoxConfig } from '../entities/BoxConfig';
+import { TokenAccount } from '../entities/TokenAccount';
 
 const network = clusterApiUrl("devnet");
 
@@ -58,42 +60,48 @@ export const initAMeta = async () => {
   console.log("sdsdsadaasd==========", await program.account.aMeta.fetch(aMetaPDA));
 }
 
-export const buyBox = async () => {
+export const buyBox = async (walletAddress: string, box: BoxConfig, price: number) => {
   const program = await getProgram();
   const [aMetaPDA, bump] = await getAMeta();
-  const buyerWallet = new web3.PublicKey('J6wxcpJYGLeD192VXjYRejooB7kEGbZMq8jdGLcY3fmR');
-  const boxNft = Keypair.generate();
-  const buyerTokenAccount = await findAssociatedTokenAddress(buyerWallet, AMETA_TOKEN);
-  const ownerTokenAccount = new web3.PublicKey('BfvHGfacbqHe58NSD8mJQB9ZNqPb7ZG7gWHNRSAzwefh');
-  const boxVault = await findAssociatedTokenAddress(buyerWallet, boxNft.publicKey);
-  const metadataAddress = await getMetadata(boxNft.publicKey);
-
-  console.log("buyerTokenAccount balance: ", (await program.provider.connection.getTokenAccountBalance(buyerTokenAccount)).value.uiAmount);
-
-  await program.rpc.buyBox(bump, 'BOX1', 'STARTER_BOX', {
-    accounts: {
-      aMeta: aMetaPDA,
-      payer: buyerWallet,
-      boxMint: boxNft.publicKey,
-      // aMetaToken: aMetaToken.publicKey,
-      // mintAuthority: payer.publicKey,
-      buyerTokenAccount: buyerTokenAccount,
-      ownerTokenAccount: ownerTokenAccount,
-      vault: boxVault,
-      metadata: metadataAddress,
-      tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
-      tokenProgram: TOKEN_PROGRAM_ID,
-      associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-      rent: web3.SYSVAR_RENT_PUBKEY,
-      systemProgram: web3.SystemProgram.programId,
+  const walletCacheRepo = DI.em.fork().getRepository(WalletCache);
+  const tokenAccountRepo = DI.em.fork().getRepository(TokenAccount);
+  try {
+    let payerSecret = await walletCacheRepo.findOne({ walletAddress: walletAddress });
+    const buyerWallet = Keypair.fromSecretKey(Uint8Array.from(bs58.decode(payerSecret.secretKey)));
+    //ameta token acc
+    const buyerTokenAccount = (await connection.getTokenAccountsByOwner(buyerWallet.publicKey, { mint: AMETA_TOKEN })).value[0].pubkey;
+    const ownerTokenAccount = await findAssociatedTokenAddress(OWNER_TOKEN_ACCOUNT, AMETA_TOKEN);
+    const ametaBalance = (await program.provider.connection.getTokenAccountBalance(buyerTokenAccount)).value.uiAmount;
+    console.log("buyerTokenAccount balance: ", ametaBalance);
+    if (price > ametaBalance) {
+      throw new Error(ErrorCode.AmountNotEnough);
     }
-    , signers: [boxNft]
-  })
+    //transaction
+    // check box tk account
+    let boxTokenAcct = await tokenAccountRepo.findOne({ tokenAddress: box.address, walletAddress: walletAddress });
+    let tokenAddress = new PublicKey(box.address);
+    if (!boxTokenAcct) {
+      await createTokenAccount(buyerWallet, tokenAddress, box.code);
+    }
+    //send box from sender to receiver
+    let senderTokenAccount = (await connection.getTokenAccountsByOwner(OWNER_TOKEN_ACCOUNT, { mint: tokenAddress })).value[0].pubkey;
+    let receiverTokenAccount = (await connection.getTokenAccountsByOwner(buyerWallet.publicKey, { mint: tokenAddress })).value[0].pubkey;
+    let tx = new Transaction();
+    tx.add(
+      Token.createTransferCheckedInstruction(TOKEN_PROGRAM_ID, buyerTokenAccount, AMETA_TOKEN, ownerTokenAccount, buyerWallet.publicKey, [buyerWallet, MY_WALLET], price * Math.pow(10,9), 9),
+      Token.createTransferCheckedInstruction(TOKEN_PROGRAM_ID, senderTokenAccount, tokenAddress, receiverTokenAccount, MY_WALLET.publicKey, [MY_WALLET], 1 * Math.pow(10,9), 9)
+    )
+    tx.feePayer = MY_WALLET.publicKey;
+    let hash = await web3.sendAndConfirmTransaction(connection, tx, [buyerWallet, MY_WALLET]);
+    console.log("hash ==" + hash);
+  } catch (e) {
+    console.error(e);
+    throw e
+  }
 }
 
 export const buyBoxNew = async (user: User) => {
   try {
-
     const program = await getProgram();
     const [aMetaPDA, bump] = await getAMeta();
     const walletCacheRepo = DI.em.fork().getRepository(WalletCache);
@@ -105,8 +113,7 @@ export const buyBoxNew = async (user: User) => {
     const ametaToken = AMETA_TOKEN;
     console.log("buyer " + user.walletAddress);
     const buyerTokenAccount = (await connection.getTokenAccountsByOwner(buyerWallet.publicKey, { mint: ametaToken })).value[0].pubkey;
-    // const ownerTokenAccount = (await connection.getTokenAccountsByOwner(OWNER_TOKEN_ACCOUNT, { mint: ametaToken })).value[0].pubkey;
-    const ownerTokenAccount = await findAssociatedTokenAddress(OWNER_TOKEN_ACCOUNT,ametaToken);
+    const ownerTokenAccount = await findAssociatedTokenAddress(OWNER_TOKEN_ACCOUNT, ametaToken);
 
     console.log("get buyer acc " + buyerTokenAccount);
     const boxVault = await findAssociatedTokenAddress(buyerWallet.publicKey, boxNft.publicKey);

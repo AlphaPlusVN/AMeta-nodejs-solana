@@ -10,6 +10,8 @@ import { ErrorCode, HandleErrorException, SUCCESS } from "../config/ErrorCodeCon
 import { MktBoxesForSale } from "../entities/MktBoxForSale";
 import { DI } from '../configdb/database.config';
 import { User } from '../entities/User';
+import { BoxConfig } from '../entities/BoxConfig';
+import { Constants } from '../commons/Constants';
 
 
 interface BuyBoxInput extends BaseInput {
@@ -30,9 +32,9 @@ class BuyBoxController extends BaseController {
 
     initializeRoutes = () => {
         this.router.get('/test', this.test);
-        this.router.post('/buyBox', [AuthMiddleWare.verifyToken], this.buyBox);
+        // this.router.post('/buyBox', [AuthMiddleWare.verifyToken], this.buyBox);
         this.router.post('/buyBoxNew', this.buyBoxNew);
-        // this.router.post('/buyBox', this.buyBox);
+        this.router.post('/buyBox', this.buyBox);
         this.router.post('/boxesForSale', [AuthMiddleWare.verifyToken], this.getBoxesForSale);
         // this.router.post('/openBox', [AuthMiddleWare.verifyToken], this.openBox);
         this.router.post('/openBox', this.openBox);
@@ -53,29 +55,32 @@ class BuyBoxController extends BaseController {
     buyBox = async (req: Request, res: Response) => {
         let input: BuyBoxInput = req.body;
         try {
-            let walletPayer: PublicKey = null;
-            //@ts-ignore
-            const walletAddress = req.walletAddress;
-            // const walletAddress = 'BfvHGfacbqHe58NSD8mJQB9ZNqPb7ZG7gWHNRSAzwefh';
-            try {
-
-                console.log('walletAddress', walletAddress);
-                //@ts-ignore
-                walletPayer = new PublicKey(walletAddress);
-            } catch (err) {
-                throw new Error(ErrorCode.WalletAddressIsInvalid)
-
+            const sessionId = input.sessionId;
+            const userRepo = DI.em.fork().getRepository(User);
+            let user = await userRepo.findOne({ activeSessionId: sessionId });
+            if (!user) {
+                throw "Session is invalid";
             }
-
-            const mktBoxForSalRepo = DI.em.fork().getRepository(MktBoxesForSale);
-            let box: MktBoxesForSale = await mktBoxForSalRepo.findOne({ boxId: input.boxId, status: '1' });
+            const boxConfigRepo = DI.em.fork().getRepository(BoxConfig);
+            let box = await boxConfigRepo.findOne({ code: input.boxId, isNFT: Constants.STATUS_YES });
             if (!box) {
                 throw new Error(ErrorCode.BoxIDIsInvalid);
-
             }
+            let price = 0;
+            for (let payment of box.payments) {
+                //ameta method
+                if (payment.method == 2) {
+                    price = payment.price;
+                }
+            }
+            if (price == 0) {
+                throw new Error(ErrorCode.PaymentMethodNotSupported);
+            }
+            buyBox(user.walletAddress,box, price);
             buildResponse(input.refNo, res, SUCCESS, {})
 
         } catch (err) {
+            console.error(err);
             HandleErrorException(input, res, err + "");
         }
 
@@ -104,12 +109,11 @@ class BuyBoxController extends BaseController {
     }
     buyBoxNew = async (req: Request, res: Response) => {
         let input: BuyBoxInput = req.body;
-        let sessionId:string = input.sessionId;
+        let sessionId: string = input.sessionId;
         try {
             const userRepo = DI.em.fork().getRepository(User);
-            let user = await userRepo.findOne({activeSessionId: sessionId});
-            if(!user)
-            {
+            let user = await userRepo.findOne({ activeSessionId: sessionId });
+            if (!user) {
                 throw new Error(ErrorCode.AuthFailed);
             }
             buyBoxNew(user);
@@ -118,15 +122,14 @@ class BuyBoxController extends BaseController {
             HandleErrorException(input, res, err + "");
         }
     }
-    
+
     buyFTBox = async (req: Request, res: Response) => {
         let input: BuyBoxInput = req.body;
-        let sessionId:string = input.sessionId;
+        let sessionId: string = input.sessionId;
         try {
             const userRepo = DI.em.fork().getRepository(User);
-            let user = await userRepo.findOne({activeSessionId: sessionId});
-            if(!user)
-            {
+            let user = await userRepo.findOne({ activeSessionId: sessionId });
+            if (!user) {
                 throw new Error(ErrorCode.AuthFailed);
             }
             buyBoxNew(user);
