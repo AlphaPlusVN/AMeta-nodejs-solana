@@ -24,6 +24,9 @@ import { constants } from 'crypto';
 import { Constants, TokenCode } from '../commons/Constants';
 export const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID =
   new anchor.web3.PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
+import {
+  PROGRAM_ID as MPL_TOKEN_METADATA_PROGRAM_ID
+} from "@metaplex-foundation/mpl-token-metadata";
 const PREFIX = 'a_meta';
 
 
@@ -217,4 +220,19 @@ export const createTokenAccount = async (wallet: Keypair, token: PublicKey, toke
   } catch (e) {
     console.error(e);
   }
+}
+export async function getMetadataPDA(mint: PublicKey): Promise<PublicKey> {
+  const [publicKey] = await PublicKey.findProgramAddress(
+    [Buffer.from("metadata"), MPL_TOKEN_METADATA_PROGRAM_ID.toBuffer(), mint.toBuffer()],
+    MPL_TOKEN_METADATA_PROGRAM_ID
+  );
+  return publicKey;
+}
+
+export async function getMasterEditionPDA(mint: PublicKey): Promise<PublicKey> {
+  const [publicKey] = await PublicKey.findProgramAddress(
+    [Buffer.from("metadata"), MPL_TOKEN_METADATA_PROGRAM_ID.toBuffer(), mint.toBuffer(), Buffer.from("edition")],
+    MPL_TOKEN_METADATA_PROGRAM_ID
+  );
+  return publicKey;
 }

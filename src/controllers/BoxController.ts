@@ -1,6 +1,6 @@
 import BaseController, { BaseInput } from "./BaseController";
 import { Request, Response } from 'express';
-import { buyBox, buyBoxNew, connection, openBox } from "../ameta/SolAMeta";
+import { buyBox, buyBoxNew, connection, openBox, mintBox } from '../ameta/SolAMeta';
 import { PublicKey } from "@solana/web3.js";
 import { buildResponse, isNullOrEmptyString } from "../commons/Utils";
 
@@ -76,7 +76,9 @@ class BuyBoxController extends BaseController {
             if (price == 0) {
                 throw new Error(ErrorCode.PaymentMethodNotSupported);
             }
-            buyBox(user.walletAddress,box, price);
+            mintBox(user.walletAddress,box, price);
+            // buyBox(user.walletAddress,box, price);
+
             buildResponse(input.refNo, res, SUCCESS, {})
 
         } catch (err) {

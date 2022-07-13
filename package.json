@@ -37,6 +37,7 @@
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.29.2",
     "mongodb": "^4.4.1",
+    "nft.storage": "^6.4.0",
     "ts-node": "^10.7.0"
   }
 }
