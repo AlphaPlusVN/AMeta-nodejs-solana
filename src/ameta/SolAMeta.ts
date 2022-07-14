@@ -1,25 +1,23 @@
-import { clusterApiUrl, Connection, PublicKey, Keypair, SystemProgram, Transaction } from '@solana/web3.js';
-import {
-  Program, Provider, web3, BN
-} from '@project-serum/anchor';
+import { BN, Program, Provider, web3 } from '@project-serum/anchor';
+import { clusterApiUrl, Connection, Keypair, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
 // import idl from './ameta.json'
 import ametaIdl from './ameta.json';
-import { getMetadata, getAMeta, MY_WALLET, AMetaData, TOKEN_METADATA_PROGRAM_ID, findAssociatedTokenAddress, initializeMint, AMETA_TOKEN, OWNER_TOKEN_ACCOUNT, SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID, createTokenAccount, getMetadataPDA, getMasterEditionPDA } from './SolUtils';
+import { AMetaData, AMETA_TOKEN, createTokenAccount, findAssociatedTokenAddress, getAMeta, getMasterEditionPDA, getMetadata, getMetadataPDA, initializeMint, MY_WALLET, OWNER_TOKEN_ACCOUNT, SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID, TOKEN_METADATA_PROGRAM_ID } from './SolUtils';
 
-import { AccountLayout, Token, TOKEN_PROGRAM_ID, MintLayout } from '@solana/spl-token';
+import { createCreateMasterEditionV3Instruction, createCreateMetadataAccountV2Instruction } from '@metaplex-foundation/mpl-token-metadata';
+import { NodeWallet } from '@project-serum/anchor/dist/cjs/provider';
+import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes';
+import { AccountLayout, MintLayout, Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { isNullOrEmptyString } from '../commons/Utils';
+import { ErrorCode } from '../config/ErrorCodeConfig';
+import { DI } from '../configdb/database.config';
+import { BoxConfig } from '../entities/BoxConfig';
+import { Item } from '../entities/ItemEntity';
+import { TokenAccount } from '../entities/TokenAccount';
+import { User } from '../entities/User';
+import { WalletCache } from '../entities/WalletCache';
 import { Ameta } from './ameta';
 import FishingRodNFT from './FishingRodNFT';
-import { ErrorCode } from '../config/ErrorCodeConfig';
-import { NodeWallet } from '@project-serum/anchor/dist/cjs/provider';
-import { DI } from '../configdb/database.config';
-import { User } from '../entities/User';
-import { Item } from '../entities/ItemEntity';
-import { WalletCache } from '../entities/WalletCache';
-import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes';
-import { BoxConfig } from '../entities/BoxConfig';
-import { TokenAccount } from '../entities/TokenAccount';
-import { createCreateMasterEditionV3Instruction, createCreateMetadataAccountV2Instruction } from '@metaplex-foundation/mpl-token-metadata';
-import { randomUUID } from 'crypto';
 import { MintNFT } from './MintNFT';
 
 const network = clusterApiUrl("devnet");
@@ -163,7 +161,6 @@ export const mintBox = async (walletAddress: string, box: BoxConfig, price: numb
     }
     let mint = Keypair.generate();
     console.log(`mint: ${mint.publicKey.toBase58()}`);
-    let ata = await Token.getAssociatedTokenAddress(SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID, TOKEN_PROGRAM_ID, mint.publicKey, MY_WALLET.publicKey);
     let userAta = await Token.getAssociatedTokenAddress(SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID, TOKEN_PROGRAM_ID, mint.publicKey, buyerWallet.publicKey);
     let tokenMetadataPubkey = await getMetadataPDA(mint.publicKey);
     let masterEditionPubkey = await getMasterEditionPDA(mint.publicKey);
@@ -226,8 +223,12 @@ export const mintBox = async (walletAddress: string, box: BoxConfig, price: numb
     tx.feePayer = MY_WALLET.publicKey;
     let hash = await web3.sendAndConfirmTransaction(connection, tx, [MY_WALLET, buyerWallet, mint]);
     console.log("hash " + hash)
+    if (!isNullOrEmptyString(hash)) {
+      return mint.publicKey.toBase58();
+    }
   } catch (e) {
     console.log(e);
+    return null;
   }
 }
 export const openBox = async (payer: string, boxAddress: string) => {

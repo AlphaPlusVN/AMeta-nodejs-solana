@@ -46,7 +46,6 @@ export namespace MintNFT
             image: imageUrl,
         };
         cid = "https://ipfs.io/ipfs/" + await NFTStorageClient.storeMetadata(JSON.stringify(metadata));
-        console.log("cid " + cid);
         return cid;
     }
 }

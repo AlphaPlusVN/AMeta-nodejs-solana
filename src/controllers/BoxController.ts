@@ -12,6 +12,7 @@ import { DI } from '../configdb/database.config';
 import { User } from '../entities/User';
 import { BoxConfig } from '../entities/BoxConfig';
 import { Constants } from '../commons/Constants';
+import { Item, ItemConfig } from '../entities/ItemEntity';
 
 
 interface BuyBoxInput extends BaseInput {
@@ -76,10 +77,24 @@ class BuyBoxController extends BaseController {
             if (price == 0) {
                 throw new Error(ErrorCode.PaymentMethodNotSupported);
             }
-            mintBox(user.walletAddress,box, price);
-            // buyBox(user.walletAddress,box, price);
+            let nftAddress = await mintBox(user.walletAddress, box, price);
+            if (isNullOrEmptyString(nftAddress)) {
+                throw new Error(ErrorCode.TransactionFailed);
+            } else {
+                const itemConfigRepo = DI.em.fork().getRepository(ItemConfig);
+                const itemRepo = DI.em.fork().getRepository(Item);
+                let itemConfig = await itemConfigRepo.findOne({ itemType: box.itemType });
+                let item = new Item();
+                item.itemType = box.itemType;
+                item.group = itemConfig.group;
+                item.name = itemConfig.name;
+                item.description = itemConfig.desc;
+                item.isNFT = Constants.STATUS_YES;
+                item.owner = user.id;
+                await itemRepo.persistAndFlush(item);
+                buildResponse(input.refNo, res, SUCCESS, {box:item});
+            }
 
-            buildResponse(input.refNo, res, SUCCESS, {})
 
         } catch (err) {
             console.error(err);

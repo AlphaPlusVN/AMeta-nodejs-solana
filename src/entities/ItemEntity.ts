@@ -23,6 +23,9 @@ export class Item extends BaseEntity {
     @Property() modelId: number = 0;
     @Property() equiped: number = 0;
     @Property() attr?: ItemAttribute = new ItemAttribute();
+    @Property() nftAddress: string;
+    @Property() isNFT: number;
+    @Property() isLocked: number;
 }
 
 
@@ -30,6 +33,8 @@ export class Item extends BaseEntity {
 export class ItemConfig extends BaseEntity {
     @Property() itemType!: number;
     @Property() code: string;
+    @Property() name: string;
+    @Property() desc: string;
     @Property() group: number;
     @Property() rank: number = 0;
     @Property() buyFee: number;
