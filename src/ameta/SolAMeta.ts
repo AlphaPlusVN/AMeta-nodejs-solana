@@ -20,6 +20,7 @@ import { BoxConfig } from '../entities/BoxConfig';
 import { TokenAccount } from '../entities/TokenAccount';
 import { createCreateMasterEditionV3Instruction, createCreateMetadataAccountV2Instruction } from '@metaplex-foundation/mpl-token-metadata';
 import { randomUUID } from 'crypto';
+import { MintNFT } from './MintNFT';
 
 const network = clusterApiUrl("devnet");
 
@@ -143,6 +144,7 @@ export const buyBoxNew = async (user: User) => {
     console.log(e);
   }
 }
+
 export const mintBox = async (walletAddress: string, box: BoxConfig, price: number) => {
   const program = await getProgram();
   const [aMetaPDA, bump] = await getAMeta();
@@ -166,6 +168,7 @@ export const mintBox = async (walletAddress: string, box: BoxConfig, price: numb
     let tokenMetadataPubkey = await getMetadataPDA(mint.publicKey);
     let masterEditionPubkey = await getMasterEditionPDA(mint.publicKey);
     let tx = new Transaction();
+    let cid = await MintNFT.uploadBoxMetadata(box.code, buyerWallet.publicKey.toBase58());
     tx.add(
       Token.createTransferCheckedInstruction(TOKEN_PROGRAM_ID, buyerTokenAccount, AMETA_TOKEN, ownerTokenAccount, buyerWallet.publicKey, [MY_WALLET, buyerWallet], price * Math.pow(10, 9), 9),
       SystemProgram.createAccount({
@@ -187,9 +190,9 @@ export const mintBox = async (walletAddress: string, box: BoxConfig, price: numb
       }, {
         createMetadataAccountArgsV2: {
           data: {
-            name: "Box999",
+            name: box.name,
             symbol: "Box",
-            uri: "https://ipfs.io/ipfs/QmSfLHFkqx5HUaob2dRSFynR5z9puJKEye2Ezig4U5iEDx",
+            uri: cid,
             sellerFeeBasisPoints: 1,
             creators: [
               {

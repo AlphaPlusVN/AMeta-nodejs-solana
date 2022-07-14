@@ -14,6 +14,8 @@ export type ItemOnBox = {
 @Entity({ collection: "box_config" })
 export class BoxConfig extends BaseEntity {
     @Property() code: string;
+    @Property() description: string;
+    @Property() name: string;
     @Property() address: string;
     @Property() payments: Payment[];
     @Property() isNFT: number;
@@ -21,4 +23,5 @@ export class BoxConfig extends BaseEntity {
     @Property() normalPool: ItemOnBox[];
     @Property() inactive: number = 0;
     @Property() itemType: number;
+    @Property() imageUrl: string;
 }
