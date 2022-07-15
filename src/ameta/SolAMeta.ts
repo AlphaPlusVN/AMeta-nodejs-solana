@@ -19,6 +19,7 @@ import { WalletCache } from '../entities/WalletCache';
 import { Ameta } from './ameta';
 import FishingRodNFT from './FishingRodNFT';
 import { MintNFT } from './MintNFT';
+import { min } from 'moment';
 
 const network = clusterApiUrl("devnet");
 
@@ -392,5 +393,28 @@ export const mintNFTItem = async (walletAddress: string, item: Item) => {
   } catch (e) {
     console.log(e);
     return null;
+  }
+}
+export async function burnItem(walletAddress: string, item: Item) {
+  const walletCacheRepo = DI.em.fork().getRepository(WalletCache);
+  let payerSecret = await walletCacheRepo.findOne({ walletAddress: walletAddress });
+  const burnWallet = Keypair.fromSecretKey(Uint8Array.from(bs58.decode(payerSecret.secretKey)));
+  const mint = new PublicKey(item.nftAddress);
+  try {
+    let tx = new Transaction();
+    const burnTokenAccount = (await connection.getTokenAccountsByOwner(burnWallet.publicKey, { mint: mint })).value[0].pubkey;
+    const tokenBalance = await connection.getTokenAccountBalance(burnTokenAccount);
+    tx.add(
+      Token.createBurnInstruction(TOKEN_PROGRAM_ID, mint, burnTokenAccount, burnWallet.publicKey, [burnWallet], tokenBalance.value.uiAmount),
+      Token.createCloseAccountInstruction(TOKEN_PROGRAM_ID, burnTokenAccount, MY_WALLET.publicKey, burnWallet.publicKey, [burnWallet])
+    )
+    tx.feePayer = MY_WALLET.publicKey;
+    let hash = await web3.sendAndConfirmTransaction(connection, tx, [burnWallet, MY_WALLET]);
+    console.log("hash=" + hash);
+    return hash;
+  } catch (e) {
+    console.log(e);
+    return null;
+
   }
 }

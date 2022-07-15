@@ -1,6 +1,6 @@
 import BaseController, { BaseInput } from "./BaseController";
 import { Request, Response } from 'express';
-import { buyBox, buyBoxNew, connection, openBox, mintBox, mintNFTItem } from '../ameta/SolAMeta';
+import { buyBox, buyBoxNew, connection, openBox, mintBox, mintNFTItem, burnItem } from '../ameta/SolAMeta';
 import { PublicKey } from "@solana/web3.js";
 import { buildResponse, isNullOrEmptyString } from "../commons/Utils";
 
@@ -46,6 +46,7 @@ class BuyBoxController extends BaseController {
         this.router.post('/boxesForSale', [AuthMiddleWare.verifyToken], this.getBoxesForSale);
         // this.router.post('/openBox', [AuthMiddleWare.verifyToken], this.openBox);
         this.router.post('/openBox', this.openBox);
+        this.router.post('/burnItem', this.burnItem);
     }
 
     test = async (req: Request, res: Response) => {
@@ -101,8 +102,6 @@ class BuyBoxController extends BaseController {
                 await itemRepo.persistAndFlush(item);
                 buildResponse(input.refNo, res, SUCCESS, { box: item });
             }
-
-
         } catch (err) {
             console.error(err);
             HandleErrorException(input, res, err + "");
@@ -170,6 +169,33 @@ class BuyBoxController extends BaseController {
                 await itemRepo.persistAndFlush(item);
             }
             buildResponse(input.refNo, res, SUCCESS, {})
+        } catch (err) {
+            console.log(err);
+            HandleErrorException(input, res, err + "");
+        }
+    }
+
+    burnItem = async (req: Request, res: Response) => {
+        let input: MintItemInput = req.body;
+        let sessionId: string = input.sessionId;
+        try {
+            const userRepo = DI.em.fork().getRepository(User);
+            let user = await userRepo.findOne({ activeSessionId: sessionId });
+            if (!user) {
+                throw new Error(ErrorCode.AuthFailed);
+            }
+            const itemRepo = DI.em.fork().getRepository(Item);
+            let item = await itemRepo.findOne({ _id: new ObjectId(input.itemId) });
+            if(!item || item.owner != user.id)
+            {
+                throw new Error(ErrorCode.ParamsIsInvalid);
+            }
+            let burnHash = await burnItem(user.walletAddress, item);
+            if(isNullOrEmptyString(burnHash))
+            {
+                throw new Error(ErrorCode.TransactionFailed);
+            }
+            buildResponse(input.refNo, res, SUCCESS, {burnHash})
         } catch (err) {
             console.log(err);
             HandleErrorException(input, res, err + "");
