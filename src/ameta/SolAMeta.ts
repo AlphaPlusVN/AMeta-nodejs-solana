@@ -231,6 +231,7 @@ export const mintBox = async (walletAddress: string, box: BoxConfig, price: numb
     return null;
   }
 }
+
 export const openBox = async (payer: string, boxAddress: string) => {
   try {
     let fishingRod = new FishingRodNFT();
@@ -307,3 +308,89 @@ export const openBox = async (payer: string, boxAddress: string) => {
   return null;
 }
 
+export const mintNFTItem = async (walletAddress: string, item: Item) => {
+  const program = await getProgram();
+  const walletCacheRepo = DI.em.fork().getRepository(WalletCache);
+  try {
+    let payerSecret = await walletCacheRepo.findOne({ walletAddress: walletAddress });
+    const buyerWallet = Keypair.fromSecretKey(Uint8Array.from(bs58.decode(payerSecret.secretKey)));
+    //ameta token acc
+    const buyerTokenAccount = (await connection.getTokenAccountsByOwner(buyerWallet.publicKey, { mint: AMETA_TOKEN })).value[0].pubkey;
+    const ownerTokenAccount = await findAssociatedTokenAddress(OWNER_TOKEN_ACCOUNT, AMETA_TOKEN);
+    const ametaBalance = (await program.provider.connection.getTokenAccountBalance(buyerTokenAccount)).value.uiAmount;
+    console.log("buyerTokenAccount balance: ", ametaBalance);
+    // if (price > ametaBalance) {
+    //   throw new Error(ErrorCode.AmountNotEnough);
+    // }
+    let mint = Keypair.generate();
+    console.log(`mint: ${mint.publicKey.toBase58()}`);
+    let userAta = await Token.getAssociatedTokenAddress(SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID, TOKEN_PROGRAM_ID, mint.publicKey, buyerWallet.publicKey);
+    let tokenMetadataPubkey = await getMetadataPDA(mint.publicKey);
+    let masterEditionPubkey = await getMasterEditionPDA(mint.publicKey);
+    let tx = new Transaction();
+    let cid = await MintNFT.uploadItemMetadata(item, buyerWallet.publicKey.toBase58());
+    tx.add(
+      // Token.createTransferCheckedInstruction(TOKEN_PROGRAM_ID, buyerTokenAccount, AMETA_TOKEN, ownerTokenAccount, buyerWallet.publicKey, [MY_WALLET, buyerWallet], price * Math.pow(10, 9), 9),
+      SystemProgram.createAccount({
+        fromPubkey: MY_WALLET.publicKey,
+        newAccountPubkey: mint.publicKey,
+        space: MintLayout.span,
+        lamports: await Token.getMinBalanceRentForExemptMint(program.provider.connection),
+        programId: TOKEN_PROGRAM_ID
+      }),
+      Token.createInitMintInstruction(TOKEN_PROGRAM_ID, mint.publicKey, 0, MY_WALLET.publicKey, null),
+      Token.createAssociatedTokenAccountInstruction(SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID, TOKEN_PROGRAM_ID, mint.publicKey, userAta, buyerWallet.publicKey, MY_WALLET.publicKey),
+      Token.createMintToInstruction(TOKEN_PROGRAM_ID, mint.publicKey, userAta, MY_WALLET.publicKey, [MY_WALLET, buyerWallet], 1),
+      createCreateMetadataAccountV2Instruction({
+        metadata: tokenMetadataPubkey,
+        mint: mint.publicKey,
+        mintAuthority: MY_WALLET.publicKey,
+        payer: MY_WALLET.publicKey,
+        updateAuthority: MY_WALLET.publicKey,
+      }, {
+        createMetadataAccountArgsV2: {
+          data: {
+            name: item.name,
+            symbol: "Item",
+            uri: cid,
+            sellerFeeBasisPoints: 1,
+            creators: [
+              {
+                address: MY_WALLET.publicKey,
+                verified: true,
+                share: 100,
+              },
+            ],
+            collection: null,
+            uses: null,
+          },
+          isMutable: true,
+        },
+      }),
+      createCreateMasterEditionV3Instruction(
+        {
+          edition: masterEditionPubkey,
+          mint: mint.publicKey,
+          updateAuthority: MY_WALLET.publicKey,
+          mintAuthority: MY_WALLET.publicKey,
+          payer: MY_WALLET.publicKey,
+          metadata: tokenMetadataPubkey,
+        },
+        {
+          createMasterEditionArgs: {
+            maxSupply: 0,
+          },
+        }
+      )
+    )
+    tx.feePayer = MY_WALLET.publicKey;
+    let hash = await web3.sendAndConfirmTransaction(connection, tx, [MY_WALLET, buyerWallet, mint]);
+    console.log("hash " + hash)
+    if (!isNullOrEmptyString(hash)) {
+      return mint.publicKey.toBase58();
+    }
+  } catch (e) {
+    console.log(e);
+    return null;
+  }
+}

@@ -25,6 +25,7 @@ export class Item extends BaseEntity {
     @Property() attr?: ItemAttribute = new ItemAttribute();
     @Property() nftAddress: string;
     @Property() isNFT: number;
+    @Property() imageUrl:string;
     @Property() isLocked: number;
 }
 

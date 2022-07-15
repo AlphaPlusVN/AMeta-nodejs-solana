@@ -1,6 +1,6 @@
 import BaseController, { BaseInput } from "./BaseController";
 import { Request, Response } from 'express';
-import { buyBox, buyBoxNew, connection, openBox, mintBox } from '../ameta/SolAMeta';
+import { buyBox, buyBoxNew, connection, openBox, mintBox, mintNFTItem } from '../ameta/SolAMeta';
 import { PublicKey } from "@solana/web3.js";
 import { buildResponse, isNullOrEmptyString } from "../commons/Utils";
 
@@ -13,11 +13,17 @@ import { User } from '../entities/User';
 import { BoxConfig } from '../entities/BoxConfig';
 import { Constants } from '../commons/Constants';
 import { Item, ItemConfig } from '../entities/ItemEntity';
+import { ObjectId } from '@mikro-orm/mongodb';
 
 
 interface BuyBoxInput extends BaseInput {
     sessionId: string;
     boxId: string
+}
+
+interface MintItemInput extends BaseInput {
+    sessionId: string;
+    itemId: string
 }
 
 interface OpenBoxInput extends BaseInput {
@@ -36,6 +42,7 @@ class BuyBoxController extends BaseController {
         // this.router.post('/buyBox', [AuthMiddleWare.verifyToken], this.buyBox);
         this.router.post('/buyBoxNew', this.buyBoxNew);
         this.router.post('/buyBox', this.buyBox);
+        this.router.post('/mintItem', this.mintItem);
         this.router.post('/boxesForSale', [AuthMiddleWare.verifyToken], this.getBoxesForSale);
         // this.router.post('/openBox', [AuthMiddleWare.verifyToken], this.openBox);
         this.router.post('/openBox', this.openBox);
@@ -92,7 +99,7 @@ class BuyBoxController extends BaseController {
                 item.isNFT = Constants.STATUS_YES;
                 item.owner = user.id;
                 await itemRepo.persistAndFlush(item);
-                buildResponse(input.refNo, res, SUCCESS, {box:item});
+                buildResponse(input.refNo, res, SUCCESS, { box: item });
             }
 
 
@@ -140,8 +147,8 @@ class BuyBoxController extends BaseController {
         }
     }
 
-    buyFTBox = async (req: Request, res: Response) => {
-        let input: BuyBoxInput = req.body;
+    mintItem = async (req: Request, res: Response) => {
+        let input: MintItemInput = req.body;
         let sessionId: string = input.sessionId;
         try {
             const userRepo = DI.em.fork().getRepository(User);
@@ -149,12 +156,26 @@ class BuyBoxController extends BaseController {
             if (!user) {
                 throw new Error(ErrorCode.AuthFailed);
             }
-            buyBoxNew(user);
+            const itemRepo = DI.em.fork().getRepository(Item);
+            let item = await itemRepo.findOne({ _id: new ObjectId(input.itemId) });
+            if(!item || item.owner != user.id)
+            {
+                throw new Error(ErrorCode.ParamsIsInvalid);
+            }
+            let itemMint = await mintNFTItem(user.walletAddress, item);
+            if(!isNullOrEmptyString(itemMint))
+            {
+                item.isLocked = Constants.STATUS_NO;
+                item.nftAddress = itemMint;
+                await itemRepo.persistAndFlush(item);
+            }
+            buildResponse(input.refNo, res, SUCCESS, {})
         } catch (err) {
             console.log(err);
             HandleErrorException(input, res, err + "");
         }
     }
+
 }
 
 export default BuyBoxController
