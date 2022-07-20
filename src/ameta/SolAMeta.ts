@@ -383,7 +383,7 @@ export const mintNFTItem = async (walletAddress: string, item: Item) => {
           },
         }
       )
-    ) 
+    )
     tx.feePayer = MY_WALLET.publicKey;
     let hash = await web3.sendAndConfirmTransaction(connection, tx, [MY_WALLET, buyerWallet, mint]);
     console.log("hash " + hash)
