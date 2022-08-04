@@ -1,12 +1,8 @@
-import * as express from 'express';
 import * as bodyParser from 'body-parser';
-import { connect } from './configdb/database.config';
 import { config } from "dotenv";
+import * as express from 'express';
 import path from "path";
-import { web3 } from '@project-serum/anchor';
-import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes';
-import { PublicKey } from '@solana/web3.js';
-import base58 from 'bs58';
+import { connect } from './configdb/database.config';
 
 config({ path: path.join(__dirname, "../config.env") });
 

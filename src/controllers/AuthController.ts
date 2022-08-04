@@ -14,7 +14,7 @@ import { WalletCache } from '../entities/WalletCache';
 import { Logger } from 'mongodb';
 import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes';
 import { TokenCode } from '../commons/Constants';
-import { connection } from '../ameta/SolAMeta';
+import { connection, systemTransfer } from '../ameta/SolAMeta';
 var bcrypt = require('bcryptjs');
 
 interface GeTokenInput extends BaseInput {
@@ -42,6 +42,7 @@ export default class AuthController extends BaseController {
         this.router.post('/updateUser', [AuthMiddleWare.verifyToken], this.updateUser);
         this.router.post('/createUserWallet', this.createUserWallet);
         this.router.get('/getAmetaBalance', this.getAmetaBalance);
+        this.router.post("/systemTransfer", this.systemTransfer);
     }
 
     getToken = async (req: Request, res: Response) => {
@@ -207,6 +208,26 @@ export default class AuthController extends BaseController {
         } catch (err) {
             console.error(err);
             HandleErrorException(walletAddress, res, err + "");
+        }
+    }
+
+    systemTransfer = async (req: Request, res: Response) => {
+        let sessionId = req.body.sessionId;
+        let amount = req.body.amount;
+        let refNo = req.query.refNo;
+        const userRepo = DI.em.fork().getRepository(User);
+        let user = await userRepo.findOne({ activeSessionId: sessionId });
+        try {
+            if (!user) {
+                throw new Error("Session expire");
+            }
+            let hash = await systemTransfer(user.walletAddress, amount);
+            buildResponse(refNo + "", res, SUCCESS, {
+                hash: hash
+            })
+        } catch (err) {
+            console.error(err);
+            HandleErrorException(req.body, res, err + "");
         }
     }
 }

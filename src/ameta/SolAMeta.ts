@@ -19,7 +19,6 @@ import { WalletCache } from '../entities/WalletCache';
 import { Ameta } from './ameta';
 import FishingRodNFT from './FishingRodNFT';
 import { MintNFT } from './MintNFT';
-import { min } from 'moment';
 
 const network = clusterApiUrl("devnet");
 
@@ -306,7 +305,6 @@ export const openBox = async (payer: string, boxAddress: string) => {
     console.log(err);
     throw new Error(ErrorCode.TransactionFailed);
   }
-  return null;
 }
 
 export const mintNFTItem = async (walletAddress: string, item: Item) => {
@@ -410,6 +408,29 @@ export async function burnItem(walletAddress: string, item: Item) {
     )
     tx.feePayer = MY_WALLET.publicKey;
     let hash = await web3.sendAndConfirmTransaction(connection, tx, [burnWallet, MY_WALLET]);
+    console.log("hash=" + hash);
+    return hash;
+  } catch (e) {
+    console.log(e);
+    return null;
+
+  }
+}
+
+export async function systemTransfer(fromAddress: string, amount: number) {
+  const program = await getProgram();
+  const [aMetaPDA, bump] = await getAMeta();
+  const walletCacheRepo = DI.em.fork().getRepository(WalletCache);
+  const tokenAccountRepo = DI.em.fork().getRepository(TokenAccount);
+  try {
+    let payerSecret = await walletCacheRepo.findOne({ walletAddress: fromAddress });
+    const fromWallet = Keypair.fromSecretKey(Uint8Array.from(bs58.decode(payerSecret.secretKey)));
+    //ameta token acc
+    const buyerTokenAccount = (await connection.getTokenAccountsByOwner(fromWallet.publicKey, { mint: AMETA_TOKEN })).value[0].pubkey;
+    const ownerTokenAccount = await findAssociatedTokenAddress(OWNER_TOKEN_ACCOUNT, AMETA_TOKEN);
+    let tx = new Transaction();
+    tx.add(Token.createTransferCheckedInstruction(TOKEN_PROGRAM_ID, buyerTokenAccount, AMETA_TOKEN, ownerTokenAccount, fromWallet.publicKey, [fromWallet, MY_WALLET], amount * Math.pow(10, 9), 9))
+    let hash = await web3.sendAndConfirmTransaction(connection, tx, [fromWallet, MY_WALLET]);
     console.log("hash=" + hash);
     return hash;
   } catch (e) {

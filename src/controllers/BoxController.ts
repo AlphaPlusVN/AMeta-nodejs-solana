@@ -1,7 +1,6 @@
 import BaseController, { BaseInput } from "./BaseController";
 import { Request, Response } from 'express';
 import { buyBox, buyBoxNew, connection, openBox, mintBox, mintNFTItem, burnItem } from '../ameta/SolAMeta';
-import { PublicKey } from "@solana/web3.js";
 import { buildResponse, isNullOrEmptyString } from "../commons/Utils";
 
 import AuthMiddleWare from "../middleware/AuthMiddleWare";
@@ -201,7 +200,6 @@ class BuyBoxController extends BaseController {
             HandleErrorException(input, res, err + "");
         }
     }
-
 }
 
 export default BuyBoxController
