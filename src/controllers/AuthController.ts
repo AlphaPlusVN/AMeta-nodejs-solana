@@ -15,6 +15,10 @@ import { Logger } from 'mongodb';
 import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes';
 import { TokenCode } from '../commons/Constants';
 import { connection, systemTransfer } from '../ameta/SolAMeta';
+
+import { KardiaAccount } from 'kardia-js-sdk';
+import { getAPlusBalance, kardiaClient } from '../commons/KardiaUtils';
+
 var bcrypt = require('bcryptjs');
 
 interface GeTokenInput extends BaseInput {
@@ -40,8 +44,10 @@ export default class AuthController extends BaseController {
         this.router.post('/getToken', this.getToken);
         this.router.post('/getNonce', this.getNonce);
         this.router.post('/updateUser', [AuthMiddleWare.verifyToken], this.updateUser);
-        this.router.post('/createUserWallet', this.createUserWallet);
-        this.router.get('/getAmetaBalance', this.getAmetaBalance);
+        // this.router.post('/createUserWallet', this.createUserWallet);
+        this.router.post('/createUserWallet', this.createKarWallet);
+        // this.router.get('/getAmetaBalance', this.getAmetaBalance);
+        this.router.get('/getAmetaBalance', this.getKarAmetaBalance);
         this.router.post("/systemTransfer", this.systemTransfer);
     }
 
@@ -194,6 +200,38 @@ export default class AuthController extends BaseController {
         }
     };
 
+    createKarWallet = async (req: Request, res: Response) => {
+        let input = req.body;
+        try {
+            //save to db
+            let userRepo = DI.em.fork().getRepository(User);
+            let walletRepo = DI.em.fork().getRepository(WalletCache);
+            let user = await userRepo.findOne({ username: input.username });
+            if (user && isNullOrEmptyString(user.walletAddress)) {
+                console.log("Create wallet for " + req.body.username);
+                //generate wallet
+                let walletAcct = KardiaAccount.generateWallet();
+                // let keypair = Keypair.generate();
+                // const privateKey = bs58.encode(keypair.secretKey);
+                //create token account
+                // await createTokenAccount(keypair, AMETA_TOKEN, TokenCode.AMETA);
+
+                user.walletAddress = walletAcct.address;
+                await userRepo.persistAndFlush(user);
+                let wallet = new WalletCache();
+                wallet.walletAddress = walletAcct.address;
+                wallet.secretKey = walletAcct.privateKey;
+                await walletRepo.persistAndFlush(wallet);
+            }
+            buildResponse(input.refNo, res, SUCCESS, {
+                user
+            });
+        } catch (err) {
+            console.error(err);
+            HandleErrorException(input, res, err + "");
+        }
+    };
+
     getAmetaBalance = async (req: Request, res: Response) => {
         console.log(req.query);
         let refNo = req.query.refNo;
@@ -202,6 +240,22 @@ export default class AuthController extends BaseController {
         try {
             let tokenAcct = (await connection.getTokenAccountsByOwner(new PublicKey(walletAddress), { mint: AMETA_TOKEN })).value[0].pubkey;
             let balance = (await connection.getTokenAccountBalance(tokenAcct)).value.uiAmount;
+            buildResponse(refNo + "", res, SUCCESS, {
+                balance
+            });
+        } catch (err) {
+            console.error(err);
+            HandleErrorException(walletAddress, res, err + "");
+        }
+    }
+
+    getKarAmetaBalance = async (req: any, res: any) => {
+        console.log(req.query);
+        let refNo = req.query.refNo;
+        let walletAddress: string = req.query.walletAddress;
+        console.log("check balance of :" + walletAddress);
+        try {
+            const balance = await getAPlusBalance(walletAddress);
             buildResponse(refNo + "", res, SUCCESS, {
                 balance
             });

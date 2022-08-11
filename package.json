@@ -37,6 +37,7 @@
     "fs": "^0.0.1-security",
     "ipfs-http-client": "^56.0.2",
     "jsonwebtoken": "^8.5.1",
+    "kardia-js-sdk": "^0.6.0",
     "moment": "^2.29.2",
     "mongodb": "^4.4.1",
     "nft.storage": "^6.4.0",
