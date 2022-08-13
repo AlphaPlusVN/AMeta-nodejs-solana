@@ -13,25 +13,26 @@ export class ItemAttribute {
 export class Item extends BaseEntity {
     @Property() owner: string;
     @Property() itemType!: number;
-    @Property() buyFee?: number;
-    @Property() sellFee?: number;
+    @Property({default:0}) buyFee: number = 0;
+    @Property({default:0}) sellFee: number = 0;
     @Property() name: string;
     @Property() description: string;
-    @Property() rank: number;
+    @Property({default:0}) rank: number = 0;
     @Property() group: number;
-    @Property() quantity: number = 1;
-    @Property() hotItem: number = 0;
-    @Property() modelId: number = 0;
-    @Property() equiped: number = 0;
-    @Property() canBuild: number = 0; //0 can't build
+    @Property({default:1}) quantity: number = 1;
+    @Property({default:0}) hotItem: number = 0;
+    @Property({default:0}) modelId: number = 0;
+    @Property({default:0}) equiped: number = 0;
+    @Property({default:0}) canBuild: number = 0; //0 can't build
     @Property() mapList: Array<number> = new Array<number>();
-    @Property() isNFT: number = 0;
+    @Property({default:0}) isNFT: number = 0;
     @Property() nftAddress: string;
-    @Property() durability: number;
+    @Property({default:0}) durability: number;
     @Property() attr?: ItemAttribute = new ItemAttribute();
-    @Property() canStack: number;
-    @Property() isLocked: number;
+    @Property({default:0}) canStack: number = 0;
+    @Property({default:0}) isLocked: number = 0;
     @Property() imageUrl: string;
+    @Property({default:0}) tokenId: number = 0;
 }
 
 

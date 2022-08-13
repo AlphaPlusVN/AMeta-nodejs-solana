@@ -17,13 +17,12 @@
     "typescript": "^4.6.3"
   },
   "dependencies": {
+    "@ethereumjs/tx": "^3.5.2",
     "@metaplex-foundation/mpl-token-metadata": "^2.1.0",
     "@metaplex/js": "^4.12.0",
     "@mikro-orm/core": "^5.1.5",
     "@mikro-orm/mongodb": "^5.1.5",
-    "@project-serum/anchor": "^0.18.2",
     "@solana/spl-token": "^0.1.8",
-    "@solana/web3.js": "^1.37.1",
     "@types/cors": "^2.8.12",
     "@types/jsonwebtoken": "^8.5.8",
     "bcryptjs": "^2.4.3",
@@ -37,11 +36,13 @@
     "fs": "^0.0.1-security",
     "ipfs-http-client": "^56.0.2",
     "jsonwebtoken": "^8.5.1",
-    "kardia-js-sdk": "^0.6.0",
     "moment": "^2.29.2",
     "mongodb": "^4.4.1",
     "nft.storage": "^6.4.0",
     "node-fetch": "^2.6.7",
-    "ts-node": "^10.7.0"
+    "ts-node": "^10.7.0",
+    "web3": "^1.7.5",
+    "web3-eth-accounts": "^1.7.5",
+    "web3-eth-contract": "^1.7.5"
   }
 }
