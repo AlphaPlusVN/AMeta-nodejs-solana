@@ -4,12 +4,11 @@ import { DI } from '../configdb/database.config';
 import { getAPlusBalance, APLUS_OWNER, NFTContract, web3, DEFAULT_NFT_SMC_ADDRESS } from '../commons/KardiaUtils';
 import { transferAPlusToken } from './AplusContract';
 import { NFTMetaData } from '../ameta/NFTMetadata';
+import { Item } from '../entities/ItemEntity';
 
 export const mintBoxKar = async (walletAddress: string, box: BoxConfig, price: number) => {
-    let boxTokenId: number = 0;
     const walletCacheRepo = DI.em.fork().getRepository(WalletCache);
     try {
-        console.log("Check balance " + walletAddress);
         let balance = await getAPlusBalance(walletAddress);
         console.log("Aplus balance " + balance);
         if (balance < price) {
@@ -36,11 +35,38 @@ export const mintBoxKar = async (walletAddress: string, box: BoxConfig, price: n
             let tx = await web3.eth.accounts.signTransaction(rawTransaction, walletSender.secretKey);
             let txResult = await web3.eth.sendSignedTransaction(tx.rawTransaction).on('receipt', console.log);
             console.log("Mint NFT result " + txResult.status);
-            boxTokenId = mintNFT;
-        }   
-        return boxTokenId;
+            return txResult.status;
+        }
+        return false;
     } catch (e) {
         console.log(e);
-        return -1;
+        return false;
+    }
+}
+
+export const mintKarNFTItem = async (walletAddress: string, item: Item) => {
+    const walletCacheRepo = DI.em.fork().getRepository(WalletCache);
+    try {
+        let walletSender = await walletCacheRepo.findOne({ walletAddress: walletAddress });
+        //ameta token acc
+        let cid = await NFTMetaData.uploadItemMetadata(item, walletAddress);
+        let mintNFT = await NFTContract.methods.awardItem(walletAddress, cid).encodeABI();
+        const gasPrice = await web3.eth.getGasPrice();
+        const gasLimit = 900000;
+        const rawTransaction = {
+            'from': walletSender.walletAddress,
+            'gasPrice': web3.utils.toHex(gasPrice),
+            'gas': web3.utils.toHex(gasPrice),
+            'gasLimit': web3.utils.toHex(gasLimit),
+            'to': DEFAULT_NFT_SMC_ADDRESS,
+            'data': mintNFT
+        };
+        let tx = await web3.eth.accounts.signTransaction(rawTransaction, walletSender.secretKey);
+        let txResult = await web3.eth.sendSignedTransaction(tx.rawTransaction).on('receipt', console.log);
+        console.log("Mint NFT result " + txResult.status);
+        return txResult.status;
+    } catch (e) {
+        console.log(e);
+        return false;
     }
 }

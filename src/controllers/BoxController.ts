@@ -3,7 +3,8 @@ import { Request, Response } from 'express';
 import { buildResponse } from "../commons/Utils";
 import BaseController, { BaseInput } from "./BaseController";
 
-import { mintBoxKar } from '../aplus_kar/NFTContract';
+import { ObjectId } from '@mikro-orm/mongodb';
+import { mintBoxKar, mintKarNFTItem } from '../aplus_kar/NFTContract';
 import { Constants } from '../commons/Constants';
 import { DEFAULT_NFT_SMC_ADDRESS } from '../commons/KardiaUtils';
 import { ErrorCode, HandleErrorException, SUCCESS } from "../config/ErrorCodeConfig";
@@ -42,7 +43,7 @@ class BuyBoxController extends BaseController {
         // this.router.post('/buyBoxNew', this.buyBoxNew);
         // this.router.post('/buyBox', this.buyBox);
         this.router.post('/buyBox', this.buyBoxKar);
-        // this.router.post('/mintItem', this.mintItem);
+        this.router.post('/mintItem', this.mintItem);
         this.router.post('/boxesForSale', [AuthMiddleWare.verifyToken], this.getBoxesForSale);
         // this.router.post('/openBox', [AuthMiddleWare.verifyToken], this.openBox);
         // this.router.post('/openBox', this.openBox);
@@ -135,8 +136,8 @@ class BuyBoxController extends BaseController {
             if (price == 0) {
                 throw new Error(ErrorCode.PaymentMethodNotSupported);
             }
-            let nftTokenId: number = await mintBoxKar(user.walletAddress, box, price);
-            if (nftTokenId <= 0) {
+            let mintBoxSucess = await mintBoxKar(user.walletAddress, box, price);
+            if (mintBoxSucess) {
                 throw new Error(ErrorCode.TransactionFailed);
             } else {
                 const itemConfigRepo = DI.em.fork().getRepository(ItemConfig);
@@ -150,7 +151,6 @@ class BuyBoxController extends BaseController {
                 item.isNFT = Constants.STATUS_YES;
                 item.owner = user.id;
                 item.nftAddress = DEFAULT_NFT_SMC_ADDRESS;
-                item.tokenId = nftTokenId;
                 await itemRepo.persistAndFlush(item);
                 buildResponse(input.refNo, res, SUCCESS, { box: item });
             }
@@ -197,32 +197,34 @@ class BuyBoxController extends BaseController {
     //     }
     // }
 
-    // mintItem = async (req: Request, res: Response) => {
-    //     let input: MintItemInput = req.body;
-    //     let sessionId: string = input.sessionId;
-    //     try {
-    //         const userRepo = DI.em.fork().getRepository(User);
-    //         let user = await userRepo.findOne({ activeSessionId: sessionId });
-    //         if (!user) {
-    //             throw new Error(ErrorCode.AuthFailed);
-    //         }
-    //         const itemRepo = DI.em.fork().getRepository(Item);
-    //         let item = await itemRepo.findOne({ _id: new ObjectId(input.itemId) });
-    //         if (!item || item.owner != user.id) {
-    //             throw new Error(ErrorCode.ParamsIsInvalid);
-    //         }
-    //         let itemMint = await mintNFTItem(user.walletAddress, item);
-    //         if (!isNullOrEmptyString(itemMint)) {
-    //             item.isLocked = Constants.STATUS_NO;
-    //             item.nftAddress = itemMint;
-    //             await itemRepo.persistAndFlush(item);
-    //         }
-    //         buildResponse(input.refNo, res, SUCCESS, {})
-    //     } catch (err) {
-    //         console.log(err);
-    //         HandleErrorException(input, res, err + "");
-    //     }
-    // }
+    mintItem = async (req: Request, res: Response) => {
+        let input: MintItemInput = req.body;
+        let sessionId: string = input.sessionId;
+        try {
+            const userRepo = DI.em.fork().getRepository(User);
+            let user = await userRepo.findOne({ activeSessionId: sessionId });
+            if (!user) {
+                throw new Error(ErrorCode.AuthFailed);
+            }
+            const itemRepo = DI.em.fork().getRepository(Item);
+            let item = await itemRepo.findOne({ _id: new ObjectId(input.itemId) });
+            if (!item || item.owner != user.id) {
+                throw new Error(ErrorCode.ParamsIsInvalid);
+            }
+            let mintSuccess = await mintKarNFTItem(user.walletAddress, item);
+            if (mintSuccess) {
+                item.isLocked = Constants.STATUS_NO;
+                item.nftAddress = DEFAULT_NFT_SMC_ADDRESS;
+                await itemRepo.persistAndFlush(item);
+            } else {
+                throw new Error(ErrorCode.TransactionFailed);
+            }
+            buildResponse(input.refNo, res, SUCCESS, {})
+        } catch (err) {
+            console.log(err);
+            HandleErrorException(input, res, err + "");
+        }
+    }
 
     // burnItem = async (req: Request, res: Response) => {
     //     let input: MintItemInput = req.body;
