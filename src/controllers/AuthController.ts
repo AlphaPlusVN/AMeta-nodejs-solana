@@ -12,6 +12,7 @@ import { User } from '../entities/User';
 import { WalletCache } from '../entities/WalletCache';
 import AuthMiddleWare from "../middleware/AuthMiddleWare";
 import BaseController, { BaseInput } from "./BaseController";
+import { systemTransferAplus } from "../aplus_kar/AplusContract";
 
 const bcrypt = require('bcryptjs');
 
@@ -42,7 +43,7 @@ export default class AuthController extends BaseController {
         this.router.post('/createUserWallet', this.createKarWallet);
         // this.router.get('/getAmetaBalance', this.getAmetaBalance);
         this.router.get('/getAmetaBalance', this.getKarAmetaBalance);
-        // this.router.post("/systemTransfer", this.systemTransfer);
+        this.router.post("/systemTransfer", this.systemTransferKar);
     }
 
     getToken = async (req: Request, res: Response) => {
@@ -269,4 +270,23 @@ export default class AuthController extends BaseController {
     //         HandleErrorException(req.body, res, err + "");
     //     }
     // }
+    systemTransferKar = async (req: Request, res: Response) => {
+        let sessionId = req.body.sessionId;
+        let amount = req.body.amount;
+        let refNo = req.query.refNo;
+        const userRepo = DI.em.fork().getRepository(User);
+        let user = await userRepo.findOne({ activeSessionId: sessionId });
+        try {
+            if (!user) {
+                throw new Error("Session expire");
+            }
+            let result = await systemTransferAplus(user.walletAddress, amount);
+            buildResponse(refNo + "", res, SUCCESS, {
+                status: result
+            })
+        } catch (err) {
+            console.error(err);
+            HandleErrorException(req.body, res, err + "");
+        }
+    }
 }
