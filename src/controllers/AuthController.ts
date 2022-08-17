@@ -200,10 +200,6 @@ export default class AuthController extends BaseController {
                 console.log("Create wallet for " + req.body.username);
                 //generate wallet
                 let walletAcct = web3.eth.accounts.create();
-                // let keypair = Keypair.generate();
-                // const privateKey = bs58.encode(keypair.secretKey);
-                //create token account
-                // await createTokenAccount(keypair, AMETA_TOKEN, TokenCode.AMETA);
 
                 user.walletAddress = walletAcct.address;
                 await userRepo.persistAndFlush(user);

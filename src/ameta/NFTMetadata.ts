@@ -31,7 +31,7 @@ export namespace NFTMetaData {
         }
         let imageUrl = box.imageUrl;
         const metadata = {
-            name: box.code,
+            name: box.name,
             description: box.description,
             external_url: "https://ameta.games",
             attributes: [
