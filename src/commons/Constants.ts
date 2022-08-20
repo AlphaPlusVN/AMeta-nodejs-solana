@@ -10,3 +10,9 @@ export class TokenCode
     static readonly AMETA:string = "AMETA";
     static readonly STARTER_BOX:string = "STARTER_BOX";
 }
+
+export class ChainCode
+{
+    static readonly KARDIACHAIN = "KAR";
+    static readonly OKC = "OKC";
+}

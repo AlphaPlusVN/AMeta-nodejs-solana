@@ -7,6 +7,7 @@ export class User extends BaseEntity{
     @Property() username?: string;
     @Property() password?: string;
     @Property() nonce?: string;
+    @Property() chainCode: string;
     @Property() walletAddress: string;
     @Property() email?: string;
 }

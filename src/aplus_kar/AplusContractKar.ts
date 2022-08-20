@@ -1,4 +1,4 @@
-import { APlusContract, KAR_APLUS_CONTRACT_ADDRESS, KAR_APLUS_OWNER, web3 } from '../commons/KardiaUtils';
+import { APlusContract, KAR_APLUS_CONTRACT_ADDRESS, KAR_APLUS_OWNER, web3Kar } from '../commons/KardiaUtils';
 import { DI } from '../configdb/database.config';
 import { WalletCache } from '../entities/WalletCache';
 
@@ -10,7 +10,7 @@ export async function mintAplusKar(to: string, amount: number, isWei: boolean) {
         result = await APlusContract.methods.mint(to, amount).send();
     } else {
         console.log("Mint " + amount + " Aplus to " + to);
-        result = await APlusContract.methods.mint(to, web3.utils.toWei(amount + "", "ether")).send();
+        result = await APlusContract.methods.mint(to, web3Kar.utils.toWei(amount + "", "ether")).send();
     }
     console.log("Mint aplus resp " + result);
 }
@@ -23,17 +23,17 @@ export async function systemTransferAplusKar(userWallet: string, amount: number)
 }
 
 export async function transferAPlusTokenKar(walletSender: WalletCache, receiverAddress: string, amount: number) {
-    const data = await APlusContract.methods.transfer(receiverAddress, web3.utils.toWei(amount + "")).encodeABI();
-    const gasPrice = await web3.eth.getGasPrice();
+    const data = await APlusContract.methods.transfer(receiverAddress, web3Kar.utils.toWei(amount + "")).encodeABI();
+    const gasPrice = await web3Kar.eth.getGasPrice();
     const gasLimit = 90000;
     const rawTransaction = {
         'from': walletSender.walletAddress,
-        'gasPrice': web3.utils.toHex(gasPrice),
-        'gasLimit': web3.utils.toHex(gasLimit),
+        'gasPrice': web3Kar.utils.toHex(gasPrice),
+        'gasLimit': web3Kar.utils.toHex(gasLimit),
         'to': KAR_APLUS_CONTRACT_ADDRESS,
         'data': data
     };
-    let tx = await web3.eth.accounts.signTransaction(rawTransaction, walletSender.secretKey);
-    let txResult = await web3.eth.sendSignedTransaction(tx.rawTransaction).on('receipt', console.log);
+    let tx = await web3Kar.eth.accounts.signTransaction(rawTransaction, walletSender.secretKey);
+    let txResult = await web3Kar.eth.sendSignedTransaction(tx.rawTransaction).on('receipt', console.log);
     return txResult;
 }
