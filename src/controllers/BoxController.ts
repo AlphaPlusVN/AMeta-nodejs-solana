@@ -4,7 +4,7 @@ import { buildResponse } from "../commons/Utils";
 import BaseController, { BaseInput } from "./BaseController";
 
 import { ObjectId } from '@mikro-orm/mongodb';
-import { mintBoxKar, mintKarNFTItem } from '../aplus_kar/NFTContract';
+import { mintBoxKar, mintKarNFTItem } from '../aplus_kar/NFTContractKar';
 import { Constants } from '../commons/Constants';
 import { KAR_NFT_ADDRESS } from '../commons/KardiaUtils';
 import { ErrorCode, HandleErrorException, SUCCESS } from "../config/ErrorCodeConfig";

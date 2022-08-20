@@ -12,7 +12,7 @@ import { User } from '../entities/User';
 import { WalletCache } from '../entities/WalletCache';
 import AuthMiddleWare from "../middleware/AuthMiddleWare";
 import BaseController, { BaseInput } from "./BaseController";
-import { systemTransferAplus } from "../aplus_kar/AplusContract";
+import { systemTransferAplusKar } from "../aplus_kar/AplusContractKar";
 
 const bcrypt = require('bcryptjs');
 
@@ -280,7 +280,7 @@ export default class AuthController extends BaseController {
             if (!user) {
                 throw new Error("Session expire");
             }
-            let result = await systemTransferAplus(user.walletAddress, amount);
+            let result = await systemTransferAplusKar(user.walletAddress, amount);
             buildResponse(refNo + "", res, SUCCESS, {
                 status: result
             })

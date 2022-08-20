@@ -3,7 +3,7 @@ import { DI } from '../configdb/database.config';
 import { WalletCache } from '../entities/WalletCache';
 
 
-export async function mintAplus(to: string, amount: number, isWei: boolean) {
+export async function mintAplusKar(to: string, amount: number, isWei: boolean) {
     let result;
     if (isWei) {
         console.log("Mint " + amount * Math.pow(10, -18) + " Aplus to " + to);
@@ -15,14 +15,14 @@ export async function mintAplus(to: string, amount: number, isWei: boolean) {
     console.log("Mint aplus resp " + result);
 }
 
-export async function systemTransferAplus(userWallet: string, amount: number) {
+export async function systemTransferAplusKar(userWallet: string, amount: number) {
     const walletRepo = DI.em.fork().getRepository(WalletCache);
     let walletSender = await walletRepo.findOne({ walletAddress: userWallet });
-    let result = await transferAPlusToken(walletSender, KAR_APLUS_OWNER, amount);
+    let result = await transferAPlusTokenKar(walletSender, KAR_APLUS_OWNER, amount);
     return result.status;
 }
 
-export async function transferAPlusToken(walletSender: WalletCache, receiverAddress: string, amount: number) {
+export async function transferAPlusTokenKar(walletSender: WalletCache, receiverAddress: string, amount: number) {
     const data = await APlusContract.methods.transfer(receiverAddress, web3.utils.toWei(amount + "")).encodeABI();
     const gasPrice = await web3.eth.getGasPrice();
     const gasLimit = 90000;

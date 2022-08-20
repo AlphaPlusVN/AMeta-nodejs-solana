@@ -2,7 +2,7 @@ import { BoxConfig } from '../entities/BoxConfig';
 import { WalletCache } from '../entities/WalletCache';
 import { DI } from '../configdb/database.config';
 import { getAPlusBalance, KAR_APLUS_OWNER, NFTContract, web3, KAR_NFT_ADDRESS } from '../commons/KardiaUtils';
-import { transferAPlusToken } from './AplusContract';
+import { transferAPlusTokenKar } from './AplusContractKar';
 import { NFTMetaData } from '../ameta/NFTMetadata';
 import { Item } from '../entities/ItemEntity';
 
@@ -16,7 +16,7 @@ export const mintBoxKar = async (walletAddress: string, box: BoxConfig, price: n
         }
         let walletSender = await walletCacheRepo.findOne({ walletAddress });
         //tranfer token to owner
-        let result = await transferAPlusToken(walletSender, KAR_APLUS_OWNER, price);
+        let result = await transferAPlusTokenKar(walletSender, KAR_APLUS_OWNER, price);
         console.log("Transfer Aplus result " + result.status);
         //check success
         if (result) {
