@@ -1,4 +1,4 @@
-import { APlusContract, APLUS_CONTRACT_ADDRESS, APLUS_OWNER, web3 } from '../commons/KardiaUtils';
+import { APlusContract, KAR_APLUS_CONTRACT_ADDRESS, KAR_APLUS_OWNER, web3 } from '../commons/KardiaUtils';
 import { DI } from '../configdb/database.config';
 import { WalletCache } from '../entities/WalletCache';
 
@@ -18,7 +18,7 @@ export async function mintAplus(to: string, amount: number, isWei: boolean) {
 export async function systemTransferAplus(userWallet: string, amount: number) {
     const walletRepo = DI.em.fork().getRepository(WalletCache);
     let walletSender = await walletRepo.findOne({ walletAddress: userWallet });
-    let result = await transferAPlusToken(walletSender, APLUS_OWNER, amount);
+    let result = await transferAPlusToken(walletSender, KAR_APLUS_OWNER, amount);
     return result.status;
 }
 
@@ -30,7 +30,7 @@ export async function transferAPlusToken(walletSender: WalletCache, receiverAddr
         'from': walletSender.walletAddress,
         'gasPrice': web3.utils.toHex(gasPrice),
         'gasLimit': web3.utils.toHex(gasLimit),
-        'to': APLUS_CONTRACT_ADDRESS,
+        'to': KAR_APLUS_CONTRACT_ADDRESS,
         'data': data
     };
     let tx = await web3.eth.accounts.signTransaction(rawTransaction, walletSender.secretKey);

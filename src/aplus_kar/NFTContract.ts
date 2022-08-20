@@ -1,7 +1,7 @@
 import { BoxConfig } from '../entities/BoxConfig';
 import { WalletCache } from '../entities/WalletCache';
 import { DI } from '../configdb/database.config';
-import { getAPlusBalance, APLUS_OWNER, NFTContract, web3, DEFAULT_NFT_SMC_ADDRESS } from '../commons/KardiaUtils';
+import { getAPlusBalance, KAR_APLUS_OWNER, NFTContract, web3, KAR_NFT_ADDRESS } from '../commons/KardiaUtils';
 import { transferAPlusToken } from './AplusContract';
 import { NFTMetaData } from '../ameta/NFTMetadata';
 import { Item } from '../entities/ItemEntity';
@@ -16,7 +16,7 @@ export const mintBoxKar = async (walletAddress: string, box: BoxConfig, price: n
         }
         let walletSender = await walletCacheRepo.findOne({ walletAddress });
         //tranfer token to owner
-        let result = await transferAPlusToken(walletSender, APLUS_OWNER, price);
+        let result = await transferAPlusToken(walletSender, KAR_APLUS_OWNER, price);
         console.log("Transfer Aplus result " + result.status);
         //check success
         if (result) {
@@ -29,7 +29,7 @@ export const mintBoxKar = async (walletAddress: string, box: BoxConfig, price: n
                 'gasPrice': web3.utils.toHex(gasPrice),
                 'gas': web3.utils.toHex(gasPrice),
                 'gasLimit': web3.utils.toHex(gasLimit),
-                'to': DEFAULT_NFT_SMC_ADDRESS,
+                'to': KAR_NFT_ADDRESS,
                 'data': mintNFT
             };
             let tx = await web3.eth.accounts.signTransaction(rawTransaction, walletSender.secretKey);
@@ -58,7 +58,7 @@ export const mintKarNFTItem = async (walletAddress: string, item: Item) => {
             'gasPrice': web3.utils.toHex(gasPrice),
             'gas': web3.utils.toHex(gasPrice),
             'gasLimit': web3.utils.toHex(gasLimit),
-            'to': DEFAULT_NFT_SMC_ADDRESS,
+            'to': KAR_NFT_ADDRESS,
             'data': mintNFT
         };
         let tx = await web3.eth.accounts.signTransaction(rawTransaction, walletSender.secretKey);

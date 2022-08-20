@@ -6,7 +6,7 @@ import BaseController, { BaseInput } from "./BaseController";
 import { ObjectId } from '@mikro-orm/mongodb';
 import { mintBoxKar, mintKarNFTItem } from '../aplus_kar/NFTContract';
 import { Constants } from '../commons/Constants';
-import { DEFAULT_NFT_SMC_ADDRESS } from '../commons/KardiaUtils';
+import { KAR_NFT_ADDRESS } from '../commons/KardiaUtils';
 import { ErrorCode, HandleErrorException, SUCCESS } from "../config/ErrorCodeConfig";
 import { DI } from '../configdb/database.config';
 import { BoxConfig } from '../entities/BoxConfig';
@@ -150,7 +150,7 @@ class BuyBoxController extends BaseController {
                 item.description = itemConfig.desc;
                 item.isNFT = Constants.STATUS_YES;
                 item.owner = user.id;
-                item.nftAddress = DEFAULT_NFT_SMC_ADDRESS;
+                item.nftAddress = KAR_NFT_ADDRESS;
                 await itemRepo.persistAndFlush(item);
                 buildResponse(input.refNo, res, SUCCESS, { box: item });
             }
@@ -214,7 +214,7 @@ class BuyBoxController extends BaseController {
             let mintSuccess = await mintKarNFTItem(user.walletAddress, item);
             if (mintSuccess) {
                 item.isLocked = Constants.STATUS_NO;
-                item.nftAddress = DEFAULT_NFT_SMC_ADDRESS;
+                item.nftAddress = KAR_NFT_ADDRESS;
                 await itemRepo.persistAndFlush(item);
             } else {
                 throw new Error(ErrorCode.TransactionFailed);
