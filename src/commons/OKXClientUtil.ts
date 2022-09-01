@@ -16,16 +16,18 @@ export async function getAPlusBalance(address: string) {
 }
 
 export function getAplusABI() {
-    const fs = require('fs');
-    var jsonFile = __dirname + "/OKCAplusToken.json";
-    var parsed = JSON.parse(fs.readFileSync(jsonFile));
-    var abi = parsed.abi;
-    return abi;
+    // const fs = require('fs');
+    // var jsonFile = __dirname + "/OKCAplusToken.json";
+    // var parsed = JSON.parse(fs.readFileSync(jsonFile));
+    // var abi = parsed.abi;
+    // return abi;
+    return new Array();
 }
 export function getNFTABI() {
-    const fs = require('fs');
-    var jsonFile = __dirname + "/OKCNFTItem.json";
-    var parsed = JSON.parse(fs.readFileSync(jsonFile));
-    var abi = parsed.abi;
-    return abi;
+    // const fs = require('fs');
+    // var jsonFile = __dirname + "/OKCNFTItem.json";
+    // var parsed = JSON.parse(fs.readFileSync(jsonFile));
+    // var abi = parsed.abi;
+    // return abi;
+    return new Array();
 }
