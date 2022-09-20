@@ -56,8 +56,8 @@ class BuyBoxController extends BaseController {
 
     getBoxesForSale = async (req: Request, res: Response) => {
         let input: BaseInput = req.body;
-        let mktBoxForSalRepo = DI.em.fork().getRepository(MktBoxesForSale);
-        let boxesForSale: MktBoxesForSale[] = await mktBoxForSalRepo.findAll();
+        let mktBoxForSalRepo = DI.em.fork().getRepository(BoxConfig);
+        let boxesForSale: BoxConfig[] = await mktBoxForSalRepo.findAll();
         if (!boxesForSale) boxesForSale = [];
         buildResponse(input.refNo, res, SUCCESS, boxesForSale);
     }
