@@ -13,7 +13,7 @@ export default class ItemController extends BaseController {
     public initializeRoutes = () => {
         this.router.post("/")
         this.router.get("/metadata/:address/:tokenId", this.getItemMetadata);
-        this.router.get("/getItemConfig/:itemCode")
+        this.router.get("/getItemConfig/:itemCode", this.getItemConfig);
     }
 
     getItemMetadata = async (req: any, res: any) => {
