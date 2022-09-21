@@ -44,7 +44,7 @@ class BuyBoxController extends BaseController {
         // this.router.post('/buyBox', this.buyBox);
         this.router.post('/buyBox', this.buyBoxKar);
         this.router.post('/mintItem', this.mintItem);
-        this.router.post('/boxesForSale', [AuthMiddleWare.verifyToken], this.getBoxesForSale);
+        this.router.post('/boxesForSale', this.getBoxesForSale);
         // this.router.post('/openBox', [AuthMiddleWare.verifyToken], this.openBox);
         // this.router.post('/openBox', this.openBox);
         // this.router.post('/burnItem', this.burnItem);
