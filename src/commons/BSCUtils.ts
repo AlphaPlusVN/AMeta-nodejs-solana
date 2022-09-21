@@ -45,7 +45,7 @@ export async function mintBoxEventTrigger(event: any) {
         let box = await boxRepo.findOne({ code: boxCode });
         if (box) {
             let metadata = new SCNFTMetadata();
-            metadata.contractAddress = BOX_CONTRACT_ADDRESS;
+            metadata.contractAddress = BOX_CONTRACT_ADDRESS.toLowerCase();
             metadata.tokenId = returnValues.tokenId;
             metadata.owner = returnValues.to;
             metadata.jsonMetadata = {
