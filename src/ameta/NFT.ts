@@ -11,7 +11,6 @@ export interface NFTCreators {
     share: number
 }
 export interface NFTTokenMetadata {
-
     name: string,
     symbol: string,
     description: string,
