@@ -21,7 +21,13 @@ let options = {
 };
 //listen event mint box
 boxContract.events.Mint(options, function (error: any, event: any) { console.log(event); })
-    .on('data', mintBoxEventTrigger(event))
+    .on('data', mintBoxTrigger(event))
+    .on('changed', function (changed: any) { console.log(changed) })
+    .on('error', function (err: any) { console.log('error', err.message, err.stack) })
+    .on('connected', function (str: any) { console.log(str) });
+
+boxContract.events.MintBatch(options, function (error: any, event: any) { console.log(event); })
+    .on('data', mintBoxBatchTrigger(event))
     .on('changed', function (changed: any) { console.log(changed) })
     .on('error', function (err: any) { console.log('error', err.message, err.stack) })
     .on('connected', function (str: any) { console.log(str) });
@@ -33,7 +39,54 @@ boxContract.events.OpenBox(options, function (error: any, event: any) { console.
     .on('error', function (err: any) { console.log('error', err.message, err.stack) })
     .on('connected', function (str: any) { console.log(str) });
 
-export async function mintBoxEventTrigger(event: any) {
+export async function mintBoxBatchTrigger(event: any) {
+    const SILVER = 1;
+    const GOLD = 2;
+    const DIAMOND = 3;
+    console.log("miner event trigger");
+    try {
+        let boxCode = "";
+        console.log(JSON.stringify(event));
+        let returnValues = event.returnValues;
+        switch (returnValues.boxType) {
+            case SILVER: boxCode = "SILVER_BOX";
+                break;
+            case GOLD: boxCode = "GOLD_BOX";
+                break;
+            case DIAMOND: boxCode = "DIAMOND_BOX";
+                break;
+            default: throw "BOX TYPE INVALID";
+        }
+        const boxRepo = DI.em.fork().getRepository(BoxConfig);
+        const metadataRepo = DI.em.fork().getRepository(SCNFTMetadata);
+        let box = await boxRepo.findOne({ code: boxCode });
+        if (box) {
+            let tokenIds: Array<number> = returnValues.tokenIds;
+            for (let tokenId of tokenIds) {
+                let metadata = new SCNFTMetadata();
+                metadata.contractAddress = BOX_CONTRACT_ADDRESS.toLowerCase();
+                metadata.tokenId = tokenId;
+                metadata.owner = returnValues.to;
+                metadata.jsonMetadata = {
+                    name: box.name,
+                    image: box.imageUrl,
+                    symbol: "AmetaBox",
+                    description: box.description,
+                    collection: { family: "Box", name: box.name },
+                    external_url: "https://ameta.games",
+                    seller_fee_basis_points: 0,
+                    attributes: [{ trait_type: "boxCode", value: box.code }]
+                }
+                metadataRepo.persist(metadata);
+            }
+            await metadataRepo.flush();
+        }
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+export async function mintBoxTrigger(event: any) {
     const SILVER = 1;
     const GOLD = 2;
     const DIAMOND = 3;
