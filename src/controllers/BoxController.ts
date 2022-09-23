@@ -59,6 +59,10 @@ class BuyBoxController extends BaseController {
         let mktBoxForSalRepo = DI.em.fork().getRepository(BoxConfig);
         let boxesForSale: BoxConfig[] = await mktBoxForSalRepo.find({isNFT:Constants.STATUS_YES});
         if (!boxesForSale) boxesForSale = [];
+        if(!input.refNo)
+        {
+            input.refNo = "refNo";
+        }
         buildResponse(input.refNo, res, SUCCESS, boxesForSale);
     }
 
