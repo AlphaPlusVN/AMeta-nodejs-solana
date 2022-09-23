@@ -9,8 +9,7 @@ export const buildResponse = (refNo: string, res: Response, responseDic: Respons
         msg: customMsg ? customMsg : responseDic.msg,
         data: data
     }
-
-    res.send(responseObj)
+    res.status(200).json(responseObj)
 }
 
 export const genRandomString = (length: number): string => {

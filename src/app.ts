@@ -15,7 +15,7 @@ class App {
     this.app = app;
     // this.port = port;
 
-    this.initializeMiddlewares();
+    // this.initializeMiddlewares();
     this.initializeControllers(controllers);
   }
 

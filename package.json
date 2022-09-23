@@ -33,6 +33,7 @@
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "dotenv": "^16.0.1",
+    "ethers": "^5.7.1",
     "express": "^4.17.3",
     "fs": "^0.0.1-security",
     "ipfs-http-client": "^56.0.2",

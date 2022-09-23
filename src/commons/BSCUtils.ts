@@ -1,43 +1,29 @@
-import Web3 from 'web3';
-import { NFTMetaData } from '../ameta/NFTMetadata';
 import { DI } from '../configdb/database.config';
 import { BoxConfig, ItemOnBox } from '../entities/BoxConfig';
-import { SCNFTMetadata, MetaDataFormat } from '../entities/NFTMetadataMapping';
-import { getRandomPercent, randomFromTo, getRandomNumber, getFameByRarity, generateItemSkill } from './Utils';
 import { ItemConfig } from '../entities/ItemEntity';
+import { SCNFTMetadata } from '../entities/NFTMetadataMapping';
+import { generateItemSkill, getFameByRarity, getRandomNumber, getRandomPercent } from './Utils';
+import { ethers } from "ethers";
 
 const BSC_ENDPOINT = 'https://data-seed-prebsc-1-s1.binance.org:8545';
 const BOX_CONTRACT_ADDRESS = "0xca8B840932c0Aa34B9E425774c15074B56877fF2";
 const NFT_ADDRESS = "";
 
+const provider = new ethers.providers.JsonRpcProvider(BSC_ENDPOINT);
 
-export const web3Kar = new Web3(Web3.givenProvider || BSC_ENDPOINT);
-export const boxContract = new web3Kar.eth.Contract(getBoxABI(), BOX_CONTRACT_ADDRESS);
+const boxContract = new ethers.Contract(
+    BOX_CONTRACT_ADDRESS,
+    getBoxABI(), // abi
+    provider
+);
 
-let options = {
-    filter: {
-    },
-    fromBlock: 0
-};
-//listen event mint box
-boxContract.events.Mint(options, function (error: any, event: any) { console.log(event); })
-    .on('data', mintBoxTrigger(event))
-    .on('changed', function (changed: any) { console.log(changed) })
-    .on('error', function (err: any) { console.log('error', err.message, err.stack) })
-    .on('connected', function (str: any) { console.log(str) });
-
-boxContract.events.MintBatch(options, function (error: any, event: any) { console.log(event); })
-    .on('data', mintBoxBatchTrigger(event))
-    .on('changed', function (changed: any) { console.log(changed) })
-    .on('error', function (err: any) { console.log('error', err.message, err.stack) })
-    .on('connected', function (str: any) { console.log(str) });
-
-//listen event openBox
-boxContract.events.OpenBox(options, function (error: any, event: any) { console.log(event); })
-    .on('data', openBoxEventTrigger(event))
-    .on('changed', function (changed: any) { console.log(changed) })
-    .on('error', function (err: any) { console.log('error', err.message, err.stack) })
-    .on('connected', function (str: any) { console.log(str) });
+boxContract.on("Mint", async (...params) => {
+    const eventData = params[params.length - 1];
+    const { transactionHash, blockNumber, args } = eventData;
+    const { tokenId, boxType, to } = args;
+    console.log("txHash " + transactionHash);
+    await mintBoxTrigger(tokenId, to, boxType);
+});
 
 export async function mintBoxBatchTrigger(event: any) {
     const SILVER = 1;
@@ -86,16 +72,14 @@ export async function mintBoxBatchTrigger(event: any) {
     }
 }
 
-export async function mintBoxTrigger(event: any) {
+export async function mintBoxTrigger(tokenId: number, to: string, boxType: number) {
     const SILVER = 1;
     const GOLD = 2;
     const DIAMOND = 3;
     console.log("miner event trigger");
     try {
         let boxCode = "";
-        console.log(JSON.stringify(event));
-        let returnValues = event.returnValues;
-        switch (returnValues.boxType) {
+        switch (boxType) {
             case SILVER: boxCode = "SILVER_BOX";
                 break;
             case GOLD: boxCode = "GOLD_BOX";
@@ -110,8 +94,8 @@ export async function mintBoxTrigger(event: any) {
         if (box) {
             let metadata = new SCNFTMetadata();
             metadata.contractAddress = BOX_CONTRACT_ADDRESS.toLowerCase();
-            metadata.tokenId = returnValues.tokenId;
-            metadata.owner = returnValues.to;
+            metadata.tokenId = tokenId;
+            metadata.owner = to;
             metadata.jsonMetadata = {
                 name: box.name,
                 image: box.imageUrl,
