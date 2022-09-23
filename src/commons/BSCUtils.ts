@@ -24,17 +24,29 @@ boxContract.on("Mint", async (...params) => {
     console.log("txHash " + transactionHash);
     await mintBoxTrigger(tokenId, to, boxType);
 });
-
-export async function mintBoxBatchTrigger(event: any) {
+boxContract.on("MintBatch", async (...params) => {
+    const eventData = params[params.length - 1];
+    const { transactionHash, blockNumber, args } = eventData;
+    const { tokenIds, boxType, to } = args;
+    console.log("txHash " + transactionHash);
+    await mintBoxBatchTrigger(tokenIds, to, boxType);
+});
+boxContract.on("OpenBox", async (...params) => {
+    const eventData = params[params.length - 1];
+    const { transactionHash, blockNumber, args } = eventData;
+    const { owner, tokenId, collectionId, boxType } = args;
+    console.log("txHash " + transactionHash);
+    await openBoxEventTrigger(owner, tokenId, collectionId, boxType);
+});
+export async function mintBoxBatchTrigger(tokenIds: number[], to: string, boxType: number) {
     const SILVER = 1;
     const GOLD = 2;
     const DIAMOND = 3;
-    console.log("miner event trigger");
+    console.log("miner batch event trigger");
     try {
         let boxCode = "";
-        console.log(JSON.stringify(event));
-        let returnValues = event.returnValues;
-        switch (returnValues.boxType) {
+        console.log(JSON.stringify(tokenIds));
+        switch (boxType) {
             case SILVER: boxCode = "SILVER_BOX";
                 break;
             case GOLD: boxCode = "GOLD_BOX";
@@ -47,12 +59,11 @@ export async function mintBoxBatchTrigger(event: any) {
         const metadataRepo = DI.em.fork().getRepository(SCNFTMetadata);
         let box = await boxRepo.findOne({ code: boxCode });
         if (box) {
-            let tokenIds: Array<number> = returnValues.tokenIds;
             for (let tokenId of tokenIds) {
                 let metadata = new SCNFTMetadata();
                 metadata.contractAddress = BOX_CONTRACT_ADDRESS.toLowerCase();
                 metadata.tokenId = tokenId;
-                metadata.owner = returnValues.to;
+                metadata.owner = to;
                 metadata.jsonMetadata = {
                     name: box.name,
                     image: box.imageUrl,
@@ -113,7 +124,7 @@ export async function mintBoxTrigger(tokenId: number, to: string, boxType: numbe
     }
 }
 
-export async function openBoxEventTrigger(event: any) {
+export async function openBoxEventTrigger(owner: string, boxId: number, nftTokenId: number, boxType: number) {
     const SILVER = 1;
     const GOLD = 2;
     const DIAMOND = 3;
@@ -121,9 +132,7 @@ export async function openBoxEventTrigger(event: any) {
     try {
         let boxCode = "";
         console.log(JSON.stringify(event));
-        let returnValues = event.returnValues;
-        let nftTokenId = event.collectionId;
-        switch (returnValues.boxType) {
+        switch (boxType) {
             case SILVER: boxCode = "SILVER_BOX";
                 break;
             case GOLD: boxCode = "GOLD_BOX";
@@ -157,8 +166,8 @@ export async function openBoxEventTrigger(event: any) {
             let itemConfig = await itemConfigRepo.findOne({ code: item.rewardCode });
             let metadata = new SCNFTMetadata();
             metadata.contractAddress = NFT_ADDRESS.toLowerCase();
-            metadata.tokenId = returnValues.tokenId;
-            metadata.owner = returnValues.to;
+            metadata.tokenId = nftTokenId;
+            metadata.owner = owner;
             metadata.jsonMetadata = {
                 name: itemConfig.name,
                 image: itemConfig.imageUrl,
