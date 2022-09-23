@@ -25,6 +25,7 @@ export class ItemSkill extends BaseEntity{
     @Property() duration: FromToObject;
     @Property() effectValue: FromToObject;
     @Property() accuracy: number;
+    @Property() imageUrl: string;
     ratePoint: number;
 }
 
