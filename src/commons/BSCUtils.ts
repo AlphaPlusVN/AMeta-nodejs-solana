@@ -7,10 +7,10 @@ import { ethers } from "ethers";
 
 export namespace BscUtil {
 
-    // const BSC_ENDPOINT = 'https://data-seed-prebsc-1-s1.binance.org:8545'; //test
-    // const BOX_CONTRACT_ADDRESS = "0xca8B840932c0Aa34B9E425774c15074B56877fF2"; //test
-    const BSC_ENDPOINT = 'https://bsc-dataseed.binance.org/'; //main
-    const BOX_CONTRACT_ADDRESS = "0xC42AB9A75D391Be6C4c94f7e53c4d374aBabDA24"; //main
+    const BSC_ENDPOINT = 'https://data-seed-prebsc-1-s1.binance.org:8545'; //test
+    const BOX_CONTRACT_ADDRESS = "0xca8B840932c0Aa34B9E425774c15074B56877fF2"; //test
+    // const BSC_ENDPOINT = 'https://bsc-dataseed.binance.org/'; //main
+    // const BOX_CONTRACT_ADDRESS = "0xC42AB9A75D391Be6C4c94f7e53c4d374aBabDA24"; //main
     const NFT_ADDRESS = "";
 
     const provider = new ethers.providers.JsonRpcProvider(BSC_ENDPOINT);
