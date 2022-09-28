@@ -2,6 +2,7 @@ import { config } from "dotenv";
 import * as express from 'express';
 import path from "path";
 import { BscUtil } from "./commons/BSCUtils";
+import { KardiaUtils } from "./commons/KardiaUtils";
 import { connect } from './configdb/database.config';
 
 config({ path: path.join(__dirname, "../config.env") });
@@ -42,6 +43,7 @@ class App {
       // console.log(keyp.publicKey + "     " + base58.encode(keyp.secretKey));
     });
     BscUtil.boxEventListener();
+    KardiaUtils.boxEventListener();
   };
 }
 

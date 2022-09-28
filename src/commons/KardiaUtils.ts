@@ -1,11 +1,14 @@
 import { ethers } from "ethers";
+import { mintBoxBatchTrigger, mintBoxTrigger, openBoxEventTrigger } from "../service/ContractEventHandler";
 import { PoolSellBox } from "./PoolSellBoxPublicABI";
 export namespace KardiaUtils {
     const KAR_RPC_ENDPOINT = 'https://rpc.kardiachain.io';
     export const KAR_APLUS_CONTRACT_ADDRESS = "0x9a79f1247D66F2119955cD322e62745095De6F2F";
     export const KAR_APLUS_OWNER = "0x7cb298F7511F1182f29e88FcCd2fF0509B58ef7a";
-    export const BOX_CONTRACT_ADDRESS = ""
+
+    export const BOX_CONTRACT_ADDRESS = "0x00EAEAEc82BAF99B3aFdc60930a937696708f730"
     const POOL_SELL_BOX_ADDRESS = "0xAB72D4d28178c9f1AE628160a047201ec6582B5F"; //main
+    const NFT_ADDRESS = "";
 
     const provider = new ethers.providers.JsonRpcProvider(KAR_RPC_ENDPOINT);
 
@@ -27,6 +30,39 @@ export namespace KardiaUtils {
         provider
     );
 
+    export async function boxEventListener() {
+        console.log("listen event of KAR " + BOX_CONTRACT_ADDRESS);
+        BoxContract.on("Mint", async (...params) => {
+            console.log("Mint event")
+            const eventData = params[params.length - 1];
+            const { transactionHash, blockNumber, args } = eventData;
+            const [tokenId, boxType, to] = args;
+            console.log("txHash " + transactionHash);
+            await mintBoxTrigger(tokenId.toNumber(), to, boxType.toNumber(), BOX_CONTRACT_ADDRESS);
+        });
+        BoxContract.on("MintBatch", async (...params) => {
+            console.log("Mint batch event")
+            const eventData = params[params.length - 1];
+            const { transactionHash, blockNumber, args } = eventData;
+            const [tokenIds, boxType, to] = args;
+            console.log("txHash " + transactionHash);
+            let listTokenId = new Array<number>();
+            for (let tokenId of tokenIds) {
+                listTokenId.push(tokenId.toNumber());
+            }
+            await mintBoxBatchTrigger(listTokenId, to, boxType.toNumber(), BOX_CONTRACT_ADDRESS);
+        });
+        BoxContract.on("OpenBox", async (...params) => {
+            console.log("OpenBox event")
+            const eventData = params[params.length - 1];
+            const { transactionHash, blockNumber, args } = eventData;
+            const [owner, tokenId, collectionId, boxType] = args;
+            console.log("txHash " + transactionHash);
+            console.log(JSON.stringify(args));
+            await openBoxEventTrigger(owner, tokenId.toNumber(), collectionId.toNumber(), boxType.toNumber(), NFT_ADDRESS);
+        });
+    }
+
     export async function getAPlusBalance(address: string) {
         let balance: number = await APlusContract.methods.balanceOf(address).call();
         return balance / 1e18;
@@ -39,6 +75,7 @@ export namespace KardiaUtils {
         var abi = parsed.abi;
         return abi;
     }
+
     export function getNFTABI() {
         const fs = require('fs');
         var jsonFile = __dirname + "/NFTItem.json";
