@@ -6,16 +6,12 @@ import { ErrorCode, HandleErrorException, SUCCESS } from "../config/ErrorCodeCon
 
 // import { connection, systemTransfer } from '../ameta/SolAMeta';
 // import { AMETA_TOKEN, createTokenAccount } from '../ameta/SolUtils';
-import { getAPlusBalance, web3Kar } from '../commons/KardiaUtils';
+import { web3OKRC } from "../commons/OKXClientUtil";
 import { DI } from '../configdb/database.config';
 import { User } from '../entities/User';
 import { WalletCache } from '../entities/WalletCache';
 import AuthMiddleWare from "../middleware/AuthMiddleWare";
 import BaseController, { BaseInput } from "./BaseController";
-import { systemTransferAplusKar } from "../aplus_kar/AplusContractKar";
-import * as bodyParser from 'body-parser';
-import { web3OKRC } from "../commons/OKXClientUtil";
-import { Constants, ChainCode } from '../commons/Constants';
 
 const bcrypt = require('bcryptjs');
 
@@ -40,13 +36,10 @@ export default class AuthController extends BaseController {
 
     initializeRoutes = () => {
         this.router.post('/getToken', this.getToken);
-        // this.router.post('/getNonce', this.getNonce);
         this.router.post('/updateUser', [AuthMiddleWare.verifyToken], this.updateUser);
-        // this.router.post('/createUserWallet', this.createUserWallet);
-        this.router.post('/createUserWallet', this.createKarWallet);
-        // this.router.get('/getAmetaBalance', this.getAmetaBalance);
-        this.router.get('/getAmetaBalance', this.getKarAmetaBalance);
-        this.router.post("/systemTransfer", this.systemTransferKar);
+        // this.router.post('/createUserWallet', this.createKarWallet);
+        // this.router.get('/getAmetaBalance', this.getKarAmetaBalance);
+        // this.router.post("/systemTransfer", this.systemTransferKar);
     }
 
     getToken = async (req: Request, res: Response) => {
@@ -193,37 +186,37 @@ export default class AuthController extends BaseController {
     //     }
     // };
 
-    createKarWallet = async (req: any, res: any) => {
-        let input = req.body;
-        try {
-            //save to db
-            let userRepo = DI.em.fork().getRepository(User);
-            let walletRepo = DI.em.fork().getRepository(WalletCache);
-            let user = await userRepo.findOne({ username: input.username });
-            if (user && isNullOrEmptyString(user.walletAddress)) {
-                console.log("Create wallet for " + req.body.username);
-                //generate wallet
-                let walletAcct = null;
-                if (user.chainCode == ChainCode.KARDIACHAIN) {
-                    walletAcct = web3Kar.eth.accounts.create();
-                } else {
-                    walletAcct = web3OKRC.eth.accounts.create();
-                }
-                user.walletAddress = walletAcct.address;
-                await userRepo.persistAndFlush(user);
-                let wallet = new WalletCache();
-                wallet.walletAddress = walletAcct.address;
-                wallet.secretKey = walletAcct.privateKey;
-                await walletRepo.persistAndFlush(wallet);
-            }
-            buildResponse(input.refNo, res, SUCCESS, {
-                user
-            });
-        } catch (err) {
-            console.error(err);
-            HandleErrorException(input, res, err + "");
-        }
-    };
+    // createKarWallet = async (req: any, res: any) => {
+    //     let input = req.body;
+    //     try {
+    //         //save to db
+    //         let userRepo = DI.em.fork().getRepository(User);
+    //         let walletRepo = DI.em.fork().getRepository(WalletCache);
+    //         let user = await userRepo.findOne({ username: input.username });
+    //         if (user && isNullOrEmptyString(user.walletAddress)) {
+    //             console.log("Create wallet for " + req.body.username);
+    //             //generate wallet
+    //             let walletAcct = null;
+    //             if (user.chainCode == ChainCode.KARDIACHAIN) {
+    //                 walletAcct = web3Kar.eth.accounts.create();
+    //             } else {
+    //                 walletAcct = web3OKRC.eth.accounts.create();
+    //             }
+    //             user.walletAddress = walletAcct.address;
+    //             await userRepo.persistAndFlush(user);
+    //             let wallet = new WalletCache();
+    //             wallet.walletAddress = walletAcct.address;
+    //             wallet.secretKey = walletAcct.privateKey;
+    //             await walletRepo.persistAndFlush(wallet);
+    //         }
+    //         buildResponse(input.refNo, res, SUCCESS, {
+    //             user
+    //         });
+    //     } catch (err) {
+    //         console.error(err);
+    //         HandleErrorException(input, res, err + "");
+    //     }
+    // };
 
     // getAmetaBalance = async (req: Request, res: Response) => {
     //     console.log(req.query);
@@ -242,21 +235,21 @@ export default class AuthController extends BaseController {
     //     }
     // }
 
-    getKarAmetaBalance = async (req: any, res: any) => {
-        console.log(req.query);
-        let refNo = req.query.refNo;
-        let walletAddress: string = req.query.walletAddress;
-        console.log("check balance of :" + walletAddress);
-        try {
-            const balance = await getAPlusBalance(walletAddress);
-            buildResponse(refNo + "", res, SUCCESS, {
-                balance
-            });
-        } catch (err) {
-            console.error(err);
-            HandleErrorException(walletAddress, res, err + "");
-        }
-    }
+    // getKarAmetaBalance = async (req: any, res: any) => {
+    //     console.log(req.query);
+    //     let refNo = req.query.refNo;
+    //     let walletAddress: string = req.query.walletAddress;
+    //     console.log("check balance of :" + walletAddress);
+    //     try {
+    //         const balance = await getAPlusBalance(walletAddress);
+    //         buildResponse(refNo + "", res, SUCCESS, {
+    //             balance
+    //         });
+    //     } catch (err) {
+    //         console.error(err);
+    //         HandleErrorException(walletAddress, res, err + "");
+    //     }
+    // }
 
     // systemTransfer = async (req: Request, res: Response) => {
     //     let sessionId = req.body.sessionId;
@@ -277,23 +270,23 @@ export default class AuthController extends BaseController {
     //         HandleErrorException(req.body, res, err + "");
     //     }
     // }
-    systemTransferKar = async (req: Request, res: Response) => {
-        let sessionId = req.body.sessionId;
-        let amount = req.body.amount;
-        let refNo = req.query.refNo;
-        const userRepo = DI.em.fork().getRepository(User);
-        let user = await userRepo.findOne({ activeSessionId: sessionId });
-        try {
-            if (!user) {
-                throw new Error("Session expire");
-            }
-            let result = await systemTransferAplusKar(user.walletAddress, amount);
-            buildResponse(refNo + "", res, SUCCESS, {
-                status: result
-            })
-        } catch (err) {
-            console.error(err);
-            HandleErrorException(req.body, res, err + "");
-        }
-    }
+    // systemTransferKar = async (req: Request, res: Response) => {
+    //     let sessionId = req.body.sessionId;
+    //     let amount = req.body.amount;
+    //     let refNo = req.query.refNo;
+    //     const userRepo = DI.em.fork().getRepository(User);
+    //     let user = await userRepo.findOne({ activeSessionId: sessionId });
+    //     try {
+    //         if (!user) {
+    //             throw new Error("Session expire");
+    //         }
+    //         let result = await systemTransferAplusKar(user.walletAddress, amount);
+    //         buildResponse(refNo + "", res, SUCCESS, {
+    //             status: result
+    //         })
+    //     } catch (err) {
+    //         console.error(err);
+    //         HandleErrorException(req.body, res, err + "");
+    //     }
+    // }
 }
