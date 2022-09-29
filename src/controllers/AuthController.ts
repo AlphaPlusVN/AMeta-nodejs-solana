@@ -12,6 +12,8 @@ import { User } from '../entities/User';
 import { WalletCache } from '../entities/WalletCache';
 import AuthMiddleWare from "../middleware/AuthMiddleWare";
 import BaseController, { BaseInput } from "./BaseController";
+import { getAllBoxInfo, getBoxContractByChainId } from '../service/ServiceCommon';
+import { SCNFTMetadata } from '../entities/NFTMetadataMapping';
 
 const bcrypt = require('bcryptjs');
 
@@ -37,11 +39,27 @@ export default class AuthController extends BaseController {
     initializeRoutes = () => {
         this.router.post('/getToken', this.getToken);
         this.router.post('/updateUser', [AuthMiddleWare.verifyToken], this.updateUser);
-        // this.router.post('/createUserWallet', this.createKarWallet);
-        // this.router.get('/getAmetaBalance', this.getKarAmetaBalance);
-        // this.router.post("/systemTransfer", this.systemTransferKar);
+
+        this.router.post("/getWalletItemInfo", this.getWalletItemInfo)
     }
 
+    getWalletItemInfo = async (req: Request, res: Response) => {
+        try {
+            const refNo = req.body.refNo;
+            const walletAddress = req.body.walletAddress;
+            const chainId = parseInt(req.body.chainId);
+            let tokenIds = await getAllBoxInfo(walletAddress, chainId);
+            let boxContract = getBoxContractByChainId(chainId);
+            const metadataRepo = DI.em.fork().getRepository(SCNFTMetadata);
+            console.log("chaiID " + chainId + " addr "+ boxContract.address + " tokenID: "+ JSON.stringify(tokenIds));
+            let metaData = await metadataRepo.find({ tokenId: { $in: tokenIds }, contractAddress: boxContract.address.toLowerCase() })
+            buildResponse(refNo, res, SUCCESS, metaData);
+        } catch (err) {
+            console.log(err);
+            HandleErrorException(req.body, res, err + "");
+        }
+        // let 
+    }
     getToken = async (req: Request, res: Response) => {
         let input: GeTokenInput = req.body;
         try {

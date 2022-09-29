@@ -57,41 +57,21 @@ export function getFameByRarity(rare: number) {
     return fame;
 }
 
-export function generateItemSkill(bluePrintCnf: ItemConfig) {
+export function generateItemSkill(itemConfig: ItemConfig) {
     let skills = new Array<ItemSkill>();
-    if (bluePrintCnf.skill) {
-        let bound = 0;
-        for (let skill of bluePrintCnf.skill) {
-            bound += skill.ratePoint;
-        }
-        let currentPoint = 0;
-        const randomNumber = getRandomNumber(bound);
-        for (let skill of bluePrintCnf.skill) {
-            currentPoint += skill.ratePoint;
-            if (randomNumber < currentPoint) {
-                skills.push(skill);
-                break;
-            }
-        }
+    if (itemConfig.skill && itemConfig.skill.length > 0) {
+        const randomNumber = getRandomNumber(itemConfig.skill.length);
+        let skill = itemConfig.skill[randomNumber];
+        skills.push(skill);
     }
     //add passive skill
-    if (bluePrintCnf.passiveSkill) {
-        let bound = 0;
-        for (let skill of bluePrintCnf.passiveSkill) {
-            bound += skill.ratePoint;
-        }
-        let currentPoint = 0;
-        const randomNumber = getRandomNumber(bound);
-        for (let skill of bluePrintCnf.passiveSkill) {
-            currentPoint += skill.ratePoint;
-            if (randomNumber < currentPoint) {
-                const fixedSkillValue = randomFromTo(skill.effectValue.from, skill.effectValue.to);
-                skill.effectValue.from = fixedSkillValue;
-                skill.effectValue.to = fixedSkillValue;
-                skills.push(skill);
-                break;
-            }
-        }
+    if (itemConfig.passiveSkill && itemConfig.passiveSkill.length > 0) {
+        const randomNumber = getRandomNumber(itemConfig.passiveSkill.length);
+        let skill = itemConfig.passiveSkill[randomNumber];
+        const fixedSkillValue = randomFromTo(skill.effectValue.from, skill.effectValue.to);
+        skill.effectValue.from = fixedSkillValue;
+        skill.effectValue.to = fixedSkillValue;
+        skills.push(skill);
     }
-    return skills;
+
 }

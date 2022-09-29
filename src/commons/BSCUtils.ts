@@ -14,7 +14,7 @@ export namespace BscUtil {
 
     const provider = new ethers.providers.JsonRpcProvider(BSC_ENDPOINT);
 
-    const boxContract = new ethers.Contract(
+    export const BoxContract = new ethers.Contract(
         BOX_CONTRACT_ADDRESS,
         getBoxABI(), // abi
         provider
@@ -28,15 +28,15 @@ export namespace BscUtil {
 
     export async function boxEventListener() {
         console.log("listen event of BSC " + BOX_CONTRACT_ADDRESS);
-        boxContract.on("Mint", async (...params) => {
+        BoxContract.on("Mint", async (...params) => {
             console.log("Mint event")
             const eventData = params[params.length - 1];
             const { transactionHash, blockNumber, args } = eventData;
             const [tokenId, boxType, to] = args;
             console.log("txHash " + transactionHash);
-            await mintBoxTrigger(tokenId.toNumber(), to, boxType.toNumber(), BOX_CONTRACT_ADDRESS);
+            await mintBoxTrigger(tokenId.toNumber(), to, boxType.toNumber(), BOX_CONTRACT_ADDRESS.toLowerCase());
         });
-        boxContract.on("MintBatch", async (...params) => {
+        BoxContract.on("MintBatch", async (...params) => {
             console.log("Mint batch event")
             const eventData = params[params.length - 1];
             const { transactionHash, blockNumber, args } = eventData;
@@ -48,7 +48,7 @@ export namespace BscUtil {
             }
             await mintBoxBatchTrigger(listTokenId, to, boxType.toNumber(), BOX_CONTRACT_ADDRESS);
         });
-        boxContract.on("OpenBox", async (...params) => {
+        BoxContract.on("OpenBox", async (...params) => {
             console.log("OpenBox event")
             const eventData = params[params.length - 1];
             const { transactionHash, blockNumber, args } = eventData;

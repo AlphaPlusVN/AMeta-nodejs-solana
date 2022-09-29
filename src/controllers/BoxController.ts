@@ -38,9 +38,8 @@ class BuyBoxController extends BaseController {
     getPoolBoxInfo = async (req: Request, res: Response) => {
         let poolInfo = await getPoolInfo();
         buildResponse("input.refNo", res, SUCCESS, poolInfo);
-
+        
     }
 }
-
 export default BuyBoxController
 
