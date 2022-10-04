@@ -1,6 +1,6 @@
 export enum ChainId{
-    KAR_MAIN = 0,
-    KAR_TEST = 69,
+    KAR_MAIN = 24,
+    KAR_TEST = 242,
     BSC_TEST = 97,
     BSC_MAIN = 56
 }

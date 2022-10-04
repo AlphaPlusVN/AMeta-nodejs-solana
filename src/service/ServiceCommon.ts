@@ -54,6 +54,7 @@ export function getBoxContractByChainId(chainId: number) {
         case ChainId.BSC_TEST:
             boxContract = BscUtil.BoxContract;
             break;
+        default: return null;
     }
     return boxContract;
 }
