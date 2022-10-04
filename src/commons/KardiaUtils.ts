@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import { mintBoxBatchTrigger, mintBoxTrigger, openBoxEventTrigger } from "../service/ContractEventHandler";
 import { PoolSellBox } from "./PoolSellBoxPublicABI";
 export namespace KardiaUtils {
-    const KAR_RPC_ENDPOINT = 'https://rpc.kardiachain.io';
+    const KAR_RPC_ENDPOINT = 'https://dev.kardiachain.io';
     export const KAR_APLUS_CONTRACT_ADDRESS = "0x9a79f1247D66F2119955cD322e62745095De6F2F";
     export const KAR_APLUS_OWNER = "0x7cb298F7511F1182f29e88FcCd2fF0509B58ef7a";
 
