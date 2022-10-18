@@ -113,10 +113,11 @@ export async function openBoxEventTrigger(owner: string, boxId: number, nftToken
             let rate = getRandomPercent();
             let currentRate = 0;
             let rarity = 0;
-            for (let key of box.rarityRate.keys()) {
-                currentRate += box.rarityRate.get(key);
+            for (let i = 0; i < box.rarityRate.length; i++) {
+                currentRate += box.rarityRate[i];
                 if (rate < currentRate) {
-                    rarity = parseInt(key);
+                    rarity = i;
+                    break;
                 }
             }
             let itemByRares = new Array<ItemOnBox>();

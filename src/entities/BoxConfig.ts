@@ -19,7 +19,7 @@ export class BoxConfig extends BaseEntity {
     @Property() address: string;
     @Property() payments: Payment[];
     @Property() isNFT: number;
-    @Property() rarityRate: Map<string, number>;
+    @Property() rarityRate: Array<number>;
     @Property() randomPool: ItemOnBox[];
     @Property() normalPool: ItemOnBox[];
     @Property() inactive: number = 0;
