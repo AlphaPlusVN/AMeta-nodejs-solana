@@ -97,7 +97,6 @@ export async function openBoxEventTrigger(owner: string, boxId: number, nftToken
     console.log("miner event trigger");
     try {
         let boxCode = "";
-        console.log(JSON.stringify(event));
         switch (boxType) {
             case SILVER: boxCode = "SILVER_BOX";
                 break;
