@@ -10,7 +10,7 @@ export namespace BscUtil {
     // const BSC_ENDPOINT = 'https://bsc-dataseed.binance.org/'; //main
     // const BOX_CONTRACT_ADDRESS = "0xC42AB9A75D391Be6C4c94f7e53c4d374aBabDA24"; //main
     // const POOL_SELL_BOX_ADDRESS = "0xEddDC76025001cD276862D523046837f703b2f85"; //main
-    const NFT_ADDRESS = "";
+    const NFT_ADDRESS = "0x02BA6C503fa44bfF2fd8Ecc4de76703080e4bBe4"; //TEST
 
     const provider = new ethers.providers.JsonRpcProvider(BSC_ENDPOINT);
 

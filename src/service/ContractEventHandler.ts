@@ -137,7 +137,7 @@ export async function openBoxEventTrigger(owner: string, boxId: number, nftToken
             metadata.jsonMetadata = {
                 name: itemConfig.name,
                 image: itemConfig.imageUrl,
-                symbol: "AmetaBox",
+                symbol: "NFTITem",
                 description: itemConfig.desc,
                 collection: { family: "Item", name: itemConfig.name },
                 external_url: "https://ameta.games",
