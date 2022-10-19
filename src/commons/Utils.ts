@@ -73,5 +73,5 @@ export function generateItemSkill(itemConfig: ItemConfig) {
         skill.effectValue.to = fixedSkillValue;
         skills.push(skill);
     }
-
+    return skills;
 }

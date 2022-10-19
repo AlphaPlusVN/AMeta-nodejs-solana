@@ -32,6 +32,7 @@ export const getPoolInfo = async () => {
     }
     return output;
 }
+
 export async function getAllBoxInfo(walletAddress: string, chainId: number) {
     try {
         let boxContract = getBoxContractByChainId(chainId);
@@ -43,6 +44,19 @@ export async function getAllBoxInfo(walletAddress: string, chainId: number) {
         return new Array<number>();
     }
 }
+
+export async function getAllNFTInfo(walletAddress: string, chainId: number) {
+    try {
+        let nftContract = getNFTContractByChainId(chainId);
+        const tokenIdsBig: BigNumber[] = await nftContract.tokenIdsOfOwner(walletAddress);
+        const tokenIds = tokenIdsBig.map(v => v.toNumber())
+        return tokenIds;
+    } catch (e) {
+        console.error(e);
+        return new Array<number>();
+    }
+}
+
 export function getBoxContractByChainId(chainId: number) {
     let boxContract: Contract;
     switch (chainId) {
@@ -57,4 +71,20 @@ export function getBoxContractByChainId(chainId: number) {
         default: return null;
     }
     return boxContract;
+}
+
+export function getNFTContractByChainId(chainId: number) {
+    let nftContract: Contract;
+    switch (chainId) {
+        case ChainId.KAR_MAIN:
+        case ChainId.KAR_TEST:
+            nftContract = KardiaUtils.NFTContract;
+            break;
+        case ChainId.BSC_MAIN:
+        case ChainId.BSC_TEST:
+            nftContract = BscUtil.NFTContract;
+            break;
+        default: return null;
+    }
+    return nftContract;
 }

@@ -7,10 +7,10 @@ export namespace BscUtil {
     const BSC_ENDPOINT = 'https://data-seed-prebsc-1-s1.binance.org:8545'; //test
     const BOX_CONTRACT_ADDRESS = "0xca8B840932c0Aa34B9E425774c15074B56877fF2"; //test
     const POOL_SELL_BOX_ADDRESS = "0xcF23F0750A9EA36b4E40912C5C8f4056dA54954e"; //test
+    const NFT_ADDRESS = "0x02BA6C503fa44bfF2fd8Ecc4de76703080e4bBe4"; //TEST
     // const BSC_ENDPOINT = 'https://bsc-dataseed.binance.org/'; //main
     // const BOX_CONTRACT_ADDRESS = "0xC42AB9A75D391Be6C4c94f7e53c4d374aBabDA24"; //main
     // const POOL_SELL_BOX_ADDRESS = "0xEddDC76025001cD276862D523046837f703b2f85"; //main
-    const NFT_ADDRESS = "0x02BA6C503fa44bfF2fd8Ecc4de76703080e4bBe4"; //TEST
 
     const provider = new ethers.providers.JsonRpcProvider(BSC_ENDPOINT);
 
@@ -23,6 +23,11 @@ export namespace BscUtil {
     export const PoolSellBoxContract = new ethers.Contract(
         POOL_SELL_BOX_ADDRESS,
         PoolSellBox._abi, // abi
+        provider
+    );
+    export const NFTContract = new ethers.Contract(
+        POOL_SELL_BOX_ADDRESS,
+        getNFTABI(),
         provider
     );
 
@@ -62,6 +67,13 @@ export namespace BscUtil {
     export function getBoxABI() {
         const fs = require('fs');
         let jsonFile = __dirname + "/BoxABI.json";
+        let parsed = JSON.parse(fs.readFileSync(jsonFile));
+        return parsed;
+    }
+    
+    export function getNFTABI() {
+        const fs = require('fs');
+        let jsonFile = __dirname + "/NFTABI.json";
         let parsed = JSON.parse(fs.readFileSync(jsonFile));
         return parsed;
     }

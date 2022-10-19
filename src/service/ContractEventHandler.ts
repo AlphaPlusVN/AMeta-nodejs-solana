@@ -144,6 +144,8 @@ export async function openBoxEventTrigger(owner: string, boxId: number, nftToken
                 seller_fee_basis_points: 0,
                 attributes: [{ trait_type: "itemCode", value: itemConfig.code },
                 { trait_type: "fame", value: getFameByRarity(rarity) },
+                { trait_type: "catcherBarSize", value: itemConfig.attr.catcherBarSize },
+                { trait_type: "catcherBarSpeed", value: itemConfig.attr.catcherBarSpeed },
                 { trait_type: "skills", value: generateItemSkill(itemConfig) }
                 ]
             }

@@ -12,7 +12,7 @@ export namespace KardiaUtils {
     export const BOX_CONTRACT_ADDRESS = "0xAB72D4d28178c9f1AE628160a047201ec6582B5F"; //test
     const POOL_SELL_BOX_ADDRESS = "0x2c9FF4b226B36D1e180E728fb342D74f82D32b4E"; //test
 
-    const NFT_ADDRESS = "";
+    const NFT_ADDRESS = "0x2DDCB116Fb46eFe8855156300c027533fD32a556";
 
     const provider = new ethers.providers.JsonRpcProvider(KAR_RPC_ENDPOINT);
 
@@ -31,6 +31,12 @@ export namespace KardiaUtils {
     export const PoolSellBoxContract = new ethers.Contract(
         POOL_SELL_BOX_ADDRESS,
         PoolSellBox._abi, // abi
+        provider
+    );
+
+    export const NFTContract = new ethers.Contract(
+        POOL_SELL_BOX_ADDRESS,
+        getNFTABI(),
         provider
     );
 
@@ -82,10 +88,9 @@ export namespace KardiaUtils {
 
     export function getNFTABI() {
         const fs = require('fs');
-        var jsonFile = __dirname + "/NFTItem.json";
-        var parsed = JSON.parse(fs.readFileSync(jsonFile));
-        var abi = parsed.abi;
-        return abi;
+        let jsonFile = __dirname + "/NFTABI.json";
+        let parsed = JSON.parse(fs.readFileSync(jsonFile));
+        return parsed;
     }
 
     function getBoxABI() {

@@ -6,14 +6,12 @@ import { ErrorCode, HandleErrorException, SUCCESS } from "../config/ErrorCodeCon
 
 // import { connection, systemTransfer } from '../ameta/SolAMeta';
 // import { AMETA_TOKEN, createTokenAccount } from '../ameta/SolUtils';
-import { web3OKRC } from "../commons/OKXClientUtil";
 import { DI } from '../configdb/database.config';
-import { User } from '../entities/User';
-import { WalletCache } from '../entities/WalletCache';
-import AuthMiddleWare from "../middleware/AuthMiddleWare";
-import BaseController, { BaseInput } from "./BaseController";
-import { getAllBoxInfo, getBoxContractByChainId } from '../service/ServiceCommon';
 import { SCNFTMetadata } from '../entities/NFTMetadataMapping';
+import { User } from '../entities/User';
+import AuthMiddleWare from "../middleware/AuthMiddleWare";
+import { getAllBoxInfo, getAllNFTInfo, getBoxContractByChainId, getNFTContractByChainId } from '../service/ServiceCommon';
+import BaseController, { BaseInput } from "./BaseController";
 
 const bcrypt = require('bcryptjs');
 
@@ -48,12 +46,16 @@ export default class AuthController extends BaseController {
             const refNo = req.body.refNo;
             const walletAddress = req.body.walletAddress;
             const chainId = parseInt(req.body.chainId);
-            let tokenIds = await getAllBoxInfo(walletAddress, chainId);
+            let boxTokenIds = await getAllBoxInfo(walletAddress, chainId);
             let boxContract = getBoxContractByChainId(chainId);
+            let nftTokenIds = await getAllNFTInfo(walletAddress, chainId);
+            let nftContract = getNFTContractByChainId(chainId);
             const metadataRepo = DI.em.fork().getRepository(SCNFTMetadata);
-            console.log("chaiID " + chainId + " addr "+ boxContract.address + " tokenID: "+ JSON.stringify(tokenIds));
-            let metaData = await metadataRepo.find({ tokenId: { $in: tokenIds }, contractAddress: boxContract.address.toLowerCase() })
-            buildResponse(refNo, res, SUCCESS, metaData);
+            console.log("chaiID " + chainId + " addr " + boxContract.address + " tokenID: " + JSON.stringify(boxTokenIds));
+            let boxMetadata = await metadataRepo.find({ tokenId: { $in: boxTokenIds }, contractAddress: boxContract.address.toLowerCase() });
+            let nftMetaData = await metadataRepo.find({ tokenId: { $in: nftTokenIds }, contractAddress: nftContract.address.toLowerCase() });
+            let data = { boxs: boxMetadata, items: nftMetaData };
+            buildResponse(refNo, res, SUCCESS, data);
         } catch (err) {
             console.log(err);
             HandleErrorException(req.body, res, err + "");

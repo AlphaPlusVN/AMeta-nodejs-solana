@@ -12,10 +12,12 @@ export class ItemAttribute {
     netWeight: number = 0;
     //resourceItem
     value: number = 0;
+    catcherBarSize: number | 0;
+    catcherBarSpeed: number | 0;
 }
 
-@Entity({collection:"item_skill"})
-export class ItemSkill extends BaseEntity{
+@Entity({ collection: "item_skill" })
+export class ItemSkill extends BaseEntity {
     @Property() code: string;
     @Property() name: string;
     @Property() type: number; //0 passive, 1 active
@@ -32,7 +34,7 @@ export class ItemSkill extends BaseEntity{
 export class ResourceItem {
     itemType: number;
     itemName: string;
-    rarity: number|0;
+    rarity: number | 0;
     point: number;
     code: string;
 }
@@ -81,7 +83,7 @@ export class ItemConfig extends BaseEntity {
     @Property() itemType!: number;
     @Property() code: string;
     @Property() group: number;
-    @Property({default:0}) rank: number;
+    @Property({ default: 0 }) rank: number;
     @Property({ default: 0 }) buyFee: number;
     @Property({ default: 0 }) sellFee: number;
     @Property() shopType: number;
