@@ -26,7 +26,7 @@ export namespace BscUtil {
         provider
     );
     export const NFTContract = new ethers.Contract(
-        POOL_SELL_BOX_ADDRESS,
+        NFT_ADDRESS,
         getNFTABI(),
         provider
     );
