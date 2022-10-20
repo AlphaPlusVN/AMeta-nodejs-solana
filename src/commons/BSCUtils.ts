@@ -1,4 +1,4 @@
-import { ethers } from "ethers";
+import { ethers, logger } from "ethers";
 import { mintBoxBatchTrigger, mintBoxTrigger, openBoxEventTrigger } from '../service/ContractEventHandler';
 import { PoolSellBox } from './PoolSellBoxPublicABI';
 
@@ -32,21 +32,21 @@ export namespace BscUtil {
     );
 
     export async function boxEventListener() {
-        console.log("listen event of BSC " + BOX_CONTRACT_ADDRESS);
+        logger.info("listen event of BSC " + BOX_CONTRACT_ADDRESS);
         BoxContract.on("Mint", async (...params) => {
-            console.log("Mint event")
+            logger.info("Mint event")
             const eventData = params[params.length - 1];
             const { transactionHash, blockNumber, args } = eventData;
             const [tokenId, boxType, to] = args;
-            console.log("txHash " + transactionHash);
+            logger.info("txHash " + transactionHash);
             await mintBoxTrigger(tokenId.toNumber(), to, boxType.toNumber(), BOX_CONTRACT_ADDRESS.toLowerCase());
         });
         BoxContract.on("MintBatch", async (...params) => {
-            console.log("Mint batch event")
+            logger.info("Mint batch event")
             const eventData = params[params.length - 1];
             const { transactionHash, blockNumber, args } = eventData;
             const [tokenIds, boxType, to] = args;
-            console.log("txHash " + transactionHash);
+            logger.info("txHash " + transactionHash);
             let listTokenId = new Array<number>();
             for (let tokenId of tokenIds) {
                 listTokenId.push(tokenId.toNumber());
@@ -54,12 +54,12 @@ export namespace BscUtil {
             await mintBoxBatchTrigger(listTokenId, to, boxType.toNumber(), BOX_CONTRACT_ADDRESS);
         });
         BoxContract.on("OpenBox", async (...params) => {
-            console.log("OpenBox event")
+            logger.info("OpenBox event")
             const eventData = params[params.length - 1];
             const { transactionHash, blockNumber, args } = eventData;
             const [owner, tokenId, collectionId, boxType] = args;
-            console.log("txHash " + transactionHash);
-            console.log(JSON.stringify(args));
+            logger.info("txHash " + transactionHash);
+            logger.info(JSON.stringify(args));
             await openBoxEventTrigger(owner, tokenId.toNumber(), collectionId.toNumber(), boxType.toNumber(), NFT_ADDRESS);
         });
     }

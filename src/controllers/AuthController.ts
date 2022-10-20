@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { sign } from "jsonwebtoken";
+import logger from "../commons/logger";
 import { buildResponse, genRandomString, isNullOrEmptyString } from "../commons/Utils";
 import { SECRET } from "../config/AuthConfig";
 import { ErrorCode, HandleErrorException, SUCCESS } from "../config/ErrorCodeConfig";
@@ -51,13 +52,13 @@ export default class AuthController extends BaseController {
             let nftTokenIds = await getAllNFTInfo(walletAddress, chainId);
             let nftContract = getNFTContractByChainId(chainId);
             const metadataRepo = DI.em.fork().getRepository(SCNFTMetadata);
-            console.log("chaiID " + chainId + " addr " + boxContract.address + " tokenID: " + JSON.stringify(boxTokenIds));
+            logger.info("chaiID " + chainId + " addr " + boxContract.address + " tokenID: " + JSON.stringify(boxTokenIds));
             let boxMetadata = await metadataRepo.find({ tokenId: { $in: boxTokenIds }, contractAddress: boxContract.address.toLowerCase() });
             let nftMetaData = await metadataRepo.find({ tokenId: { $in: nftTokenIds }, contractAddress: nftContract.address.toLowerCase() });
             let data = { boxs: boxMetadata, items: nftMetaData };
             buildResponse(refNo, res, SUCCESS, data);
         } catch (err) {
-            console.log(err);
+            logger.info(err);
             HandleErrorException(req.body, res, err + "");
         }
         // let 
@@ -65,7 +66,7 @@ export default class AuthController extends BaseController {
     getToken = async (req: Request, res: Response) => {
         let input: GeTokenInput = req.body;
         try {
-            console.log(input);
+            logger.info(input);
             if (isNullOrEmptyString(input.sig) || isNullOrEmptyString(input.walletAddress)) {
                 throw new Error(ErrorCode.ParamsIsInvalid);
 
@@ -83,7 +84,7 @@ export default class AuthController extends BaseController {
             });
             buildResponse(input.refNo, res, SUCCESS, { token: token, user: { username: user.username } });
         } catch (err) {
-            console.log(err);
+            logger.info(err);
             HandleErrorException(input, res, err + "");
         }
     }
@@ -99,7 +100,7 @@ export default class AuthController extends BaseController {
     //         let user: User = await userRepo.findOne({
     //             walletAddress: getNonceInput.walletAddress
     //         });
-    //         console.log('user', user);
+    //         logger.info('user', user);
     //         if (user) {
     //             user.nonce = nonce;
     //             await userRepo.persistAndFlush(user);
@@ -111,7 +112,7 @@ export default class AuthController extends BaseController {
     //                 password: ''
     //             });
     //             await userRepo.persistAndFlush(user);
-    //             console.log('new user', user);
+    //             logger.info('new user', user);
     //         }
 
     //         buildResponse(getNonceInput.refNo, res, SUCCESS, { nonce })
@@ -183,7 +184,7 @@ export default class AuthController extends BaseController {
     //         let walletRepo = DI.em.fork().getRepository(WalletCache);
     //         let user = await userRepo.findOne({ username: input.username });
     //         if (user && isNullOrEmptyString(user.walletAddress)) {
-    //             console.log("Create wallet for " + req.body.username);
+    //             logger.info("Create wallet for " + req.body.username);
     //             //generate wallet
     //             let keypair = Keypair.generate();
     //             const privateKey = bs58.encode(keypair.secretKey);
@@ -214,7 +215,7 @@ export default class AuthController extends BaseController {
     //         let walletRepo = DI.em.fork().getRepository(WalletCache);
     //         let user = await userRepo.findOne({ username: input.username });
     //         if (user && isNullOrEmptyString(user.walletAddress)) {
-    //             console.log("Create wallet for " + req.body.username);
+    //             logger.info("Create wallet for " + req.body.username);
     //             //generate wallet
     //             let walletAcct = null;
     //             if (user.chainCode == ChainCode.KARDIACHAIN) {
@@ -239,10 +240,10 @@ export default class AuthController extends BaseController {
     // };
 
     // getAmetaBalance = async (req: Request, res: Response) => {
-    //     console.log(req.query);
+    //     logger.info(req.query);
     //     let refNo = req.query.refNo;
     //     let walletAddress = req.query.walletAddress;
-    //     console.log("check balance of :" + walletAddress);
+    //     logger.info("check balance of :" + walletAddress);
     //     try {
     //         let tokenAcct = (await connection.getTokenAccountsByOwner(new PublicKey(walletAddress), { mint: AMETA_TOKEN })).value[0].pubkey;
     //         let balance = (await connection.getTokenAccountBalance(tokenAcct)).value.uiAmount;
@@ -256,10 +257,10 @@ export default class AuthController extends BaseController {
     // }
 
     // getKarAmetaBalance = async (req: any, res: any) => {
-    //     console.log(req.query);
+    //     logger.info(req.query);
     //     let refNo = req.query.refNo;
     //     let walletAddress: string = req.query.walletAddress;
-    //     console.log("check balance of :" + walletAddress);
+    //     logger.info("check balance of :" + walletAddress);
     //     try {
     //         const balance = await getAPlusBalance(walletAddress);
     //         buildResponse(refNo + "", res, SUCCESS, {

@@ -3,6 +3,7 @@ import { SCNFTMetadata } from '../entities/NFTMetadataMapping';
 import { DI } from '../configdb/database.config';
 import { getRandomPercent, getRandomNumber, getFameByRarity, generateItemSkill } from '../commons/Utils';
 import { ItemConfig } from '../entities/ItemEntity';
+import logger from '../commons/logger';
 
 export async function mintBoxBatchTrigger(tokenIds: number[], to: string, boxType: number, contractAddress: string) {
     const SILVER = 1;
@@ -45,7 +46,7 @@ export async function mintBoxBatchTrigger(tokenIds: number[], to: string, boxTyp
             await metadataRepo.flush();
         }
     } catch (e) {
-        console.error(e);
+       logger.error(e);
     }
 }
 
@@ -94,7 +95,7 @@ export async function openBoxEventTrigger(owner: string, boxId: number, nftToken
     const SILVER = 1;
     const GOLD = 2;
     const DIAMOND = 3;
-    console.log("miner event trigger");
+    console.log("open box event trigger");
     try {
         let boxCode = "";
         switch (boxType) {
