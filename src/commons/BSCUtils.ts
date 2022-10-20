@@ -4,7 +4,7 @@ import { PoolSellBox } from './PoolSellBoxPublicABI';
 
 export namespace BscUtil {
 
-    const BSC_ENDPOINT = 'https://data-seed-prebsc-1-s1.binance.org:8545'; //test
+    const BSC_ENDPOINT = 'https://data-seed-prebsc-1-s2.binance.org:8545'; //test
     const BOX_CONTRACT_ADDRESS = "0xca8B840932c0Aa34B9E425774c15074B56877fF2"; //test
     const POOL_SELL_BOX_ADDRESS = "0xcF23F0750A9EA36b4E40912C5C8f4056dA54954e"; //test
     const NFT_ADDRESS = "0x02BA6C503fa44bfF2fd8Ecc4de76703080e4bBe4"; //TEST
