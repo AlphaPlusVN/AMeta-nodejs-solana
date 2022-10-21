@@ -11,7 +11,8 @@ export class ItemAttribute {
     fame: number = 0;
     netWeight: number = 0;
     //resourceItem
-    value: number = 0;
+    value?: number = 0;
+    //rod & fishing rod
     catcherBarSize: number | 0;
     catcherBarSpeed: number | 0;
 }
@@ -27,7 +28,6 @@ export class ItemSkill extends BaseEntity {
     @Property() duration: FromToObject;
     @Property() effectValue: FromToObject;
     @Property() accuracy: number;
-    @Property() imageUrl: string;
     ratePoint: number;
 }
 
@@ -74,6 +74,7 @@ export class Item extends BaseEntity {
     @Property() skill: Array<ItemSkill>;
     @Property() code: string;
     @Property() color: string = "0";
+    @Property({ default: 0 }) lockedToTime: number | 0;
 
 }
 
@@ -106,4 +107,5 @@ export class ItemConfig extends BaseEntity {
     @Property() levelUpradeRequires: Array<ResourceItem>;
     @Property() starUpradeRequires: Array<ResourceItem>;
     @Property() modelId: string;
+    @Property() level: number; //for fish
 }

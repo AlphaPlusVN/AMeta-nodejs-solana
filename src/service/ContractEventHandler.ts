@@ -4,6 +4,7 @@ import { DI } from '../configdb/database.config';
 import { getRandomPercent, getRandomNumber, getFameByRarity, generateItemSkill } from '../commons/Utils';
 import { ItemConfig } from '../entities/ItemEntity';
 import logger from '../commons/logger';
+import { newItemFromConfig, setNewLevelItemData, setNewStarItemData } from '../commons/ObjectMapper';
 
 export async function mintBoxBatchTrigger(tokenIds: number[], to: string, boxType: number, contractAddress: string) {
     const SILVER = 1;
@@ -46,7 +47,7 @@ export async function mintBoxBatchTrigger(tokenIds: number[], to: string, boxTyp
             await metadataRepo.flush();
         }
     } catch (e) {
-       logger.error(e);
+        logger.error(e);
     }
 }
 
@@ -132,6 +133,12 @@ export async function openBoxEventTrigger(owner: string, boxId: number, nftToken
             const itemConfigRepo = DI.em.fork().getRepository(ItemConfig);
             let itemConfig = await itemConfigRepo.findOne({ code: item.rewardCode });
             let metadata = new SCNFTMetadata();
+            let itemMetadata = newItemFromConfig(itemConfig);
+            itemMetadata.level = 1;
+            itemMetadata.star = 1;
+            itemMetadata.skill = generateItemSkill(itemConfig);
+            setNewStarItemData(itemMetadata);
+            setNewLevelItemData(itemMetadata);
             metadata.contractAddress = contractAddress.toLowerCase();
             metadata.tokenId = nftTokenId;
             metadata.owner = owner;
@@ -143,12 +150,7 @@ export async function openBoxEventTrigger(owner: string, boxId: number, nftToken
                 collection: { family: "Item", name: itemConfig.name },
                 external_url: "https://ameta.games",
                 seller_fee_basis_points: 0,
-                attributes: [{ trait_type: "itemCode", value: itemConfig.code },
-                { trait_type: "fame", value: getFameByRarity(rarity) },
-                { trait_type: "catcherBarSize", value: itemConfig.attr.catcherBarSize },
-                { trait_type: "catcherBarSpeed", value: itemConfig.attr.catcherBarSpeed },
-                { trait_type: "skills", value: generateItemSkill(itemConfig) }
-                ]
+                attributes: [{ trait_type: "itemInfo", value: itemMetadata }]
             }
             await metadataRepo.persistAndFlush(metadata);
         }
