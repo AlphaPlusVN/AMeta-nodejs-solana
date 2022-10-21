@@ -8,6 +8,8 @@ export namespace BscUtil {
     const BOX_CONTRACT_ADDRESS = "0xca8B840932c0Aa34B9E425774c15074B56877fF2"; //test
     const POOL_SELL_BOX_ADDRESS = "0xcF23F0750A9EA36b4E40912C5C8f4056dA54954e"; //test
     const NFT_ADDRESS = "0x02BA6C503fa44bfF2fd8Ecc4de76703080e4bBe4"; //TEST
+    const GAME_ASSETS_ADDR = "0xc2870C4706Ca50C30F13CEa420A4dd739F0c7BfC";
+
     // const BSC_ENDPOINT = 'https://bsc-dataseed.binance.org/'; //main
     // const BOX_CONTRACT_ADDRESS = "0xC42AB9A75D391Be6C4c94f7e53c4d374aBabDA24"; //main
     // const POOL_SELL_BOX_ADDRESS = "0xEddDC76025001cD276862D523046837f703b2f85"; //main
@@ -31,8 +33,14 @@ export namespace BscUtil {
         provider
     );
 
+    export const gameAssetsContract = new ethers.Contract(
+        GAME_ASSETS_ADDR,
+        getGameAssetsABI(),
+        provider
+    );
+
     export async function boxEventListener() {
-        logger.info("listen event of BSC " + BOX_CONTRACT_ADDRESS);
+        logger.info("listen box event of BSC " + BOX_CONTRACT_ADDRESS);
         BoxContract.on("Mint", async (...params) => {
             logger.info("Mint event")
             const eventData = params[params.length - 1];
@@ -53,6 +61,7 @@ export namespace BscUtil {
             }
             await mintBoxBatchTrigger(listTokenId, to, boxType.toNumber(), BOX_CONTRACT_ADDRESS);
         });
+
         BoxContract.on("OpenBox", async (...params) => {
             logger.info("OpenBox event")
             const eventData = params[params.length - 1];
@@ -64,16 +73,41 @@ export namespace BscUtil {
         });
     }
 
+    export async function gameAssetsEventListener() {
+        logger.info("listen game asset event of BSC " + GAME_ASSETS_ADDR);
+        gameAssetsContract.on("LinkAccount", async (...params) => {
+            logger.info("Link Account Event")
+            const eventData = params[params.length - 1];
+            const { transactionHash, blockNumber, args } = eventData;
+            const [email, address] = args;
+            logger.info("txHash " + transactionHash);
+        });
+
+        gameAssetsContract.on("UnlinkAccount", async (...params) => {
+            logger.info("Unlink Account Event")
+            const eventData = params[params.length - 1];
+            const { transactionHash, blockNumber, args } = eventData;
+            const [email, address] = args;
+            logger.info("txHash " + transactionHash);
+        });
+    }
+
     export function getBoxABI() {
         const fs = require('fs');
         let jsonFile = __dirname + "/BoxABI.json";
         let parsed = JSON.parse(fs.readFileSync(jsonFile));
         return parsed;
     }
-    
+
     export function getNFTABI() {
         const fs = require('fs');
         let jsonFile = __dirname + "/NFTABI.json";
+        let parsed = JSON.parse(fs.readFileSync(jsonFile));
+        return parsed;
+    }
+    export function getGameAssetsABI() {
+        const fs = require('fs');
+        let jsonFile = __dirname + "/GameAssetsABI.json";
         let parsed = JSON.parse(fs.readFileSync(jsonFile));
         return parsed;
     }
