@@ -1,8 +1,9 @@
-import { BscUtil } from "../commons/BSCUtils";
+import { BscUtil } from '../commons/BSCUtils';
 import { KardiaUtils } from "../commons/KardiaUtils";
 import { ChainId } from '../commons/EnumObjs';
 import { BigNumber, Contract } from "ethers";
 import logger from "../commons/logger";
+import { User } from '../entities/User';
 
 export const getPoolInfo = async () => {
     const output = {
@@ -94,4 +95,10 @@ export function getNFTContractByChainId(chainId: number) {
         default: return null;
     }
     return nftContract;
+}
+
+export async function getERC20Assets(walletAddress: string) {
+    let erc20Info = await BscUtil.gameAssetsContract.viewErc20ByUser(walletAddress);
+    logger.info("Call GameAssets ERC20 infor ")
+    logger.info(JSON.stringify(erc20Info));
 }

@@ -76,9 +76,9 @@ export default class AuthController extends BaseController {
             let user: User = await userRepo.findOne({
                 walletAddress: input.walletAddress
             });
-            if (!user || isNullOrEmptyString(user.nonce)) {
-                throw new Error(ErrorCode.ParamsIsInvalid);
-            }
+            // if (!user || isNullOrEmptyString(user.nonce)) {
+            //     throw new Error(ErrorCode.ParamsIsInvalid);
+            // }
 
             let token = sign({ walletAddress: input.walletAddress }, SECRET, {
                 expiresIn: '365d' // 60 mins
