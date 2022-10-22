@@ -40,6 +40,7 @@ export default class AuthController extends BaseController {
         this.router.post('/updateUser', [AuthMiddleWare.verifyToken], this.updateUser);
         this.router.post("/getWalletItemInfo", this.getWalletItemInfo)
         this.router.get("/getTokenAssets/:chainId/:walletAddress", this.getTokenAssets);
+        this.router.get("/getWalletMapping/:chainId/:userEmail", this.getTokenAssets);
     }
 
     getWalletItemInfo = async (req: Request, res: Response) => {

@@ -138,6 +138,7 @@ export async function openBoxEventTrigger(owner: string, boxId: number, nftToken
             let itemConfig = await itemConfigRepo.findOne({ code: item.rewardCode });
             let metadata = new SCNFTMetadata();
             let itemMetadata = newItemFromConfig(itemConfig);
+            itemMetadata.attr.fame = getFameByRarity(itemConfig.rank);
             itemMetadata.level = 1;
             itemMetadata.star = 1;
             itemMetadata.skill = generateItemSkill(itemConfig);
