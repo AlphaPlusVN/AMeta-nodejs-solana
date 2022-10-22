@@ -32,4 +32,6 @@ export class User extends BaseEntity {
     @Property() displayName: string;
     @Property() shortDesc: string;
     @Property() mapTicket: string;
+    @Property() chainId: number;
+
 }

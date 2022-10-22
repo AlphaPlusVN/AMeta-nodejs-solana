@@ -96,31 +96,3 @@ export function getNFTContractByChainId(chainId: number) {
     }
     return nftContract;
 }
-
-export function getAplusAddressByChainId(chainId: number) {
-    let address: string;
-    switch (chainId) {
-        case ChainId.KAR_MAIN:
-        case ChainId.KAR_TEST:
-            address = BscUtil.APLUS_ADDRESS;
-            break;
-        case ChainId.BSC_MAIN:
-        case ChainId.BSC_TEST:
-            address = BscUtil.APLUS_ADDRESS;
-            break;
-        default: return null;
-    }
-    return address;
-}
-export async function getERC20Assets(walletAddress: string, chainId: number) {
-    logger.info("Call GameAssets ERC20 infor ")
-    let erc20Info: Array<[tokenAddress: string, value: BigNumber]> = await BscUtil.gameAssetsContract.viewErc20ByUser(walletAddress);
-    logger.info(JSON.stringify(erc20Info));
-    let value = 0;
-    for (let erc20token of erc20Info) {
-        if (erc20token[0] == getAplusAddressByChainId(chainId)) {
-            value = erc20token[1].toNumber();
-        }
-    }
-    return value;
-}

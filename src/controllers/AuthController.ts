@@ -5,13 +5,14 @@ import { buildResponse, genRandomString, isNullOrEmptyString } from "../commons/
 import { SECRET } from "../config/AuthConfig";
 import { ErrorCode, HandleErrorException, SUCCESS } from "../config/ErrorCodeConfig";
 
-// import { connection, systemTransfer } from '../ameta/SolAMeta';
-// import { AMETA_TOKEN, createTokenAccount } from '../ameta/SolUtils';
+import { Constants } from '../commons/Constants';
 import { DI } from '../configdb/database.config';
+import { Item } from '../entities/ItemEntity';
 import { SCNFTMetadata } from '../entities/NFTMetadataMapping';
 import { User } from '../entities/User';
 import AuthMiddleWare from "../middleware/AuthMiddleWare";
-import { getAllBoxInfo, getAllNFTInfo, getBoxContractByChainId, getERC20Assets, getNFTContractByChainId } from '../service/ServiceCommon';
+import { getErc20OfAssetByUser, getWalletByUser } from "../service/GameAssetsService";
+import { getAllBoxInfo, getAllNFTInfo, getBoxContractByChainId, getNFTContractByChainId } from '../service/ServiceCommon';
 import BaseController, { BaseInput } from "./BaseController";
 
 const bcrypt = require('bcryptjs');
@@ -40,7 +41,7 @@ export default class AuthController extends BaseController {
         this.router.post('/updateUser', [AuthMiddleWare.verifyToken], this.updateUser);
         this.router.post("/getWalletItemInfo", this.getWalletItemInfo)
         this.router.get("/getTokenAssets/:chainId/:walletAddress", this.getTokenAssets);
-        this.router.get("/getWalletMapping/:chainId/:userEmail", this.getTokenAssets);
+        this.router.get("/getWalletMapping/:chainId/:userEmail", this.getWalletMappingInfo);
     }
 
     getWalletItemInfo = async (req: Request, res: Response) => {
@@ -182,8 +183,25 @@ export default class AuthController extends BaseController {
         try {
             let walletAddress = req.params.walletAddress;
             let chainId = req.params.chainId;
-            let aplus = await getERC20Assets(walletAddress, chainId);
+            let aplus = await getErc20OfAssetByUser(walletAddress, chainId);
             buildResponse("", res, SUCCESS, aplus);
+        } catch (err) {
+            logger.error(err);
+            HandleErrorException({ refNo: null }, res, err + "");
+        }
+    }
+
+    getWalletMappingInfo = async (req: any, res: any) => {
+        try {
+            let email = req.params.userEmail;
+            let chainId = req.params.chainId;
+            let walletAddress = await getWalletByUser(email, chainId);
+            let aplus = 0;
+            let items = new Array<Item>();
+            if (walletAddress != Constants.ADDRESS_0) {
+                aplus = await getErc20OfAssetByUser(walletAddress, chainId);
+            }
+            buildResponse("", res, SUCCESS, { walletAddress, aplus, items });
         } catch (err) {
             logger.error(err);
             HandleErrorException({ refNo: null }, res, err + "");

@@ -3,6 +3,7 @@ import * as express from 'express';
 import path from "path";
 import { BscUtil } from "./commons/BSCUtils";
 import { KardiaUtils } from "./commons/KardiaUtils";
+import logger from "./commons/logger";
 import { connect } from './configdb/database.config';
 
 config({ path: path.join(__dirname, "../config.env") });
@@ -35,10 +36,10 @@ class App {
 
   public listen() {
     this.app.listen(process.env.PORT || 5000, () => {
-      console.log(`App listening on the port ${process.env.PORT || 5000}`);
+      logger.info(`App listening on the port ${process.env.PORT || 5000}`);
     });
     connect().then(async () => {
-      console.log("Database connected!");
+      logger.info("Database connected!");
     });
     BscUtil.boxEventListener();
     BscUtil.gameAssetsEventListener();
