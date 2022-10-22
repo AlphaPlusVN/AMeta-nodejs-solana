@@ -8,6 +8,7 @@ import { newItemFromConfig, setNewLevelItemData, setNewStarItemData } from '../c
 import { WalletAccount } from '../entities/WalletAccount';
 import { Constants } from '../commons/Constants';
 import { getERC20Assets } from './ServiceCommon';
+import { User } from '../entities/User';
 
 export async function mintBoxBatchTrigger(tokenIds: number[], to: string, boxType: number, contractAddress: string) {
     const SILVER = 1;
@@ -167,22 +168,27 @@ export async function linkWalletTrigger(email: string, walletAddress: string, ch
     logger.info("link wallet " + walletAddress + " to " + email);
     let walletAccount = await walletAccountRepo.findOne({ walletAddress, chainId, isDeleted: Constants.STATUS_NO });
     if (walletAccount) {
+        //remove old
+        logger.info("Remove exist account " + walletAddress);
         walletAccount.isDeleted = Constants.STATUS_YES;
         walletAccountRepo.persist(walletAccount);
     } else {
+        //link new
         walletAccount = new WalletAccount();
         walletAccount.isDeleted = Constants.STATUS_NO;
         walletAccount.tokenOnPool = 0;
         walletAccount.userEmail = email;
         walletAccount.walletAddress = walletAddress;
         walletAccount.chainId = chainId;
+        const userRepo = DI.em.fork().getRepository(User);
+        let user = await userRepo.findOne({ email });
+        let token = await getERC20Assets(walletAddress, chainId);
+        if (user && token > 0) {
+            user.token += token;
+            walletAccount.tokenOnPool += token;
+            await userRepo.persistAndFlush(user);
+        }
         walletAccountRepo.persist(walletAccount);
-    }
-    await getERC20Assets(walletAddress, chainId);
-    const walletAccountOld = await walletAccountRepo.findOne({ userEmail: email, chainId, isDeleted: Constants.STATUS_NO });
-    if (walletAccountOld) {
-        walletAccountOld.isDeleted = Constants.STATUS_YES;
-        walletAccountRepo.persist(walletAccountOld);
     }
     await walletAccountRepo.flush();
 }
@@ -190,7 +196,14 @@ export async function linkWalletTrigger(email: string, walletAddress: string, ch
 export async function unLinkWalletTrigger(email: string, walletAddress: string, chainId: number) {
     const walletAccountRepo = DI.em.fork().getRepository(WalletAccount);
     let walletAccount = await walletAccountRepo.findOne({ walletAddress, userEmail: email, chainId, isDeleted: Constants.STATUS_NO });
-    await getERC20Assets(walletAddress, chainId);
+    let token = await getERC20Assets(walletAddress, chainId);
+    const userRepo = DI.em.fork().getRepository(User);
+    let user = await userRepo.findOne({ email });
+    if (user && token > 0) {
+        user.token -= token;
+        await userRepo.persistAndFlush(user);
+    }
+
     if (walletAccount) {
         walletAccount.isDeleted = Constants.STATUS_YES;
         await walletAccountRepo.persistAndFlush(walletAccount);
