@@ -7,4 +7,5 @@ export class WalletAccount extends BaseEntity {
     @Property() userEmail: string;
     @Property() userId: string;
     @Property() tokenOnPool: number = 0;
+    @Property() chainId: number;
 }

@@ -39,7 +39,7 @@ export default class AuthController extends BaseController {
         this.router.post('/getToken', this.getToken);
         this.router.post('/updateUser', [AuthMiddleWare.verifyToken], this.updateUser);
         this.router.post("/getWalletItemInfo", this.getWalletItemInfo)
-        this.router.get("/getTokenAssets/:walletAddress", this.getTokenAssets);
+        this.router.get("/getTokenAssets/:chainId/:walletAddress", this.getTokenAssets);
     }
 
     getWalletItemInfo = async (req: Request, res: Response) => {
@@ -178,11 +178,14 @@ export default class AuthController extends BaseController {
     }
 
     getTokenAssets = async (req: any, res: any) => {
-        try{
-            let walletAddress = req.body.params.walletAddress;
-            await getERC20Assets(walletAddress);
+        try {
+            let walletAddress = req.params.walletAddress;
+            let chainId = req.params.chainId;
+            let aplus = await getERC20Assets(walletAddress, chainId);
+            buildResponse("", res, SUCCESS, aplus);
         } catch (err) {
-            HandleErrorException({refNo:null}, res, err + "");
+            logger.error(err);
+            HandleErrorException({ refNo: null }, res, err + "");
         }
     }
 }

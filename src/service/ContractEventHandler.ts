@@ -162,10 +162,10 @@ export async function openBoxEventTrigger(owner: string, boxId: number, nftToken
     }
 }
 
-export async function linkWalletTrigger(email: string, walletAddress: string) {
+export async function linkWalletTrigger(email: string, walletAddress: string, chainId: number) {
     const walletAccountRepo = DI.em.fork().getRepository(WalletAccount);
     logger.info("link wallet " + walletAddress + " to " + email);
-    let walletAccount = await walletAccountRepo.findOne({ walletAddress, isDeleted: Constants.STATUS_NO });
+    let walletAccount = await walletAccountRepo.findOne({ walletAddress, chainId, isDeleted: Constants.STATUS_NO });
     if (walletAccount) {
         walletAccount.isDeleted = Constants.STATUS_YES;
         walletAccountRepo.persist(walletAccount);
@@ -175,10 +175,11 @@ export async function linkWalletTrigger(email: string, walletAddress: string) {
         walletAccount.tokenOnPool = 0;
         walletAccount.userEmail = email;
         walletAccount.walletAddress = walletAddress;
+        walletAccount.chainId = chainId;
         walletAccountRepo.persist(walletAccount);
     }
-    await getERC20Assets(walletAddress);
-    const walletAccountOld = await walletAccountRepo.findOne({ userEmail: email, isDeleted: Constants.STATUS_NO });
+    await getERC20Assets(walletAddress, chainId);
+    const walletAccountOld = await walletAccountRepo.findOne({ userEmail: email, chainId, isDeleted: Constants.STATUS_NO });
     if (walletAccountOld) {
         walletAccountOld.isDeleted = Constants.STATUS_YES;
         walletAccountRepo.persist(walletAccountOld);
@@ -186,10 +187,10 @@ export async function linkWalletTrigger(email: string, walletAddress: string) {
     await walletAccountRepo.flush();
 }
 
-export async function unLinkWalletTrigger(email: string, walletAddress: string) {
+export async function unLinkWalletTrigger(email: string, walletAddress: string, chainId: number) {
     const walletAccountRepo = DI.em.fork().getRepository(WalletAccount);
-    let walletAccount = await walletAccountRepo.findOne({ walletAddress, userEmail: email, isDeleted: Constants.STATUS_NO });
-    await getERC20Assets(walletAddress);
+    let walletAccount = await walletAccountRepo.findOne({ walletAddress, userEmail: email, chainId, isDeleted: Constants.STATUS_NO });
+    await getERC20Assets(walletAddress, chainId);
     if (walletAccount) {
         walletAccount.isDeleted = Constants.STATUS_YES;
         await walletAccountRepo.persistAndFlush(walletAccount);

@@ -1,5 +1,6 @@
 import { ethers, logger } from "ethers";
-import { mintBoxBatchTrigger, mintBoxTrigger, openBoxEventTrigger } from '../service/ContractEventHandler';
+import { linkWalletTrigger, mintBoxBatchTrigger, mintBoxTrigger, openBoxEventTrigger, unLinkWalletTrigger } from '../service/ContractEventHandler';
+import { ChainId } from "./EnumObjs";
 import { PoolSellBox } from './PoolSellBoxPublicABI';
 
 export namespace BscUtil {
@@ -9,13 +10,14 @@ export namespace BscUtil {
     const POOL_SELL_BOX_ADDRESS = "0xcF23F0750A9EA36b4E40912C5C8f4056dA54954e"; //test
     const NFT_ADDRESS = "0x02BA6C503fa44bfF2fd8Ecc4de76703080e4bBe4"; //TEST
     const GAME_ASSETS_ADDR = "0xc2870C4706Ca50C30F13CEa420A4dd739F0c7BfC";
+    export const APLUS_ADDRESS = "0x80d04bd9F6f296cd7059208134f4A685cedC3291";//TEST
 
     // const BSC_ENDPOINT = 'https://bsc-dataseed.binance.org/'; //main
     // const BOX_CONTRACT_ADDRESS = "0xC42AB9A75D391Be6C4c94f7e53c4d374aBabDA24"; //main
     // const POOL_SELL_BOX_ADDRESS = "0xEddDC76025001cD276862D523046837f703b2f85"; //main
 
     const provider = new ethers.providers.JsonRpcProvider(BSC_ENDPOINT);
-
+    const defaultChainId = ChainId.BSC_TEST;
     export const BoxContract = new ethers.Contract(
         BOX_CONTRACT_ADDRESS,
         getBoxABI(), // abi
@@ -76,11 +78,12 @@ export namespace BscUtil {
     export async function gameAssetsEventListener() {
         logger.info("listen game asset event of BSC " + GAME_ASSETS_ADDR);
         gameAssetsContract.on("LinkAccount", async (...params) => {
-            logger.info("Link Account Event")
+            logger.info("Link Account Event");
             const eventData = params[params.length - 1];
             const { transactionHash, blockNumber, args } = eventData;
             const [email, address] = args;
             logger.info("txHash " + transactionHash);
+            linkWalletTrigger(email, address, defaultChainId);
         });
 
         gameAssetsContract.on("UnlinkAccount", async (...params) => {
@@ -89,6 +92,7 @@ export namespace BscUtil {
             const { transactionHash, blockNumber, args } = eventData;
             const [email, address] = args;
             logger.info("txHash " + transactionHash);
+            unLinkWalletTrigger(email, address, defaultChainId);
         });
     }
 
