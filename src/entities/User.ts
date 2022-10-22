@@ -19,6 +19,7 @@ export class User extends BaseEntity {
     @Property() profileDeco: any;
     @Property() gem: number = 0;
     @Property() token: number = 0;
+    @Property() rewardToken: number = 0;
     @Property() lastLogin: Date;
     @Property() fistLogin: boolean;
     @Property() equipment: string;
