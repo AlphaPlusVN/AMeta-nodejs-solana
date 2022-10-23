@@ -6,8 +6,9 @@ import { MktTransaction } from '../entities/MktTransaction';
 import { WalletCache } from '../entities/WalletCache';
 import { TokenAccount } from '../entities/TokenAccount';
 import { BoxConfig } from '../entities/BoxConfig';
-import { Item, ItemConfig } from '../entities/ItemEntity';
+import { Item, ItemConfig, ItemSkill } from '../entities/ItemEntity';
 import { SCNFTMetadata } from '../entities/NFTMetadataMapping';
+import { WalletAccount } from '../entities/WalletAccount';
 
 /** 
  * Mikro ORM Connection options object
@@ -16,7 +17,7 @@ import { SCNFTMetadata } from '../entities/NFTMetadataMapping';
  *  */
 const options: Options = {
   type: 'mongo',
-  entities: [User, MarKetConfig, MktBoxesForSale, MktTransaction, WalletCache, TokenAccount, BoxConfig, Item, ItemConfig, SCNFTMetadata]
+  entities: [User, MarKetConfig, MktBoxesForSale, MktTransaction, WalletCache, TokenAccount, BoxConfig, Item, ItemConfig, ItemSkill, SCNFTMetadata, WalletAccount]
 }; 
 
 export default options;
