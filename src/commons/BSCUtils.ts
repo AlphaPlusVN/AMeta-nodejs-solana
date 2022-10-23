@@ -1,4 +1,5 @@
 import { ethers, logger } from "ethers";
+import { parseBytes32String } from "ethers/lib/utils";
 import { linkWalletTrigger, mintBoxBatchTrigger, mintBoxTrigger, openBoxEventTrigger, unLinkWalletTrigger } from '../service/ContractEventHandler';
 import { ChainId } from "./EnumObjs";
 import { PoolSellBox } from './PoolSellBoxPublicABI';
@@ -83,6 +84,7 @@ export namespace BscUtil {
             const { transactionHash, blockNumber, args } = eventData;
             const [email, address] = args;
             logger.info("DATA " + JSON.stringify(args));
+            logger.info("email " + parseBytes32String(email));
             logger.info("txHash " + transactionHash);
             linkWalletTrigger(email, address, defaultChainId);
         });
@@ -93,6 +95,7 @@ export namespace BscUtil {
             const { transactionHash, blockNumber, args } = eventData;
             const [email, address] = args;
             logger.info("DATA " + JSON.stringify(args));
+            logger.info("email " + parseBytes32String(email));
             logger.info("txHash " + transactionHash);
             unLinkWalletTrigger(email, address, defaultChainId);
         });
