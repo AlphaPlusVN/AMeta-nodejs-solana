@@ -1,5 +1,5 @@
 import { ethers, logger } from "ethers";
-import { parseBytes32String } from "ethers/lib/utils";
+import { getAddress, keccak256, parseBytes32String } from "ethers/lib/utils";
 import { linkWalletTrigger, mintBoxBatchTrigger, mintBoxTrigger, openBoxEventTrigger, unLinkWalletTrigger } from '../service/ContractEventHandler';
 import { ChainId } from "./EnumObjs";
 import { PoolSellBox } from './PoolSellBoxPublicABI';
@@ -82,10 +82,11 @@ export namespace BscUtil {
             logger.info("Link Account Event");
             const eventData = params[params.length - 1];
             const { transactionHash, blockNumber, args } = eventData;
-            const [email, address] = args;
+            const [emailHash, address] = args;
             logger.info("DATA " + JSON.stringify(args));
-            logger.info("email " + ethers.utils.toUtf8String(email.hash));
             logger.info("txHash " + transactionHash);
+            let email = await gameAssetsContract.walletToEmail(address);
+            logger.info("email " + email);
             linkWalletTrigger(email, address, defaultChainId);
         });
 
@@ -93,10 +94,11 @@ export namespace BscUtil {
             logger.info("Unlink Account Event")
             const eventData = params[params.length - 1];
             const { transactionHash, blockNumber, args } = eventData;
-            const [email, address] = args;
+            const [emailHash, address] = args;
             logger.info("DATA " + JSON.stringify(args));
-            logger.info("email " + ethers.utils.toUtf8String(email.hash));
             logger.info("txHash " + transactionHash);
+            let email = await gameAssetsContract.walletToEmail(address);
+            logger.info("email " + email);
             unLinkWalletTrigger(email, address, defaultChainId);
         });
     }
