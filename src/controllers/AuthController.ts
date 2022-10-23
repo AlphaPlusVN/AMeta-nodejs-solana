@@ -14,6 +14,7 @@ import AuthMiddleWare from "../middleware/AuthMiddleWare";
 import { getErc20OfAssetByUser, getWalletByUser } from "../service/GameAssetsService";
 import { getAllBoxInfo, getAllNFTInfo, getBoxContractByChainId, getNFTContractByChainId } from '../service/ServiceCommon';
 import BaseController, { BaseInput } from "./BaseController";
+import { constants } from "ethers";
 
 const bcrypt = require('bcryptjs');
 
@@ -199,7 +200,7 @@ export default class AuthController extends BaseController {
             logger.info("return walletAddr " + walletAddress);
             let aplus = 0;
             let items = new Array<Item>();
-            if (walletAddress != Constants.ADDRESS_0) {
+            if (walletAddress != constants.AddressZero) {
                 aplus = await getErc20OfAssetByUser(walletAddress, chainId);
             }
             buildResponse("", res, SUCCESS, { walletAddress, aplus, items });

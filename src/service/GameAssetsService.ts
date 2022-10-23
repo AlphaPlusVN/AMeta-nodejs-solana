@@ -2,6 +2,7 @@ import { BscUtil } from '../commons/BSCUtils';
 import { ChainId } from '../commons/EnumObjs';
 import { BigNumber } from 'ethers';
 import logger from '../commons/logger';
+import { getAddress } from 'ethers/lib/utils';
 
 export function getAplusAddressByChainId(chainId: number) {
     let address: string;
@@ -21,7 +22,7 @@ export function getAplusAddressByChainId(chainId: number) {
 
 export async function getERC20Assets(walletAddress: string, chainId: number) {
     logger.info("Call GameAssets ERC20 infor ")
-    let erc20Info: Array<[tokenAddress: string, value: BigNumber]> = await BscUtil.gameAssetsContract.viewErc20ByUser(walletAddress);
+    let erc20Info: Array<[tokenAddress: string, value: BigNumber]> = await BscUtil.gameAssetsContract.viewErc20ByUser(getAddress(walletAddress));
     logger.info(JSON.stringify(erc20Info));
     let value = 0;
     for (let erc20token of erc20Info) {
@@ -33,7 +34,7 @@ export async function getERC20Assets(walletAddress: string, chainId: number) {
 }
 export async function getErc20OfAssetByUser(walletAddress: string, chainId: number) {
     logger.info("Call GameAssets ERC20 infor ")
-    let erc20Info: [tokenAddress: string, value: BigNumber] = await BscUtil.gameAssetsContract.viewErc20OfAssetByUser(getAplusAddressByChainId(chainId), walletAddress);
+    let erc20Info: [tokenAddress: string, value: BigNumber] = await BscUtil.gameAssetsContract.viewErc20OfAssetByUser(getAddress(getAplusAddressByChainId(chainId)), getAddress(walletAddress));
     logger.info(JSON.stringify(erc20Info));
     return erc20Info[1].toNumber();
 }
