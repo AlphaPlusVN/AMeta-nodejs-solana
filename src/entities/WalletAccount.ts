@@ -5,7 +5,6 @@ import { BaseEntity } from './BaseEntity';
 export class WalletAccount extends BaseEntity {
     @Property() walletAddress: string;
     @Property() userEmail: string;
-    @Property() userId: string;
     @Property() tokenOnPool: number = 0;
     @Property() chainId: number;
 }

@@ -97,9 +97,7 @@ export namespace BscUtil {
             const [emailHash, address] = args;
             logger.info("DATA " + JSON.stringify(args));
             logger.info("txHash " + transactionHash);
-            let email = await gameAssetsContract.walletToEmail(address);
-            logger.info("email " + email);
-            unLinkWalletTrigger(email, address, defaultChainId);
+            unLinkWalletTrigger(address, defaultChainId);
         });
     }
 
