@@ -34,7 +34,7 @@ export async function getERC20Assets(walletAddress: string, chainId: number) {
 }
 export async function getErc20OfAssetByUser(walletAddress: string, chainId: number) {
     logger.info("Call GameAssets ERC20 infor ")
-    let erc20Info: [tokenAddress: string, value: BigNumber] = await BscUtil.gameAssetsContract.viewErc20OfAssetByUser(getAddress(getAplusAddressByChainId(chainId)), getAddress(walletAddress));
+    let erc20Info: [tokenAddress: string, value: BigNumber] = await BscUtil.gameAssetsContract.viewErc20OfAssetByUser(getAddress(getAplusAddressByChainId(chainId).toLowerCase()), getAddress(walletAddress.toLowerCase()));
     logger.info(JSON.stringify(erc20Info));
     return erc20Info[1].toNumber();
 }
