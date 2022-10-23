@@ -195,7 +195,7 @@ export default class AuthController extends BaseController {
     getWalletMappingInfo = async (req: any, res: any) => {
         try {
             let email = req.params.userEmail;
-            let chainId = req.params.chainId;
+            let chainId = parseInt(req.params.chainId);
             let walletAddress = await getWalletByUser(email, chainId);
             logger.info("return walletAddr " + walletAddress);
             let aplus = 0;

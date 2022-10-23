@@ -15,7 +15,8 @@ export function getAplusAddressByChainId(chainId: number) {
         case ChainId.BSC_TEST:
             address = BscUtil.APLUS_ADDRESS;
             break;
-        default: return null;
+        default: address = BscUtil.APLUS_ADDRESS;
+            break;
     }
     return address;
 }
