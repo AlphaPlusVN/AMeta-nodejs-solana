@@ -82,6 +82,7 @@ export namespace BscUtil {
             const eventData = params[params.length - 1];
             const { transactionHash, blockNumber, args } = eventData;
             const [email, address] = args;
+            logger.info("DATA " + JSON.stringify(args));
             logger.info("txHash " + transactionHash);
             linkWalletTrigger(email, address, defaultChainId);
         });
@@ -91,6 +92,7 @@ export namespace BscUtil {
             const eventData = params[params.length - 1];
             const { transactionHash, blockNumber, args } = eventData;
             const [email, address] = args;
+            logger.info("DATA " + JSON.stringify(args));
             logger.info("txHash " + transactionHash);
             unLinkWalletTrigger(email, address, defaultChainId);
         });

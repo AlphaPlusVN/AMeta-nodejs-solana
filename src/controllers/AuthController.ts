@@ -56,7 +56,7 @@ export default class AuthController extends BaseController {
             let nftContract = getNFTContractByChainId(chainId);
             const metadataRepo = DI.em.fork().getRepository(SCNFTMetadata);
             logger.info("chaiID " + chainId + " addr " + boxContract.address + " BoxtokenID: " + JSON.stringify(boxTokenIds));
-            logger.info("chaiID " + chainId + " addr " + boxContract.address + " NFTtokenID: " + JSON.stringify(nftTokenIds));
+            logger.info("chaiID " + chainId + " addr " + nftContract.address + " NFTtokenID: " + JSON.stringify(nftTokenIds));
             let boxMetadata = await metadataRepo.find({ tokenId: { $in: boxTokenIds }, contractAddress: boxContract.address.toLowerCase() });
             let nftMetaData = await metadataRepo.find({ tokenId: { $in: nftTokenIds }, contractAddress: nftContract.address.toLowerCase() });
             let data = { boxs: boxMetadata, items: nftMetaData };
