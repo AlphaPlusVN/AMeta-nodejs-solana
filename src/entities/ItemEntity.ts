@@ -54,7 +54,7 @@ export class Item extends BaseEntity {
     @Property({ default: "0" }) modelId: string = "0";
     @Property({ default: 0 }) equiped: number = 0;
     @Property({ default: 0 }) canBuild: number = 0; //0 can't build
-    @Property() mapList: Array<number> = new Array<number>();
+    @Property() mapList?: Array<number> = new Array<number>();
     @Property({ default: 0 }) isNFT: number = 0;
     @Property() nftAddress: string;
     @Property() attr: ItemAttribute = new ItemAttribute();
