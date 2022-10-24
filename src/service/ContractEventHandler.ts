@@ -201,14 +201,13 @@ export async function linkWalletTrigger(email: string, walletAddress: string, ch
                 walletAccountRepo.persist(walletAccount);
             }
             await walletAccountRepo.flush();
-            if (oldToken != newToken) {
-                let delta = newToken - oldToken;
+            if (tokenAdded > 0) {
                 let transaction = await saveTransaction(Constants.SYSTEM_ADMIN, user.id, TransType.WALLET_SYNC, { walletAddress, tokenAdded }, chainId + "", walletAddress, "Link wallet address");
                 // if (rewards && rewards.length > 0) {
                 //     await saveItemTransaction(transaction.from, transaction.to, rewards, transaction.transactionNumber);
                 // }
-                await saveTokenTransaction(transaction.from, transaction.to, Math.abs(delta), transaction.transactionNumber);
-                await saveUserBalanceHistory(user, 0, delta, transaction.transactionNumber);
+                await saveTokenTransaction(transaction.from, transaction.to, Math.abs(tokenAdded), transaction.transactionNumber);
+                await saveUserBalanceHistory(user, 0, tokenAdded, transaction.transactionNumber);
             }
         } else {
             logger.warn("skip user by chainId " + chainId);
@@ -225,15 +224,12 @@ export async function unLinkWalletTrigger(email: string, walletAddress: string, 
         let token = await getErc20OfAssetByUser(walletAddress, chainId);
         const userRepo = DI.em.fork().getRepository(User);
         let user = await userRepo.findOne({ email: email });
-        let oldToken = user.token;
-        let newToken = user.token;
         if (user && token > 0) {
             user.token = user.rewardToken;
-            newToken = user.token;
             await userRepo.persistAndFlush(user);
         }
-        if (oldToken != newToken) {
-            let delta = newToken - oldToken;
+        if (token > 0) {
+            let delta = -1 * token;
             let transaction = await saveTransaction(Constants.SYSTEM_ADMIN, user.id, TransType.WALLET_SYNC, { walletAddress, token: delta }, chainId + "", walletAddress, "Unlink wallet address");
             // if (rewards && rewards.length > 0) {
             //     await saveItemTransaction(transaction.from, transaction.to, rewards, transaction.transactionNumber);
