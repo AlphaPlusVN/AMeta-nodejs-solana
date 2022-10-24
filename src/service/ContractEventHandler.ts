@@ -252,6 +252,7 @@ export async function depositErc20Trigger(email: string, walletAddress: string, 
         if (walletAccount) {
             walletAccount.tokenOnPool += value;
             const userRepo = DI.em.fork().getRepository(User);
+            await walletAccountRepo.persistAndFlush(walletAccount);
             let user = await userRepo.findOne({ email });
             if (user) {
                 user.token = user.rewardToken + walletAccount.tokenOnPool;
