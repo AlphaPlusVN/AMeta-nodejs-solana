@@ -1,4 +1,4 @@
-import { Constants } from '../commons/Constants';
+import { Constants, TransType } from '../commons/Constants';
 import logger from '../commons/logger';
 import { newItemFromConfig, setNewLevelItemData, setNewStarItemData } from '../commons/ObjectMapper';
 import { generateItemSkill, getFameByRarity, getRandomNumber, getRandomPercent } from '../commons/Utils';
@@ -9,6 +9,8 @@ import { SCNFTMetadata } from '../entities/NFTMetadataMapping';
 import { User } from '../entities/User';
 import { WalletAccount } from '../entities/WalletAccount';
 import { getErc20OfAssetByUser } from './GameAssetsService';
+import { TransactionHistory } from '../entities/TransactionHistory';
+import { saveTokenTransaction, saveTransaction, saveUserBalanceHistory } from './TransactionService';
 
 export async function mintBoxBatchTrigger(tokenIds: number[], to: string, boxType: number, contractAddress: string) {
     const SILVER = 1;
@@ -171,6 +173,9 @@ export async function linkWalletTrigger(email: string, walletAddress: string, ch
         const userRepo = DI.em.fork().getRepository(User);
         let user = await userRepo.findOne({ email });
         if (user && user.chainId == chainId) {
+            let oldToken = user.token;
+            let newToken = user.token;
+            let tokenAdded = 0;
             let walletAccount = await walletAccountRepo.findOne({ walletAddress, chainId, isDeleted: Constants.STATUS_NO });
             if (walletAccount) {
                 //remove old
@@ -185,15 +190,26 @@ export async function linkWalletTrigger(email: string, walletAddress: string, ch
                 walletAccount.userEmail = email;
                 walletAccount.walletAddress = walletAddress;
                 walletAccount.chainId = chainId;
-                let token = await getErc20OfAssetByUser(walletAddress, chainId);
-                if (user && token > 0) {
-                    user.token += token;
-                    walletAccount.tokenOnPool += token;
+                tokenAdded = await getErc20OfAssetByUser(walletAddress, chainId);
+
+                if (user && tokenAdded > 0) {
+                    user.token += tokenAdded;
+                    newToken = user.token;
+                    walletAccount.tokenOnPool += tokenAdded;
                     await userRepo.persistAndFlush(user);
                 }
                 walletAccountRepo.persist(walletAccount);
             }
             await walletAccountRepo.flush();
+            if (oldToken != newToken) {
+                let delta = newToken - oldToken;
+                let transaction = await saveTransaction(Constants.SYSTEM_ADMIN, user.id, TransType.WALLET_SYNC, { walletAddress, tokenAdded }, chainId + "", walletAddress, "Link wallet address");
+                // if (rewards && rewards.length > 0) {
+                //     await saveItemTransaction(transaction.from, transaction.to, rewards, transaction.transactionNumber);
+                // }
+                await saveTokenTransaction(transaction.from, transaction.to, Math.abs(delta), transaction.transactionNumber);
+                await saveUserBalanceHistory(user, 0, delta, transaction.transactionNumber);
+            }
         } else {
             logger.warn("skip user by chainId " + chainId);
         }
@@ -209,11 +225,22 @@ export async function unLinkWalletTrigger(walletAddress: string, chainId: number
         let token = await getErc20OfAssetByUser(walletAddress, chainId);
         const userRepo = DI.em.fork().getRepository(User);
         let user = await userRepo.findOne({ email: walletAccount.userEmail });
+        let oldToken = user.token;
+        let newToken = user.token;
         if (user && token > 0) {
             user.token -= token;
+            newToken = user.token;
             await userRepo.persistAndFlush(user);
         }
-
+        if (oldToken != newToken) {
+            let delta = newToken - oldToken;
+            let transaction = await saveTransaction(Constants.SYSTEM_ADMIN, user.id, TransType.WALLET_SYNC, { walletAddress, token: delta }, chainId + "", walletAddress, "Unlink wallet address");
+            // if (rewards && rewards.length > 0) {
+            //     await saveItemTransaction(transaction.from, transaction.to, rewards, transaction.transactionNumber);
+            // }
+            await saveTokenTransaction(transaction.from, transaction.to, Math.abs(delta), transaction.transactionNumber);
+            await saveUserBalanceHistory(user, 0, delta, transaction.transactionNumber);
+        }
         if (walletAccount) {
             walletAccount.isDeleted = Constants.STATUS_YES;
             await walletAccountRepo.persistAndFlush(walletAccount);

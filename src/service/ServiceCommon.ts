@@ -4,6 +4,8 @@ import { ChainId } from '../commons/EnumObjs';
 import { BigNumber, Contract } from "ethers";
 import logger from "../commons/logger";
 import { User } from '../entities/User';
+import { DI } from '../configdb/database.config';
+import { SystemParam } from '../entities/SystemParam';
 
 export const getPoolInfo = async () => {
     const output = {
@@ -95,4 +97,10 @@ export function getNFTContractByChainId(chainId: number) {
         default: return null;
     }
     return nftContract;
+}
+
+export async function getSystemConfigParam(key: string) {
+    const systemConfigRepo = DI.em.fork().getRepository(SystemParam);
+    const systemConfig = await systemConfigRepo.findOne({ code: key });
+    return systemConfig;
 }

@@ -50,3 +50,18 @@ export async function setNewStarItemData(item: Item) {
         item.nextStarPoint = Math.round(1100 * Math.pow(1.5, item.rank));
     }
 }
+export function getItemSaveFromItem(item: Item) {
+    let itemSave = {
+        itemId: item.id,
+        code: item.code,
+        itemType: item.itemType,
+        modelId: item.modelId,
+        rank: item.rank,
+        itemName: item.name,
+        group: item.group | 0,
+        quantity: item.quantity,
+        skills: item.skill,
+        attr: item.attr
+    };
+    return itemSave;
+}
