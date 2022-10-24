@@ -260,7 +260,6 @@ export async function depositErc20Trigger(email: string, walletAddress: string, 
                 let transaction = await saveTransaction(Constants.SYSTEM_ADMIN, user.id, TransType.WALLET_SYNC, { walletAddress, token: value }, chainId + "", walletAddress, "Deposit token to account");
                 await saveTokenTransaction(transaction.from, transaction.to, value, transaction.transactionNumber);
                 await saveUserBalanceHistory(user, 0, value, transaction.transactionNumber);
-
             }
         }
     }
