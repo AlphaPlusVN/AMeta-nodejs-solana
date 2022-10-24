@@ -272,9 +272,15 @@ export async function depositErc721Trigger(email: string, walletAddress: string,
             tokenIdsNumber.push(tokenId.toNumber());
         }
         logger.info("Deposit " + JSON.stringify(tokenIdsNumber) + " to " + email + " by " + walletAddress);
+        const metaDataRepo = DI.em.fork().getRepository(SCNFTMetadata);
+        let metaDatas = new Array<SCNFTMetadata>();
+        metaDatas = await metaDataRepo.find({ tokenId: { $in: tokenIdsNumber }, contractAddress: tokenAddress });
+        for (let metadata of metaDatas) {
+            logger.info("data" + JSON.stringify(metadata.jsonMetadata));
+        }
         let walletAccount = await walletAccountRepo.findOne({ userEmail: email, walletAddress, chainId, isDeleted: Constants.STATUS_NO });
         if (walletAccount) {
-            
+
         }
     }
 }
