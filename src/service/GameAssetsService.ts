@@ -3,6 +3,9 @@ import { ChainId } from '../commons/EnumObjs';
 import { BigNumber } from 'ethers';
 import logger from '../commons/logger';
 import { getAddress } from 'ethers/lib/utils';
+import { SCNFTMetadata } from '../entities/NFTMetadataMapping';
+import { DI } from '../configdb/database.config';
+import { Item } from '../entities/ItemEntity';
 
 export function getAplusAddressByChainId(chainId: number) {
     let address: string;
@@ -56,6 +59,23 @@ export async function getErc20OfAssetByUser(walletAddress: string, chainId: numb
     return erc20Info[1].toNumber();
 }
 
+export async function getErc721OfAssetByUser(walletAddress: string, chainId: number) {
+    logger.info("Call GameAssets 721 infor ")
+    let erc721Info:[tokendAddress:string, tokenIds:Array<BigNumber>] = await BscUtil.gameAssetsContract.viewErc721OfAssetByUser(getAddress(getNFTAddressByChainId(chainId).toLowerCase()), getAddress(walletAddress.toLowerCase()));
+    logger.info(JSON.stringify(erc721Info));
+    let tokenIdsNumber = new Array<number>();
+    for (let tokenId of erc721Info[1]) {
+        tokenIdsNumber.push(tokenId.toNumber());
+    }
+    const metaDataRepo = DI.em.fork().getRepository(SCNFTMetadata);
+    let metaDatas = new Array<SCNFTMetadata>();
+    metaDatas = await metaDataRepo.find({ tokenId: { $in: tokenIdsNumber }, contractAddress: getNFTAddressByChainId(chainId).toLowerCase() });
+    let items = new Array<Item>();
+    for (let metadata of metaDatas) {
+        items.push(metadata.jsonMetadata.attributes[0].value);
+    }
+    return items;
+}
 
 export async function getWalletByUser(userEmail: string, chainId: number) {
     let walletAddress = await BscUtil.gameAssetsContract.emailToWallet(userEmail);

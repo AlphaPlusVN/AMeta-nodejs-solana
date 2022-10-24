@@ -11,7 +11,7 @@ import { Item } from '../entities/ItemEntity';
 import { SCNFTMetadata } from '../entities/NFTMetadataMapping';
 import { User } from '../entities/User';
 import AuthMiddleWare from "../middleware/AuthMiddleWare";
-import { getErc20OfAssetByUser, getWalletByUser } from "../service/GameAssetsService";
+import { getErc20OfAssetByUser, getErc721OfAssetByUser, getWalletByUser } from "../service/GameAssetsService";
 import { getAllBoxInfo, getAllNFTInfo, getBoxContractByChainId, getNFTContractByChainId } from '../service/ServiceCommon';
 import BaseController, { BaseInput } from "./BaseController";
 import { constants } from "ethers";
@@ -202,6 +202,7 @@ export default class AuthController extends BaseController {
             let items = new Array<Item>();
             if (walletAddress != constants.AddressZero) {
                 aplus = await getErc20OfAssetByUser(walletAddress, chainId);
+                items = await getErc721OfAssetByUser(walletAddress, chainId);
             }
             buildResponse("", res, SUCCESS, { walletAddress, aplus, items });
         } catch (err) {

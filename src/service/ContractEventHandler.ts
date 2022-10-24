@@ -286,7 +286,7 @@ export async function depositErc721Trigger(email: string, walletAddress: string,
         for (let item of items) {
             item.owner = user.id;
             item.walletOwner = walletAddress;
-            itemRepo.persist(item);
+            itemRepo.create(item);
         }
         if (items.length > 0) {
             await itemRepo.flush();
