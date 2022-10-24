@@ -5,7 +5,7 @@ import { newItemFromConfig, setNewLevelItemData, setNewStarItemData } from '../c
 import { generateItemSkill, getFameByRarity, getRandomNumber, getRandomPercent } from '../commons/Utils';
 import { DI } from '../configdb/database.config';
 import { BoxConfig, ItemOnBox } from '../entities/BoxConfig';
-import { ItemConfig } from '../entities/ItemEntity';
+import { ItemConfig, Item } from '../entities/ItemEntity';
 import { SCNFTMetadata } from '../entities/NFTMetadataMapping';
 import { User } from '../entities/User';
 import { WalletAccount } from '../entities/WalletAccount';
@@ -274,13 +274,21 @@ export async function depositErc721Trigger(email: string, walletAddress: string,
         logger.info("Deposit " + JSON.stringify(tokenIdsNumber) + " to " + email + " by " + walletAddress);
         const metaDataRepo = DI.em.fork().getRepository(SCNFTMetadata);
         let metaDatas = new Array<SCNFTMetadata>();
-        metaDatas = await metaDataRepo.find({ tokenId: { $in: tokenIdsNumber }, contractAddress: tokenAddress });
+        metaDatas = await metaDataRepo.find({ tokenId: { $in: tokenIdsNumber }, contractAddress: tokenAddress.toLowerCase() });
+        let items = new Array<Item>();
         for (let metadata of metaDatas) {
-            logger.info("data" + JSON.stringify(metadata.jsonMetadata));
+            logger.info("data " + JSON.stringify(metadata.jsonMetadata.attributes[0].value));
+            items.push(metadata.jsonMetadata.attributes[0].value);
         }
-        let walletAccount = await walletAccountRepo.findOne({ userEmail: email, walletAddress, chainId, isDeleted: Constants.STATUS_NO });
-        if (walletAccount) {
-
+        const userRepo = DI.em.fork().getRepository(User);
+        let user = await userRepo.findOne({ email });
+        const itemRepo = DI.em.fork().getRepository(Item);
+        for (let item of items) {
+            item.owner = user.id;
+            item.walletOwner = walletAddress;
+        }
+        if (items.length > 0) {
+            await itemRepo.persistAndFlush(items);
         }
     }
 }

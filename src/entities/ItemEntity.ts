@@ -75,7 +75,7 @@ export class Item extends BaseEntity {
     @Property() code: string;
     @Property() color: string = "0";
     @Property({ default: 0 }) lockedToTime: number | 0;
-
+    @Property() walletOwner: string;
 }
 
 
