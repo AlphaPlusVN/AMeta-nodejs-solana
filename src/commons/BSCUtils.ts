@@ -1,5 +1,5 @@
-import { ethers, logger } from "ethers";
-import { linkWalletTrigger, mintBoxBatchTrigger, mintBoxTrigger, openBoxEventTrigger, unLinkWalletTrigger } from '../service/ContractEventHandler';
+import { ethers, logger, BigNumber } from 'ethers';
+import { depositErc20Trigger, depositErc721Trigger, linkWalletTrigger, mintBoxBatchTrigger, mintBoxTrigger, openBoxEventTrigger, unLinkWalletTrigger } from '../service/ContractEventHandler';
 import { ChainId } from "./EnumObjs";
 import { PoolSellBox } from './PoolSellBoxPublicABI';
 
@@ -95,6 +95,27 @@ export namespace BscUtil {
             logger.info("DATA " + JSON.stringify(args));
             logger.info("txHash " + transactionHash);
             unLinkWalletTrigger(email, address, defaultChainId);
+        });
+
+        gameAssetsContract.on("DepositErc20", async (...params) => {
+            logger.info("Unlink Account Event")
+            const eventData = params[params.length - 1];
+            const { transactionHash, blockNumber, args } = eventData;
+            const [email, walletAddress, tokenAddress, value] = args;
+            logger.info("DATA " + JSON.stringify(args));
+            logger.info("txHash " + transactionHash);
+            depositErc20Trigger(email, walletAddress, tokenAddress, value.toNumber(), defaultChainId);
+        });
+
+        gameAssetsContract.on("DepositErc721", async (...params) => {
+            logger.info("Unlink Account Event")
+            const eventData = params[params.length - 1];
+            const { transactionHash, blockNumber, args } = eventData;
+            const [email, walletAddress, tokenAddress, tokenIds] = args;
+            let tokenIdArr: Array<BigNumber> = tokenIds;
+            logger.info("DATA " + JSON.stringify(args));
+            logger.info("txHash " + transactionHash);
+            depositErc721Trigger(email, walletAddress, tokenAddress, tokenIdArr, defaultChainId);
         });
     }
 

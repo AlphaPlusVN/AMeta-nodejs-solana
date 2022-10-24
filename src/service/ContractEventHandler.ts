@@ -8,9 +8,10 @@ import { ItemConfig } from '../entities/ItemEntity';
 import { SCNFTMetadata } from '../entities/NFTMetadataMapping';
 import { User } from '../entities/User';
 import { WalletAccount } from '../entities/WalletAccount';
-import { getErc20OfAssetByUser } from './GameAssetsService';
+import { getErc20OfAssetByUser, getAplusAddressByChainId } from './GameAssetsService';
 import { TransactionHistory } from '../entities/TransactionHistory';
 import { saveTokenTransaction, saveTransaction, saveUserBalanceHistory } from './TransactionService';
+import { BigNumber } from 'ethers';
 
 export async function mintBoxBatchTrigger(tokenIds: number[], to: string, boxType: number, contractAddress: string) {
     const SILVER = 1;
@@ -173,8 +174,6 @@ export async function linkWalletTrigger(email: string, walletAddress: string, ch
         const userRepo = DI.em.fork().getRepository(User);
         let user = await userRepo.findOne({ email });
         if (user && user.chainId == chainId) {
-            let oldToken = user.token;
-            let newToken = user.token;
             let tokenAdded = 0;
             let walletAccount = await walletAccountRepo.findOne({ walletAddress, chainId, isDeleted: Constants.STATUS_NO });
             if (walletAccount) {
@@ -194,7 +193,6 @@ export async function linkWalletTrigger(email: string, walletAddress: string, ch
 
                 if (user && tokenAdded > 0) {
                     user.token = user.rewardToken + tokenAdded;
-                    newToken = user.token;
                     walletAccount.tokenOnPool += tokenAdded;
                     await userRepo.persistAndFlush(user);
                 }
@@ -243,5 +241,41 @@ export async function unLinkWalletTrigger(email: string, walletAddress: string, 
         }
     } catch (e) {
         logger.error(e);
+    }
+}
+
+export async function depositErc20Trigger(email: string, walletAddress: string, tokenAddress: string, value: number, chainId: number) {
+    if (tokenAddress == getAplusAddressByChainId(chainId)) {
+        const walletAccountRepo = DI.em.fork().getRepository(WalletAccount);
+        logger.info("Deposit " + value + " Aplus to " + email + " by " + walletAddress);
+        let walletAccount = await walletAccountRepo.findOne({ userEmail: email, walletAddress, chainId, isDeleted: Constants.STATUS_NO });
+        if (walletAccount) {
+            walletAccount.tokenOnPool += value;
+            const userRepo = DI.em.fork().getRepository(User);
+            let user = await userRepo.findOne({ email });
+            if (user) {
+                user.token = user.rewardToken + walletAccount.tokenOnPool;
+                await userRepo.persistAndFlush(user);
+                let transaction = await saveTransaction(Constants.SYSTEM_ADMIN, user.id, TransType.WALLET_SYNC, { walletAddress, token: value }, chainId + "", walletAddress, "Deposit token to account");
+                await saveTokenTransaction(transaction.from, transaction.to, value, transaction.transactionNumber);
+                await saveUserBalanceHistory(user, 0, value, transaction.transactionNumber);
+
+            }
+        }
+    }
+}
+
+export async function depositErc721Trigger(email: string, walletAddress: string, tokenAddress: string, tokendIds: Array<BigNumber>, chainId: number) {
+    if (tokenAddress == getAplusAddressByChainId(chainId)) {
+        const walletAccountRepo = DI.em.fork().getRepository(WalletAccount);
+        let tokenIdsNumber = new Array<number>();
+        for (let tokenId of tokendIds) {
+            tokenIdsNumber.push(tokenId.toNumber());
+        }
+        logger.info("Deposit " + JSON.stringify(tokenIdsNumber) + " to " + email + " by " + walletAddress);
+        let walletAccount = await walletAccountRepo.findOne({ userEmail: email, walletAddress, chainId, isDeleted: Constants.STATUS_NO });
+        if (walletAccount) {
+
+        }
     }
 }
