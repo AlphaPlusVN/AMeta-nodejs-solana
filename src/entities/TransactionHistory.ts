@@ -16,7 +16,6 @@ export class TransactionHistory extends BaseEntity {
 
 @Entity({ collection: "transaction_token" })
 export class TransactionToken extends BaseEntity {
-    @Property() transactionId: string;
     @Property() transactionNumber: number;
     @Property() from: string;
     @Property() to: string;
@@ -25,7 +24,6 @@ export class TransactionToken extends BaseEntity {
 
 @Entity({ collection: "transaction_item" })
 export class TransactionItem extends BaseEntity {
-    @Property() transactionId: string;
     @Property() transactionNumber: number;
     @Property() from: string;
     @Property() to: string;
@@ -34,7 +32,6 @@ export class TransactionItem extends BaseEntity {
 
 @Entity({ collection: "transaction_gold" })
 export class TransactionGold extends BaseEntity {
-    @Property() transactionId: string;
     @Property() transactionNumber: number;
     @Property() from: string;
     @Property() to: string;
