@@ -193,7 +193,7 @@ export async function linkWalletTrigger(email: string, walletAddress: string, ch
                 tokenAdded = await getErc20OfAssetByUser(walletAddress, chainId);
 
                 if (user && tokenAdded > 0) {
-                    user.token += tokenAdded;
+                    user.token = user.rewardToken + tokenAdded;
                     newToken = user.token;
                     walletAccount.tokenOnPool += tokenAdded;
                     await userRepo.persistAndFlush(user);
@@ -218,17 +218,17 @@ export async function linkWalletTrigger(email: string, walletAddress: string, ch
     }
 }
 
-export async function unLinkWalletTrigger(walletAddress: string, chainId: number) {
+export async function unLinkWalletTrigger(email: string, walletAddress: string, chainId: number) {
     try {
         const walletAccountRepo = DI.em.fork().getRepository(WalletAccount);
         let walletAccount = await walletAccountRepo.findOne({ walletAddress, chainId, isDeleted: Constants.STATUS_NO });
         let token = await getErc20OfAssetByUser(walletAddress, chainId);
         const userRepo = DI.em.fork().getRepository(User);
-        let user = await userRepo.findOne({ email: walletAccount.userEmail });
+        let user = await userRepo.findOne({ email: email });
         let oldToken = user.token;
         let newToken = user.token;
         if (user && token > 0) {
-            user.token -= token;
+            user.token = user.rewardToken;
             newToken = user.token;
             await userRepo.persistAndFlush(user);
         }

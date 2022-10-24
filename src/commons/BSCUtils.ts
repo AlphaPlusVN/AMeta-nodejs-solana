@@ -82,11 +82,9 @@ export namespace BscUtil {
             logger.info("Link Account Event");
             const eventData = params[params.length - 1];
             const { transactionHash, blockNumber, args } = eventData;
-            const [emailHash, address] = args;
+            const [email, address] = args;
             logger.info("DATA " + JSON.stringify(args));
             logger.info("txHash " + transactionHash);
-            let email = await gameAssetsContract.walletToEmail(address);
-            logger.info("email " + email);
             linkWalletTrigger(email, address, defaultChainId);
         });
 
@@ -94,10 +92,10 @@ export namespace BscUtil {
             logger.info("Unlink Account Event")
             const eventData = params[params.length - 1];
             const { transactionHash, blockNumber, args } = eventData;
-            const [emailHash, address] = args;
+            const [email, address] = args;
             logger.info("DATA " + JSON.stringify(args));
             logger.info("txHash " + transactionHash);
-            unLinkWalletTrigger(address, defaultChainId);
+            unLinkWalletTrigger(email, address, defaultChainId);
         });
     }
 
