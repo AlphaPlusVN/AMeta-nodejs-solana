@@ -98,7 +98,7 @@ export namespace BscUtil {
         });
 
         gameAssetsContract.on("DepositErc20", async (...params) => {
-            logger.info("Unlink Account Event")
+            logger.info("Deposit ERC20 Account Event")
             const eventData = params[params.length - 1];
             const { transactionHash, blockNumber, args } = eventData;
             const [email, walletAddress, tokenAddress, value] = args;
@@ -108,7 +108,7 @@ export namespace BscUtil {
         });
 
         gameAssetsContract.on("DepositErc721", async (...params) => {
-            logger.info("Unlink Account Event")
+            logger.info("Deposit ERC 721")
             const eventData = params[params.length - 1];
             const { transactionHash, blockNumber, args } = eventData;
             const [email, walletAddress, tokenAddress, tokenIds] = args;
