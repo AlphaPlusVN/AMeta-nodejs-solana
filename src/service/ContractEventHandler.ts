@@ -286,6 +286,7 @@ export async function depositErc721Trigger(email: string, walletAddress: string,
         for (let item of items) {
             item.owner = user.id;
             item.walletOwner = walletAddress;
+            item.mapList = [];
             let itemNew = itemRepo.create(item);
             itemRepo.persist(itemNew);
         }
