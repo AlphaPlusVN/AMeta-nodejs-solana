@@ -1,3 +1,4 @@
+import { BigNumber } from 'ethers';
 import { Constants, TransType } from '../commons/Constants';
 import logger from '../commons/logger';
 import { newItemFromConfig, setNewLevelItemData, setNewStarItemData } from '../commons/ObjectMapper';
@@ -8,10 +9,8 @@ import { ItemConfig } from '../entities/ItemEntity';
 import { SCNFTMetadata } from '../entities/NFTMetadataMapping';
 import { User } from '../entities/User';
 import { WalletAccount } from '../entities/WalletAccount';
-import { getErc20OfAssetByUser, getAplusAddressByChainId } from './GameAssetsService';
-import { TransactionHistory } from '../entities/TransactionHistory';
+import { getAplusAddressByChainId, getErc20OfAssetByUser, getNFTAddressByChainId } from './GameAssetsService';
 import { saveTokenTransaction, saveTransaction, saveUserBalanceHistory } from './TransactionService';
-import { BigNumber } from 'ethers';
 
 export async function mintBoxBatchTrigger(tokenIds: number[], to: string, boxType: number, contractAddress: string) {
     const SILVER = 1;
@@ -266,7 +265,7 @@ export async function depositErc20Trigger(email: string, walletAddress: string, 
 }
 
 export async function depositErc721Trigger(email: string, walletAddress: string, tokenAddress: string, tokendIds: Array<BigNumber>, chainId: number) {
-    if (tokenAddress == getAplusAddressByChainId(chainId)) {
+    if (tokenAddress == getNFTAddressByChainId(chainId)) {
         const walletAccountRepo = DI.em.fork().getRepository(WalletAccount);
         let tokenIdsNumber = new Array<number>();
         for (let tokenId of tokendIds) {
@@ -275,7 +274,7 @@ export async function depositErc721Trigger(email: string, walletAddress: string,
         logger.info("Deposit " + JSON.stringify(tokenIdsNumber) + " to " + email + " by " + walletAddress);
         let walletAccount = await walletAccountRepo.findOne({ userEmail: email, walletAddress, chainId, isDeleted: Constants.STATUS_NO });
         if (walletAccount) {
-
+            
         }
     }
 }

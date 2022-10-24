@@ -20,6 +20,22 @@ export function getAplusAddressByChainId(chainId: number) {
     }
     return address;
 }
+export function getNFTAddressByChainId(chainId: number) {
+    let address: string;
+    switch (chainId) {
+        case ChainId.KAR_MAIN:
+        case ChainId.KAR_TEST:
+            address = BscUtil.NFT_ADDRESS;
+            break;
+        case ChainId.BSC_MAIN:
+        case ChainId.BSC_TEST:
+            address = BscUtil.NFT_ADDRESS;
+            break;
+        default: address = BscUtil.NFT_ADDRESS;
+            break;
+    }
+    return address;
+}
 
 export async function getERC20Assets(walletAddress: string, chainId: number) {
     logger.info("Call GameAssets ERC20 infor ")
