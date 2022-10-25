@@ -273,31 +273,37 @@ export async function depositErc20Trigger(email: string, walletAddress: string, 
 }
 
 export async function depositErc721Trigger(email: string, walletAddress: string, tokenAddress: string, tokendIds: Array<BigNumber>, chainId: number) {
-    if (tokenAddress == getNFTAddressByChainId(chainId)) {
-        const walletAccountRepo = DI.em.fork().getRepository(WalletAccount);
-        let tokenIdsNumber = new Array<number>();
-        for (let tokenId of tokendIds) {
-            tokenIdsNumber.push(tokenId.toNumber());
+    try {
+        if (tokenAddress == getNFTAddressByChainId(chainId)) {
+            const walletAccountRepo = DI.em.fork().getRepository(WalletAccount);
+            let tokenIdsNumber = new Array<number>();
+            for (let tokenId of tokendIds) {
+                tokenIdsNumber.push(tokenId.toNumber());
+            }
+            logger.info("Deposit " + JSON.stringify(tokenIdsNumber) + " to " + email + " by " + walletAddress);
+            const metaDataRepo = DI.em.fork().getRepository(SCNFTMetadata);
+            let metaDatas = new Array<SCNFTMetadata>();
+            metaDatas = await metaDataRepo.find({ tokenId: { $in: tokenIdsNumber }, contractAddress: tokenAddress.toLowerCase() });
+            let items = new Array<Item>();
+            for (let metadata of metaDatas) {
+                logger.info("data " + JSON.stringify(metadata.jsonMetadata.attributes[0].value));
+                items.push(metadata.jsonMetadata.attributes[0].value);
+            }
+            const userRepo = DI.em.fork().getRepository(User);
+            let user = await userRepo.findOne({ email });
+            const itemRepo = DI.em.fork().getRepository(Item);
+            for (let item of items) {
+                item.owner = user.id;
+                item.walletOwner = walletAddress;
+                item.mapList = [];
+                let itemNew = itemRepo.create(item);
+                itemRepo.persist(itemNew);
+            }
+            if (items.length > 0) {
+                await itemRepo.flush();
+            }
         }
-        logger.info("Deposit " + JSON.stringify(tokenIdsNumber) + " to " + email + " by " + walletAddress);
-        const metaDataRepo = DI.em.fork().getRepository(SCNFTMetadata);
-        let metaDatas = new Array<SCNFTMetadata>();
-        metaDatas = await metaDataRepo.find({ tokenId: { $in: tokenIdsNumber }, contractAddress: tokenAddress.toLowerCase() });
-        let items = new Array<Item>();
-        for (let metadata of metaDatas) {
-            logger.info("data " + JSON.stringify(metadata.jsonMetadata.attributes[0].value));
-            items.push(metadata.jsonMetadata.attributes[0].value);
-        }
-        const userRepo = DI.em.fork().getRepository(User);
-        let user = await userRepo.findOne({ email });
-        const itemRepo = DI.em.fork().getRepository(Item);
-        for (let item of items) {
-            item.owner = user.id;
-            item.walletOwner = walletAddress;
-            itemRepo.create(item);
-        }
-        if (items.length > 0) {
-            await itemRepo.flush();
-        }
+    } catch (e) {
+        logger.error(e);
     }
 }
