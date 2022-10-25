@@ -11,6 +11,7 @@ import { User } from '../entities/User';
 import { WalletAccount } from '../entities/WalletAccount';
 import { getAplusAddressByChainId, getErc20OfAssetByUser, getNFTAddressByChainId } from './GameAssetsService';
 import { saveTokenTransaction, saveTransaction, saveUserBalanceHistory } from './TransactionService';
+import { BoxOpenHistory } from '../entities/BoxOpenHistory';
 
 export async function mintBoxBatchTrigger(tokenIds: number[], to: string, boxType: number, contractAddress: string) {
     const SILVER = 1;
@@ -160,6 +161,13 @@ export async function openBoxEventTrigger(owner: string, boxId: number, nftToken
                 attributes: [{ trait_type: "itemInfo", value: itemMetadata }]
             }
             await metadataRepo.persistAndFlush(metadata);
+            const boxRepo = DI.em.fork().getRepository(BoxOpenHistory);
+            let boxOpen = new BoxOpenHistory();
+            boxOpen.boxName = boxCode;
+            boxOpen.boxType = boxType;
+            boxOpen.itemName = itemMetadata.name;
+            boxOpen.itemRarity = itemMetadata.rank;
+            await boxRepo.persistAndFlush(boxOpen);
         }
     } catch (e) {
         console.error(e);

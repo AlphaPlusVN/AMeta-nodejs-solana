@@ -20,4 +20,7 @@ export abstract class BaseEntity {
 
   @Property()
   owner?:string = "";
+
+  @Property()
+  createdTime = new Date().getTime();
 }

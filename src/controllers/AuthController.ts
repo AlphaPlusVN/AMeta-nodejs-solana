@@ -22,9 +22,11 @@ interface GeTokenInput extends BaseInput {
     walletAddress: string,
     sig: string,
 }
+
 interface GeNonceInput extends BaseInput {
     walletAddress: string
 }
+
 interface UpdateUserInput extends BaseInput {
     walletAddress: string,
     email: string,
