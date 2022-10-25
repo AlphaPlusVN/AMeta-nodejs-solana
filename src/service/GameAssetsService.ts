@@ -61,7 +61,7 @@ export async function getErc20OfAssetByUser(walletAddress: string, chainId: numb
 
 export async function getErc721OfAssetByUser(walletAddress: string, chainId: number) {
     logger.info("Call GameAssets 721 infor ")
-    let erc721Info:[tokendAddress:string, tokenIds:Array<BigNumber>] = await BscUtil.gameAssetsContract.viewErc721OfAssetByUser(getAddress(getNFTAddressByChainId(chainId).toLowerCase()), getAddress(walletAddress.toLowerCase()));
+    let erc721Info: [tokendAddress: string, tokenIds: Array<BigNumber>] = await BscUtil.gameAssetsContract.viewErc721OfAssetByUser(getAddress(getNFTAddressByChainId(chainId).toLowerCase()), getAddress(walletAddress.toLowerCase()));
     logger.info(JSON.stringify(erc721Info));
     let tokenIdsNumber = new Array<number>();
     for (let tokenId of erc721Info[1]) {
@@ -72,7 +72,10 @@ export async function getErc721OfAssetByUser(walletAddress: string, chainId: num
     metaDatas = await metaDataRepo.find({ tokenId: { $in: tokenIdsNumber }, contractAddress: getNFTAddressByChainId(chainId).toLowerCase() });
     let items = new Array<Item>();
     for (let metadata of metaDatas) {
-        items.push(metadata.jsonMetadata.attributes[0].value);
+        let item: Item = metadata.jsonMetadata.attributes[0].value;
+        item.tokenId = metadata.tokenId;
+        item.nftAddress = metadata.contractAddress;
+        items.push(item);
     }
     return items;
 }

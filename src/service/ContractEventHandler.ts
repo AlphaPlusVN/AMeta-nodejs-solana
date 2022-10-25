@@ -284,22 +284,25 @@ export async function depositErc721Trigger(email: string, walletAddress: string,
             const metaDataRepo = DI.em.fork().getRepository(SCNFTMetadata);
             let metaDatas = new Array<SCNFTMetadata>();
             metaDatas = await metaDataRepo.find({ tokenId: { $in: tokenIdsNumber }, contractAddress: tokenAddress.toLowerCase() });
-            let items = new Array<Item>();
+            let mapItems = new Map<number, Item>();
             for (let metadata of metaDatas) {
                 logger.info("data " + JSON.stringify(metadata.jsonMetadata.attributes[0].value));
-                items.push(metadata.jsonMetadata.attributes[0].value);
+                mapItems.set(metadata.tokenId, metadata.jsonMetadata.attributes[0].value);
             }
             const userRepo = DI.em.fork().getRepository(User);
             let user = await userRepo.findOne({ email });
             const itemRepo = DI.em.fork().getRepository(Item);
-            for (let item of items) {
+            for (let tokenId of mapItems.keys()) {
+                let item = mapItems.get(tokenId);
+                item.tokenId = tokenId;
                 item.owner = user.id;
                 item.walletOwner = walletAddress;
+                item.nftAddress = tokenAddress;
                 item.mapList = [];
                 let itemNew = itemRepo.create(item);
                 itemRepo.persist(itemNew);
             }
-            if (items.length > 0) {
+            if (mapItems.size > 0) {
                 await itemRepo.flush();
             }
         }
