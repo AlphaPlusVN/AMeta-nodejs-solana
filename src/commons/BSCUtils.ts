@@ -1,6 +1,7 @@
-import { ethers, logger, BigNumber } from 'ethers';
+import { ethers, BigNumber } from 'ethers';
 import { depositErc20Trigger, depositErc721Trigger, linkWalletTrigger, mintBoxBatchTrigger, mintBoxTrigger, openBoxEventTrigger, unLinkWalletTrigger } from '../service/ContractEventHandler';
 import { ChainId } from "./EnumObjs";
+import logger from './logger';
 import { PoolSellBox } from './PoolSellBoxPublicABI';
 
 export namespace BscUtil {
@@ -104,7 +105,13 @@ export namespace BscUtil {
             const [email, walletAddress, tokenAddress, value] = args;
             logger.info("DATA " + JSON.stringify(args));
             logger.info("txHash " + transactionHash);
-            depositErc20Trigger(email, walletAddress, tokenAddress, value.toNumber(), defaultChainId);
+            let valueToNumber = 0;
+            try {
+                valueToNumber = value.toNumber();
+            } catch (e) {
+                logger.error(e);
+            }
+            depositErc20Trigger(email, walletAddress, tokenAddress, valueToNumber, defaultChainId);
         });
 
         gameAssetsContract.on("DepositErc721", async (...params) => {
