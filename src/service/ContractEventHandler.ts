@@ -277,6 +277,7 @@ export async function unLinkWalletTrigger(email: string, walletAddress: string, 
                     item.owner = "";
                     item.isDeleted = Constants.STATUS_YES;
                 }
+                await itemRepo.persistAndFlush(itemByWallets);
                 await saveItemTransaction(transaction.from, transaction.to, itemByWallets, transaction.transactionNumber);
             }
         }
