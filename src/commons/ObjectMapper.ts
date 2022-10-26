@@ -29,17 +29,9 @@ export function newItemFromConfig(config: ItemConfig) {
 }
 export async function setNewLevelItemData(item: Item) {
     if (item.level == 1) {
-        item.nextLevelPoint = 100;
+        item.nextLevelPoint = 1000;
     } else {
-        let rate: number;
-        if (item.star == 1) {
-            rate = 1.2;
-        } else if (item.star == 2) {
-            rate = 1.5;
-        } else {
-            rate = 2;
-        }
-        item.nextLevelPoint = Math.round((item.nextLevelPoint + item.level) * rate);
+        item.nextLevelPoint = Math.round((item.nextLevelPoint) * 1.2);
     }
 }
 
