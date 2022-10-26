@@ -9,9 +9,10 @@ import { ItemConfig, Item } from '../entities/ItemEntity';
 import { SCNFTMetadata } from '../entities/NFTMetadataMapping';
 import { User } from '../entities/User';
 import { WalletAccount } from '../entities/WalletAccount';
-import { getAplusAddressByChainId, getErc20OfAssetByUser, getNFTAddressByChainId } from './GameAssetsService';
-import { saveTokenTransaction, saveTransaction, saveUserBalanceHistory } from './TransactionService';
+import { getAplusAddressByChainId, getErc20OfAssetByUser, getErc721OfAssetByUser, getNFTAddressByChainId } from './GameAssetsService';
+import { saveItemTransaction, saveTokenTransaction, saveTransaction, saveUserBalanceHistory } from './TransactionService';
 import { BoxOpenHistory } from '../entities/BoxOpenHistory';
+import { Token } from 'nft.storage';
 
 export async function mintBoxBatchTrigger(tokenIds: number[], to: string, boxType: number, contractAddress: string) {
     const SILVER = 1;
@@ -197,13 +198,37 @@ export async function linkWalletTrigger(email: string, walletAddress: string, ch
                 walletAccount.walletAddress = walletAddress;
                 walletAccount.chainId = chainId;
                 tokenAdded = await getErc20OfAssetByUser(walletAddress, chainId);
-
                 if (user && tokenAdded > 0) {
                     user.token = user.rewardToken + tokenAdded;
                     walletAccount.tokenOnPool += tokenAdded;
                     await userRepo.persistAndFlush(user);
                 }
                 walletAccountRepo.persist(walletAccount);
+                await walletAccountRepo.flush();
+                let items = await getErc721OfAssetByUser(walletAddress, chainId);
+                if (items.length > 0) {
+                    const itemRepo = DI.em.fork().getRepository(Item);
+                    //clear old item
+                    let itemByWallets = await itemRepo.find({ walletOwner: walletAddress });
+                    let transaction = await saveTransaction(Constants.SYSTEM_ADMIN, user.id, TransType.WALLET_SYNC, { token: tokenAdded, items: items }, "", walletAddress, "Remove item by wallet");
+                    if (itemByWallets && itemByWallets.length > 0) {
+                        for (let item of itemByWallets) {
+                            item.owner = "";
+                            item.isDeleted = Constants.STATUS_YES;
+                        }
+                        itemRepo.persist(itemByWallets);
+                        await saveItemTransaction(transaction.from, transaction.to, itemByWallets, transaction.transactionNumber);
+                    }
+                    //add new Item
+                    for (let item of items) {
+                        item.owner = user.id;
+                        item.walletOwner = walletAddress;
+                        item.mapList = [];
+                        let itemNew = itemRepo.create(item);
+                        itemRepo.persist(itemNew);
+                    }
+                    await itemRepo.flush();
+                }
             }
             await walletAccountRepo.flush();
             if (tokenAdded > 0) {
@@ -214,6 +239,7 @@ export async function linkWalletTrigger(email: string, walletAddress: string, ch
                 await saveTokenTransaction(transaction.from, transaction.to, Math.abs(tokenAdded), transaction.transactionNumber);
                 await saveUserBalanceHistory(user, 0, tokenAdded, transaction.transactionNumber);
             }
+
         } else {
             logger.warn("skip user by chainId " + chainId);
         }
@@ -236,15 +262,22 @@ export async function unLinkWalletTrigger(email: string, walletAddress: string, 
         if (token > 0) {
             let delta = -1 * token;
             let transaction = await saveTransaction(Constants.SYSTEM_ADMIN, user.id, TransType.WALLET_SYNC, { walletAddress, token: delta }, chainId + "", walletAddress, "Unlink wallet address");
-            // if (rewards && rewards.length > 0) {
-            //     await saveItemTransaction(transaction.from, transaction.to, rewards, transaction.transactionNumber);
-            // }
             await saveTokenTransaction(transaction.from, transaction.to, Math.abs(delta), transaction.transactionNumber);
             await saveUserBalanceHistory(user, 0, delta, transaction.transactionNumber);
         }
         if (walletAccount) {
             walletAccount.isDeleted = Constants.STATUS_YES;
             await walletAccountRepo.persistAndFlush(walletAccount);
+            const itemRepo = DI.em.fork().getRepository(Item);
+            let itemByWallets = await itemRepo.find({ walletOwner: walletAddress });
+            let transaction = await saveTransaction(Constants.SYSTEM_ADMIN, user.id, TransType.WALLET_SYNC, { walletAddress, itemByWallets }, "", walletAddress, "Remove Item unlink wallet");
+            if (itemByWallets && itemByWallets.length > 0) {
+                for (let item of itemByWallets) {
+                    item.owner = "";
+                    item.isDeleted = Constants.STATUS_YES;
+                }
+                await saveItemTransaction(transaction.from, transaction.to, itemByWallets, transaction.transactionNumber);
+            }
         }
     } catch (e) {
         logger.error(e);
