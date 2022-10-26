@@ -107,7 +107,7 @@ export namespace BscUtil {
             logger.info("txHash " + transactionHash);
             let valueToNumber = 0;
             try {
-                valueToNumber = ethers.utils.parseEther(value).toNumber();
+                valueToNumber = new Number(ethers.utils.formatEther(value)).valueOf();
             } catch (e) {
                 logger.error(e);
             }

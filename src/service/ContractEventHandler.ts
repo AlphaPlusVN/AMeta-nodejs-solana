@@ -12,7 +12,6 @@ import { WalletAccount } from '../entities/WalletAccount';
 import { getAplusAddressByChainId, getErc20OfAssetByUser, getErc721OfAssetByUser, getNFTAddressByChainId } from './GameAssetsService';
 import { saveItemTransaction, saveTokenTransaction, saveTransaction, saveUserBalanceHistory } from './TransactionService';
 import { BoxOpenHistory } from '../entities/BoxOpenHistory';
-import { Token } from 'nft.storage';
 
 export async function mintBoxBatchTrigger(tokenIds: number[], to: string, boxType: number, contractAddress: string) {
     const SILVER = 1;

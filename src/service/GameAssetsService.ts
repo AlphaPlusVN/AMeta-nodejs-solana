@@ -58,7 +58,7 @@ export async function getErc20OfAssetByUser(walletAddress: string, chainId: numb
     logger.info(JSON.stringify(erc20Info));
     let valueToNumber = 0;
     try {
-        valueToNumber = ethers.utils.parseEther(erc20Info[1]).toNumber();
+        valueToNumber = new Number(ethers.utils.formatEther(erc20Info[1])).valueOf();
     } catch (e) {
         logger.error(e);
     }
