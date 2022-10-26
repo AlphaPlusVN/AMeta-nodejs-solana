@@ -10,7 +10,7 @@ import { Item, ItemConfig, ItemSkill } from '../entities/ItemEntity';
 import { SCNFTMetadata } from '../entities/NFTMetadataMapping';
 import { WalletAccount } from '../entities/WalletAccount';
 import { SystemParam } from '../entities/SystemParam';
-import { TransactionHistory, TransactionGold, TransactionToken } from '../entities/TransactionHistory';
+import { TransactionHistory, TransactionGold, TransactionToken, TransactionItem } from '../entities/TransactionHistory';
 import { UserBalanceHistory } from '../entities/UserBalanceHistory';
 import { BoxOpenHistory } from '../entities/BoxOpenHistory';
 
@@ -22,7 +22,7 @@ import { BoxOpenHistory } from '../entities/BoxOpenHistory';
 const options: Options = {
   type: 'mongo',
   entities: [User, MarKetConfig, MktBoxesForSale, MktTransaction, WalletCache, TokenAccount, BoxConfig, Item, ItemConfig, ItemSkill, SCNFTMetadata, WalletAccount,
-    SystemParam, TransactionHistory, TransactionGold, TransactionToken, UserBalanceHistory, BoxOpenHistory]
+    SystemParam, TransactionHistory, TransactionGold, TransactionToken, UserBalanceHistory, BoxOpenHistory, TransactionItem]
 }; 
 
 export default options;
