@@ -43,15 +43,14 @@ export function randomFromTo(from: number, to: number) {
 }
 export function getFameByRarity(rare: number) {
     let fame = 900;
-
     switch (rare) {
-        case 0: fame = randomFromTo(900, 1100);
+        case 0: fame = 1000;
             break;
-        case 1: fame = randomFromTo(1101, 1300);
+        case 1: fame = 1400;
             break;
-        case 0: fame = randomFromTo(1301, 1500);
+        case 2: fame = 1800;
             break;
-        case 0: fame = randomFromTo(1501, 2000);
+        case 3: fame = 2200;
             break;
     }
     return fame;
