@@ -168,6 +168,7 @@ export async function openBoxEventTrigger(owner: string, boxId: number, nftToken
             boxOpen.boxType = boxType;
             boxOpen.itemName = itemMetadata.name;
             boxOpen.itemRarity = itemMetadata.rank;
+            boxOpen.owner = owner;
             await boxRepo.persistAndFlush(boxOpen);
         }
     } catch (e) {
