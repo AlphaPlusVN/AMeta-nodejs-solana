@@ -1,6 +1,6 @@
 import { BscUtil } from '../commons/BSCUtils';
 import { ChainId } from '../commons/EnumObjs';
-import { BigNumber } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
 import logger from '../commons/logger';
 import { getAddress } from 'ethers/lib/utils';
 import { SCNFTMetadata } from '../entities/NFTMetadataMapping';
@@ -54,11 +54,11 @@ export async function getERC20Assets(walletAddress: string, chainId: number) {
 }
 export async function getErc20OfAssetByUser(walletAddress: string, chainId: number) {
     logger.info("Call GameAssets ERC20 infor ")
-    let erc20Info: [tokenAddress: string, value: BigNumber] = await BscUtil.gameAssetsContract.viewErc20OfAssetByUser(getAddress(getAplusAddressByChainId(chainId).toLowerCase()), getAddress(walletAddress.toLowerCase()));
+    let erc20Info: [tokenAddress: string, value: string] = await BscUtil.gameAssetsContract.viewErc20OfAssetByUser(getAddress(getAplusAddressByChainId(chainId).toLowerCase()), getAddress(walletAddress.toLowerCase()));
     logger.info(JSON.stringify(erc20Info));
     let valueToNumber = 0;
     try {
-        valueToNumber = erc20Info[1].toNumber();
+        valueToNumber = ethers.utils.parseEther(erc20Info[1]).toNumber();
     } catch (e) {
         logger.error(e);
     }
