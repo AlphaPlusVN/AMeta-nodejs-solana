@@ -292,10 +292,12 @@ export async function depositErc20Trigger(email: string, walletAddress: string, 
         let walletAccount = await walletAccountRepo.findOne({ userEmail: email, walletAddress, chainId, isDeleted: Constants.STATUS_NO });
         if (walletAccount) {
             walletAccount.tokenOnPool += value;
+            logger.info("walletAccount" + JSON.stringify(walletAccount));
             const userRepo = DI.em.fork().getRepository(User);
             await walletAccountRepo.persistAndFlush(walletAccount);
             let user = await userRepo.findOne({ email });
             if (user) {
+                logger.info("user existed")
                 user.token = user.rewardToken + walletAccount.tokenOnPool;
                 await userRepo.persistAndFlush(user);
                 let transaction = await saveTransaction(Constants.SYSTEM_ADMIN, user.id, TransType.WALLET_SYNC, { walletAddress, token: value }, chainId + "", walletAddress, "Deposit token to account");
