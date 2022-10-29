@@ -1,4 +1,4 @@
-import { ethers, BigNumber } from 'ethers';
+import { ethers, BigNumber, Wallet } from 'ethers';
 import { depositErc20Trigger, depositErc721Trigger, linkWalletTrigger, mintBoxBatchTrigger, mintBoxTrigger, openBoxEventTrigger, unLinkWalletTrigger } from '../service/ContractEventHandler';
 import { ChainId } from "./EnumObjs";
 import logger from './logger';
@@ -122,7 +122,7 @@ export namespace BscUtil {
             let tokenIdArr: Array<BigNumber> = tokenIds;
             logger.info("DATA " + JSON.stringify(args));
             logger.info("txHash " + transactionHash);
-            depositErc721Trigger(email, walletAddress, tokenAddress, tokenIdArr, defaultChainId);
+            await depositErc721Trigger(email, walletAddress, tokenAddress, tokenIdArr, defaultChainId);
         });
     }
 
@@ -142,6 +142,18 @@ export namespace BscUtil {
     export function getGameAssetsABI() {
         const fs = require('fs');
         let jsonFile = __dirname + "/GameAssetsABI.json";
+        let parsed = JSON.parse(fs.readFileSync(jsonFile));
+        return parsed;
+    }
+
+    export async function getOwner() {
+        const signer = await Wallet.fromEncryptedJson(getPrivateKey(), "Ameta!@#123");
+        let account = signer.connect(provider);
+        return account;
+    }
+    export function getPrivateKey() {
+        const fs = require('fs');
+        let jsonFile = __dirname + "/ga_private.pem";
         let parsed = JSON.parse(fs.readFileSync(jsonFile));
         return parsed;
     }
