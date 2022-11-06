@@ -24,6 +24,8 @@ export function newItemFromConfig(config: ItemConfig) {
         item.modelId = config.modelId;
         item.mapList = config.mapList;
         item.skill = config.skill;
+        item.tribe = config.tribe;
+        item.tribeGroup = config.tribeGroup;
     }
     return item;
 }
