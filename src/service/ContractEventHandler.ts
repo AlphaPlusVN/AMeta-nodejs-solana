@@ -118,6 +118,7 @@ export async function openBoxEventTrigger(owner: string, boxId: number, nftToken
         const boxRepo = DI.em.fork().getRepository(BoxConfig);
         const metadataRepo = DI.em.fork().getRepository(SCNFTMetadata);
         let box = await boxRepo.findOne({ code: boxCode });
+        logger.info("box " + JSON.stringify(box));
         if (box) {
             let rate = getRandomPercent();
             let currentRate = 0;
@@ -129,6 +130,7 @@ export async function openBoxEventTrigger(owner: string, boxId: number, nftToken
                     break;
                 }
             }
+            logger.info("rarity" + rarity);
             let itemByRares = new Array<ItemOnBox>();
             for (let item of box.randomPool) {
                 if (item.rarity == rarity) {

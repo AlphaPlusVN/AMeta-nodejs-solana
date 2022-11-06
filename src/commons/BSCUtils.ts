@@ -12,7 +12,7 @@ export namespace BscUtil {
     const BSC_ENDPOINT = 'https://bsc-dataseed.binance.org/'; //main
     const BOX_CONTRACT_ADDRESS = "0xC42AB9A75D391Be6C4c94f7e53c4d374aBabDA24"; //main
     const POOL_SELL_BOX_ADDRESS = "0xEddDC76025001cD276862D523046837f703b2f85"; //main
-    export const NFT_ADDRESS = "0x50DC8c1fE49900641F4e716EF0d260d0F961645e";
+    export const NFT_ADDRESS = "0xC4582ae1aF4b40F6F311e6946f3dbaEBB316DB93";
     export const APLUS_ADDRESS = "0xb445B2d8831a602aE4684EC4f9316ef2091bFe37";//main
 
     // const BSC_ENDPOINT = 'https://data-seed-prebsc-1-s2.binance.org:8545'; //test
