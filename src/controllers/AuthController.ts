@@ -1,19 +1,20 @@
 import { Request, Response } from "express";
 import { sign } from "jsonwebtoken";
+import logger from "../commons/logger";
 import { buildResponse, genRandomString, isNullOrEmptyString } from "../commons/Utils";
 import { SECRET } from "../config/AuthConfig";
 import { ErrorCode, HandleErrorException, SUCCESS } from "../config/ErrorCodeConfig";
 
-// import { connection, systemTransfer } from '../ameta/SolAMeta';
-// import { AMETA_TOKEN, createTokenAccount } from '../ameta/SolUtils';
-import { web3OKRC } from "../commons/OKXClientUtil";
+import { Constants } from '../commons/Constants';
 import { DI } from '../configdb/database.config';
-import { User } from '../entities/User';
-import { WalletCache } from '../entities/WalletCache';
-import AuthMiddleWare from "../middleware/AuthMiddleWare";
-import BaseController, { BaseInput } from "./BaseController";
-import { getAllBoxInfo, getBoxContractByChainId } from '../service/ServiceCommon';
+import { Item } from '../entities/ItemEntity';
 import { SCNFTMetadata } from '../entities/NFTMetadataMapping';
+import { User } from '../entities/User';
+import AuthMiddleWare from "../middleware/AuthMiddleWare";
+import { getErc20OfAssetByUser, getErc721OfAssetByUser, getWalletByUser } from "../service/GameAssetsService";
+import { getAllBoxInfo, getAllNFTInfo, getBoxContractByChainId, getNFTContractByChainId } from '../service/ServiceCommon';
+import BaseController, { BaseInput } from "./BaseController";
+import { constants } from "ethers";
 
 const bcrypt = require('bcryptjs');
 
@@ -21,9 +22,11 @@ interface GeTokenInput extends BaseInput {
     walletAddress: string,
     sig: string,
 }
+
 interface GeNonceInput extends BaseInput {
     walletAddress: string
 }
+
 interface UpdateUserInput extends BaseInput {
     walletAddress: string,
     email: string,
@@ -39,8 +42,9 @@ export default class AuthController extends BaseController {
     initializeRoutes = () => {
         this.router.post('/getToken', this.getToken);
         this.router.post('/updateUser', [AuthMiddleWare.verifyToken], this.updateUser);
-
         this.router.post("/getWalletItemInfo", this.getWalletItemInfo)
+        this.router.get("/getTokenAssets/:chainId/:walletAddress", this.getTokenAssets);
+        this.router.get("/getWalletMapping/:chainId/:userEmail", this.getWalletMappingInfo);
     }
 
     getWalletItemInfo = async (req: Request, res: Response) => {
@@ -48,14 +52,19 @@ export default class AuthController extends BaseController {
             const refNo = req.body.refNo;
             const walletAddress = req.body.walletAddress;
             const chainId = parseInt(req.body.chainId);
-            let tokenIds = await getAllBoxInfo(walletAddress, chainId);
+            let boxTokenIds = await getAllBoxInfo(walletAddress, chainId);
             let boxContract = getBoxContractByChainId(chainId);
+            let nftTokenIds = await getAllNFTInfo(walletAddress, chainId);
+            let nftContract = getNFTContractByChainId(chainId);
             const metadataRepo = DI.em.fork().getRepository(SCNFTMetadata);
-            console.log("chaiID " + chainId + " addr "+ boxContract.address + " tokenID: "+ JSON.stringify(tokenIds));
-            let metaData = await metadataRepo.find({ tokenId: { $in: tokenIds }, contractAddress: boxContract.address.toLowerCase() })
-            buildResponse(refNo, res, SUCCESS, metaData);
+            logger.info("chaiID " + chainId + " addr " + boxContract.address + " BoxtokenID: " + JSON.stringify(boxTokenIds));
+            logger.info("chaiID " + chainId + " addr " + nftContract.address + " NFTtokenID: " + JSON.stringify(nftTokenIds));
+            let boxMetadata = await metadataRepo.find({ tokenId: { $in: boxTokenIds }, contractAddress: boxContract.address.toLowerCase() });
+            let nftMetaData = await metadataRepo.find({ tokenId: { $in: nftTokenIds }, contractAddress: nftContract.address.toLowerCase() });
+            let data = { boxs: boxMetadata, items: nftMetaData };
+            buildResponse(refNo, res, SUCCESS, data);
         } catch (err) {
-            console.log(err);
+            logger.info(err);
             HandleErrorException(req.body, res, err + "");
         }
         // let 
@@ -63,7 +72,7 @@ export default class AuthController extends BaseController {
     getToken = async (req: Request, res: Response) => {
         let input: GeTokenInput = req.body;
         try {
-            console.log(input);
+            logger.info(input);
             if (isNullOrEmptyString(input.sig) || isNullOrEmptyString(input.walletAddress)) {
                 throw new Error(ErrorCode.ParamsIsInvalid);
 
@@ -72,16 +81,16 @@ export default class AuthController extends BaseController {
             let user: User = await userRepo.findOne({
                 walletAddress: input.walletAddress
             });
-            if (!user || isNullOrEmptyString(user.nonce)) {
-                throw new Error(ErrorCode.ParamsIsInvalid);
-            }
+            // if (!user || isNullOrEmptyString(user.nonce)) {
+            //     throw new Error(ErrorCode.ParamsIsInvalid);
+            // }
 
             let token = sign({ walletAddress: input.walletAddress }, SECRET, {
                 expiresIn: '365d' // 60 mins
             });
             buildResponse(input.refNo, res, SUCCESS, { token: token, user: { username: user.username } });
         } catch (err) {
-            console.log(err);
+            logger.info(err);
             HandleErrorException(input, res, err + "");
         }
     }
@@ -97,7 +106,7 @@ export default class AuthController extends BaseController {
     //         let user: User = await userRepo.findOne({
     //             walletAddress: getNonceInput.walletAddress
     //         });
-    //         console.log('user', user);
+    //         logger.info('user', user);
     //         if (user) {
     //             user.nonce = nonce;
     //             await userRepo.persistAndFlush(user);
@@ -109,7 +118,7 @@ export default class AuthController extends BaseController {
     //                 password: ''
     //             });
     //             await userRepo.persistAndFlush(user);
-    //             console.log('new user', user);
+    //             logger.info('new user', user);
     //         }
 
     //         buildResponse(getNonceInput.refNo, res, SUCCESS, { nonce })
@@ -173,138 +182,34 @@ export default class AuthController extends BaseController {
         }
     }
 
-    // createUserWallet = async (req: Request, res: Response) => {
-    //     let input = req.body;
-    //     try {
-    //         //save to db
-    //         let userRepo = DI.em.fork().getRepository(User);
-    //         let walletRepo = DI.em.fork().getRepository(WalletCache);
-    //         let user = await userRepo.findOne({ username: input.username });
-    //         if (user && isNullOrEmptyString(user.walletAddress)) {
-    //             console.log("Create wallet for " + req.body.username);
-    //             //generate wallet
-    //             let keypair = Keypair.generate();
-    //             const privateKey = bs58.encode(keypair.secretKey);
-    //             //create token account
-    //             await createTokenAccount(keypair, AMETA_TOKEN, TokenCode.AMETA);
+    getTokenAssets = async (req: any, res: any) => {
+        try {
+            let walletAddress = req.params.walletAddress;
+            let chainId = req.params.chainId;
+            let aplus = await getErc20OfAssetByUser(walletAddress, chainId);
+            buildResponse("", res, SUCCESS, aplus);
+        } catch (err) {
+            logger.error(err);
+            HandleErrorException({ refNo: null }, res, err + "");
+        }
+    }
 
-    //             user.walletAddress = keypair.publicKey.toBase58();
-    //             await userRepo.persistAndFlush(user);
-    //             let wallet = new WalletCache();
-    //             wallet.walletAddress = keypair.publicKey.toBase58();
-    //             wallet.secretKey = privateKey;
-    //             await walletRepo.persistAndFlush(wallet);
-    //         }
-    //         buildResponse(input.refNo, res, SUCCESS, {
-    //             user
-    //         });
-    //     } catch (err) {
-    //         console.error(err);
-    //         HandleErrorException(input, res, err + "");
-    //     }
-    // };
-
-    // createKarWallet = async (req: any, res: any) => {
-    //     let input = req.body;
-    //     try {
-    //         //save to db
-    //         let userRepo = DI.em.fork().getRepository(User);
-    //         let walletRepo = DI.em.fork().getRepository(WalletCache);
-    //         let user = await userRepo.findOne({ username: input.username });
-    //         if (user && isNullOrEmptyString(user.walletAddress)) {
-    //             console.log("Create wallet for " + req.body.username);
-    //             //generate wallet
-    //             let walletAcct = null;
-    //             if (user.chainCode == ChainCode.KARDIACHAIN) {
-    //                 walletAcct = web3Kar.eth.accounts.create();
-    //             } else {
-    //                 walletAcct = web3OKRC.eth.accounts.create();
-    //             }
-    //             user.walletAddress = walletAcct.address;
-    //             await userRepo.persistAndFlush(user);
-    //             let wallet = new WalletCache();
-    //             wallet.walletAddress = walletAcct.address;
-    //             wallet.secretKey = walletAcct.privateKey;
-    //             await walletRepo.persistAndFlush(wallet);
-    //         }
-    //         buildResponse(input.refNo, res, SUCCESS, {
-    //             user
-    //         });
-    //     } catch (err) {
-    //         console.error(err);
-    //         HandleErrorException(input, res, err + "");
-    //     }
-    // };
-
-    // getAmetaBalance = async (req: Request, res: Response) => {
-    //     console.log(req.query);
-    //     let refNo = req.query.refNo;
-    //     let walletAddress = req.query.walletAddress;
-    //     console.log("check balance of :" + walletAddress);
-    //     try {
-    //         let tokenAcct = (await connection.getTokenAccountsByOwner(new PublicKey(walletAddress), { mint: AMETA_TOKEN })).value[0].pubkey;
-    //         let balance = (await connection.getTokenAccountBalance(tokenAcct)).value.uiAmount;
-    //         buildResponse(refNo + "", res, SUCCESS, {
-    //             balance
-    //         });
-    //     } catch (err) {
-    //         console.error(err);
-    //         HandleErrorException(walletAddress, res, err + "");
-    //     }
-    // }
-
-    // getKarAmetaBalance = async (req: any, res: any) => {
-    //     console.log(req.query);
-    //     let refNo = req.query.refNo;
-    //     let walletAddress: string = req.query.walletAddress;
-    //     console.log("check balance of :" + walletAddress);
-    //     try {
-    //         const balance = await getAPlusBalance(walletAddress);
-    //         buildResponse(refNo + "", res, SUCCESS, {
-    //             balance
-    //         });
-    //     } catch (err) {
-    //         console.error(err);
-    //         HandleErrorException(walletAddress, res, err + "");
-    //     }
-    // }
-
-    // systemTransfer = async (req: Request, res: Response) => {
-    //     let sessionId = req.body.sessionId;
-    //     let amount = req.body.amount;
-    //     let refNo = req.query.refNo;
-    //     const userRepo = DI.em.fork().getRepository(User);
-    //     let user = await userRepo.findOne({ activeSessionId: sessionId });
-    //     try {
-    //         if (!user) {
-    //             throw new Error("Session expire");
-    //         }
-    //         let hash = await systemTransfer(user.walletAddress, amount);
-    //         buildResponse(refNo + "", res, SUCCESS, {
-    //             hash: hash
-    //         })
-    //     } catch (err) {
-    //         console.error(err);
-    //         HandleErrorException(req.body, res, err + "");
-    //     }
-    // }
-    // systemTransferKar = async (req: Request, res: Response) => {
-    //     let sessionId = req.body.sessionId;
-    //     let amount = req.body.amount;
-    //     let refNo = req.query.refNo;
-    //     const userRepo = DI.em.fork().getRepository(User);
-    //     let user = await userRepo.findOne({ activeSessionId: sessionId });
-    //     try {
-    //         if (!user) {
-    //             throw new Error("Session expire");
-    //         }
-    //         let result = await systemTransferAplusKar(user.walletAddress, amount);
-    //         buildResponse(refNo + "", res, SUCCESS, {
-    //             status: result
-    //         })
-    //     } catch (err) {
-    //         console.error(err);
-    //         HandleErrorException(req.body, res, err + "");
-    //     }
-    // }
+    getWalletMappingInfo = async (req: any, res: any) => {
+        try {
+            let email = req.params.userEmail;
+            let chainId = parseInt(req.params.chainId);
+            let walletAddress = await getWalletByUser(email, chainId);
+            logger.info("return walletAddr " + walletAddress);
+            let aplus = 0;
+            let items = new Array<Item>();
+            if (walletAddress != constants.AddressZero) {
+                aplus = await getErc20OfAssetByUser(walletAddress, chainId);
+                items = await getErc721OfAssetByUser(walletAddress, chainId);
+            }
+            buildResponse("", res, SUCCESS, { walletAddress, aplus, items });
+        } catch (err) {
+            logger.error(err);
+            HandleErrorException({ refNo: null }, res, err + "");
+        }
+    }
 }

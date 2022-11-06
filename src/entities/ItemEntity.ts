@@ -11,11 +11,14 @@ export class ItemAttribute {
     fame: number = 0;
     netWeight: number = 0;
     //resourceItem
-    value: number = 0;
+    value?: number = 0;
+    //rod & fishing rod
+    catcherBarSize: number | 0;
+    catcherBarSpeed: number | 0;
 }
 
-@Entity({collection:"item_skill"})
-export class ItemSkill extends BaseEntity{
+@Entity({ collection: "item_skill" })
+export class ItemSkill extends BaseEntity {
     @Property() code: string;
     @Property() name: string;
     @Property() type: number; //0 passive, 1 active
@@ -25,14 +28,13 @@ export class ItemSkill extends BaseEntity{
     @Property() duration: FromToObject;
     @Property() effectValue: FromToObject;
     @Property() accuracy: number;
-    @Property() imageUrl: string;
     ratePoint: number;
 }
 
 export class ResourceItem {
     itemType: number;
     itemName: string;
-    rarity: number|0;
+    rarity: number | 0;
     point: number;
     code: string;
 }
@@ -52,9 +54,9 @@ export class Item extends BaseEntity {
     @Property({ default: "0" }) modelId: string = "0";
     @Property({ default: 0 }) equiped: number = 0;
     @Property({ default: 0 }) canBuild: number = 0; //0 can't build
-    @Property() mapList: Array<number> = new Array<number>();
+    @Property() mapList?: Array<number> = new Array<number>();
     @Property({ default: 0 }) isNFT: number = 0;
-    @Property() nftAddress: string;
+    @Property({ default: "0x0" }) nftAddress: string = "0x0";
     @Property() attr: ItemAttribute = new ItemAttribute();
     @Property({ default: 0 }) canStack: number = 0;
     @Property({ default: 0 }) isLocked: number = 0;
@@ -72,7 +74,11 @@ export class Item extends BaseEntity {
     @Property() skill: Array<ItemSkill>;
     @Property() code: string;
     @Property() color: string = "0";
-
+    @Property({ default: 0 }) lockedToTime: number | 0;
+    @Property() walletOwner: string;
+    @Property() tokenId: number;
+    @Property() tribe: string;
+    @Property() tribeGroup: Array<string>;
 }
 
 
@@ -81,7 +87,7 @@ export class ItemConfig extends BaseEntity {
     @Property() itemType!: number;
     @Property() code: string;
     @Property() group: number;
-    @Property({default:0}) rank: number;
+    @Property({ default: 0 }) rank: number;
     @Property({ default: 0 }) buyFee: number;
     @Property({ default: 0 }) sellFee: number;
     @Property() shopType: number;
@@ -104,4 +110,7 @@ export class ItemConfig extends BaseEntity {
     @Property() levelUpradeRequires: Array<ResourceItem>;
     @Property() starUpradeRequires: Array<ResourceItem>;
     @Property() modelId: string;
+    @Property() level: number; //for fish
+    @Property() tribe: string;
+    @Property() tribeGroup: Array<string>;
 }

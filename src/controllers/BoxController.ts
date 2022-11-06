@@ -8,6 +8,7 @@ import { SUCCESS } from "../config/ErrorCodeConfig";
 import { DI } from '../configdb/database.config';
 import { BoxConfig } from '../entities/BoxConfig';
 import { getPoolInfo } from '../service/ServiceCommon';
+import { logger } from 'ethers';
 
 class BuyBoxController extends BaseController {
     constructor() {
@@ -36,6 +37,7 @@ class BuyBoxController extends BaseController {
     }
 
     getPoolBoxInfo = async (req: Request, res: Response) => {
+        logger.info("get pool box");
         let poolInfo = await getPoolInfo();
         buildResponse("input.refNo", res, SUCCESS, poolInfo);
         
