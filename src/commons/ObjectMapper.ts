@@ -29,6 +29,7 @@ export function newItemFromConfig(config: ItemConfig) {
     }
     return item;
 }
+
 export async function setNewLevelItemData(item: Item) {
     if (item.level == 1) {
         item.nextLevelPoint = 1000;
