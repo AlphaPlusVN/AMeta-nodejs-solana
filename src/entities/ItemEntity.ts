@@ -77,6 +77,8 @@ export class Item extends BaseEntity {
     @Property({ default: 0 }) lockedToTime: number | 0;
     @Property() walletOwner: string;
     @Property() tokenId: number;
+    @Property() tribe: string;
+    @Property() tribeGroup: Array<string>;
 }
 
 
@@ -109,4 +111,6 @@ export class ItemConfig extends BaseEntity {
     @Property() starUpradeRequires: Array<ResourceItem>;
     @Property() modelId: string;
     @Property() level: number; //for fish
+    @Property() tribe: string;
+    @Property() tribeGroup: Array<string>;
 }

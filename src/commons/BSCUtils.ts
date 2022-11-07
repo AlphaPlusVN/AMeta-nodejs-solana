@@ -139,6 +139,7 @@ export namespace BscUtil {
         let parsed = JSON.parse(fs.readFileSync(jsonFile));
         return parsed;
     }
+
     export function getGameAssetsABI() {
         const fs = require('fs');
         let jsonFile = __dirname + "/GameAssetsABI.json";
@@ -147,14 +148,15 @@ export namespace BscUtil {
     }
 
     export async function getOwner() {
-        const signer = await Wallet.fromEncryptedJson(getPrivateKey(), "Ameta!@#123");
+        const signer = await new Wallet(getPrivateKey());
         let account = signer.connect(provider);
         return account;
     }
+
     export function getPrivateKey() {
         const fs = require('fs');
         let jsonFile = __dirname + "/ga_private.pem";
-        let parsed = JSON.parse(fs.readFileSync(jsonFile));
-        return parsed;
+        let parsed: Buffer = fs.readFileSync(jsonFile);
+        return parsed.toString();
     }
 }

@@ -5,8 +5,6 @@ export interface BaseInput {
 
 }
 export default abstract class BaseController {
-
     public router = express.Router();
     public abstract initializeRoutes: () => void;
-
 }

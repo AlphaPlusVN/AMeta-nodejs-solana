@@ -1,11 +1,11 @@
+import { BigNumber, Contract, ethers } from 'ethers';
+import { getAddress } from 'ethers/lib/utils';
 import { BscUtil } from '../commons/BSCUtils';
 import { ChainId } from '../commons/EnumObjs';
-import { BigNumber, ethers } from 'ethers';
 import logger from '../commons/logger';
-import { getAddress } from 'ethers/lib/utils';
-import { SCNFTMetadata } from '../entities/NFTMetadataMapping';
 import { DI } from '../configdb/database.config';
 import { Item } from '../entities/ItemEntity';
+import { SCNFTMetadata } from '../entities/NFTMetadataMapping';
 
 export function getAplusAddressByChainId(chainId: number) {
     let address: string;
@@ -23,6 +23,42 @@ export function getAplusAddressByChainId(chainId: number) {
     }
     return address;
 }
+
+export function getGameAssetsContractByChain(chainId: number) {
+    let contract: Contract;
+    switch (chainId) {
+        case ChainId.KAR_MAIN:
+        case ChainId.KAR_TEST:
+            contract = BscUtil.gameAssetsContract;
+            break;
+        case ChainId.BSC_MAIN:
+        case ChainId.BSC_TEST:
+            contract = BscUtil.gameAssetsContract;
+            break;
+        default:
+            contract = BscUtil.gameAssetsContract;
+            break;
+    }
+    return contract;
+}
+export async function getOwnerContractByChain(chainId: number) {
+    let wallet: ethers.Wallet;
+    switch (chainId) {
+        case ChainId.KAR_MAIN:
+        case ChainId.KAR_TEST:
+            wallet = await BscUtil.getOwner();
+            break;
+        case ChainId.BSC_MAIN:
+        case ChainId.BSC_TEST:
+            wallet = await BscUtil.getOwner();
+            break;
+        default:
+            wallet = await BscUtil.getOwner();
+            break;
+    }
+    return wallet;
+}
+
 export function getNFTAddressByChainId(chainId: number) {
     let address: string;
     switch (chainId) {
@@ -42,7 +78,8 @@ export function getNFTAddressByChainId(chainId: number) {
 
 export async function getERC20Assets(walletAddress: string, chainId: number) {
     logger.info("Call GameAssets ERC20 infor ")
-    let erc20Info: Array<[tokenAddress: string, value: BigNumber]> = await BscUtil.gameAssetsContract.viewErc20ByUser(getAddress(walletAddress));
+    let gameAssetCt = getGameAssetsContractByChain(chainId);
+    let erc20Info: Array<[tokenAddress: string, value: BigNumber]> = await gameAssetCt.viewErc20ByUser(getAddress(walletAddress));
     logger.info(JSON.stringify(erc20Info));
     let value = 0;
     for (let erc20token of erc20Info) {
@@ -54,7 +91,8 @@ export async function getERC20Assets(walletAddress: string, chainId: number) {
 }
 export async function getErc20OfAssetByUser(walletAddress: string, chainId: number) {
     logger.info("Call GameAssets ERC20 infor ")
-    let erc20Info: [tokenAddress: string, value: string] = await BscUtil.gameAssetsContract.viewErc20OfAssetByUser(getAddress(getAplusAddressByChainId(chainId).toLowerCase()), getAddress(walletAddress.toLowerCase()));
+    let gameAssetCt = getGameAssetsContractByChain(chainId);
+    let erc20Info: [tokenAddress: string, value: string] = await gameAssetCt.viewErc20OfAssetByUser(getAddress(getAplusAddressByChainId(chainId).toLowerCase()), getAddress(walletAddress.toLowerCase()));
     logger.info(JSON.stringify(erc20Info));
     let valueToNumber = 0;
     try {
@@ -67,7 +105,8 @@ export async function getErc20OfAssetByUser(walletAddress: string, chainId: numb
 
 export async function getErc721OfAssetByUser(walletAddress: string, chainId: number) {
     logger.info("Call GameAssets 721 infor ")
-    let erc721Info: [tokendAddress: string, tokenIds: Array<BigNumber>] = await BscUtil.gameAssetsContract.viewErc721OfAssetByUser(getAddress(getNFTAddressByChainId(chainId).toLowerCase()), getAddress(walletAddress.toLowerCase()));
+    let gameAssetCt = getGameAssetsContractByChain(chainId);
+    let erc721Info: [tokendAddress: string, tokenIds: Array<BigNumber>] = await gameAssetCt.viewErc721OfAssetByUser(getAddress(getNFTAddressByChainId(chainId).toLowerCase()), getAddress(walletAddress.toLowerCase()));
     logger.info(JSON.stringify(erc721Info));
     let tokenIdsNumber = new Array<number>();
     for (let tokenId of erc721Info[1]) {
@@ -87,6 +126,14 @@ export async function getErc721OfAssetByUser(walletAddress: string, chainId: num
 }
 
 export async function getWalletByUser(userEmail: string, chainId: number) {
-    let walletAddress = await BscUtil.gameAssetsContract.emailToWallet(userEmail);
+    let gameAssetCt = getGameAssetsContractByChain(chainId);
+    let walletAddress = await gameAssetCt.emailToWallet(userEmail);
     return walletAddress;
 }
+
+export async function syncErc20Token(walletAddress: string, token: number, chainId: number) {
+    let gameAssetCt = getGameAssetsContractByChain(chainId);
+    let owner = await getOwnerContractByChain(chainId);
+    let data = await gameAssetCt.connect(owner).syncEr20(getAddress(getAplusAddressByChainId(chainId)), getAddress(walletAddress), token);
+    logger.info("Sync wallet === " + data);
+}   
