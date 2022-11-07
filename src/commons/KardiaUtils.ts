@@ -7,7 +7,7 @@ export namespace KardiaUtils {
     const KAR_RPC_ENDPOINT = 'https://rpc.kardiachain.io';
     export const BOX_CONTRACT_ADDRESS = "0x00EAEAEc82BAF99B3aFdc60930a937696708f730"; //main
     const POOL_SELL_BOX_ADDRESS = "0xAB72D4d28178c9f1AE628160a047201ec6582B5F"; //main
-    const NFT_ADDRESS = "0x3C5314b6A0611D8E8b5a074b0120c02923AA3435";// test
+    export const NFT_ADDRESS = "0x3C5314b6A0611D8E8b5a074b0120c02923AA3435";// test
 
     // const KAR_RPC_ENDPOINT = 'https://dev.kardiachain.io'; //test
     // export const BOX_CONTRACT_ADDRESS = "0xAB72D4d28178c9f1AE628160a047201ec6582B5F"; //test
@@ -15,7 +15,7 @@ export namespace KardiaUtils {
 
     // const NFT_ADDRESS = "0x2DDCB116Fb46eFe8855156300c027533fD32a556";// test
 
-    const provider = new ethers.providers.JsonRpcProvider(KAR_RPC_ENDPOINT);
+    export const provider = new ethers.providers.JsonRpcProvider(KAR_RPC_ENDPOINT);
 
     export const BoxContract = new ethers.Contract(
         BOX_CONTRACT_ADDRESS,
