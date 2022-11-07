@@ -7,7 +7,8 @@ export namespace KardiaUtils {
     // const KAR_RPC_ENDPOINT = 'https://rpc.kardiachain.io';
     // export const BOX_CONTRACT_ADDRESS = "0x00EAEAEc82BAF99B3aFdc60930a937696708f730"; //main
     // const POOL_SELL_BOX_ADDRESS = "0xAB72D4d28178c9f1AE628160a047201ec6582B5F"; //main
-    
+    // const NFT_ADDRESS = "0x2DDCB116Fb46eFe8855156300c027533fD32a556";//main
+
     const KAR_RPC_ENDPOINT = 'https://dev.kardiachain.io'; //test
     export const BOX_CONTRACT_ADDRESS = "0xAB72D4d28178c9f1AE628160a047201ec6582B5F"; //test
     const POOL_SELL_BOX_ADDRESS = "0x2c9FF4b226B36D1e180E728fb342D74f82D32b4E"; //test
