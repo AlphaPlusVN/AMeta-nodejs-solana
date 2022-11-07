@@ -1,20 +1,19 @@
 import { Request, Response } from "express";
 import { sign } from "jsonwebtoken";
 import logger from "../commons/logger";
-import { buildResponse, genRandomString, isNullOrEmptyString } from "../commons/Utils";
+import { buildResponse, isNullOrEmptyString } from "../commons/Utils";
 import { SECRET } from "../config/AuthConfig";
 import { ErrorCode, HandleErrorException, SUCCESS } from "../config/ErrorCodeConfig";
 
-import { Constants } from '../commons/Constants';
+import { constants } from "ethers";
+import { RSAUtil } from '../commons/CryptoUtility';
 import { DI } from '../configdb/database.config';
 import { Item } from '../entities/ItemEntity';
 import { SCNFTMetadata } from '../entities/NFTMetadataMapping';
 import { User } from '../entities/User';
-import AuthMiddleWare from "../middleware/AuthMiddleWare";
-import { getErc20OfAssetByUser, getErc721OfAssetByUser, getWalletByUser } from "../service/GameAssetsService";
+import { getErc20OfAssetByUser, getErc721OfAssetByUser, getWalletByUser, syncErc20Token } from "../service/GameAssetsService";
 import { getAllBoxInfo, getAllNFTInfo, getBoxContractByChainId, getNFTContractByChainId } from '../service/ServiceCommon';
 import BaseController, { BaseInput } from "./BaseController";
-import { constants } from "ethers";
 
 const bcrypt = require('bcryptjs');
 
@@ -41,10 +40,10 @@ export default class AuthController extends BaseController {
 
     initializeRoutes = () => {
         this.router.post('/getToken', this.getToken);
-        this.router.post('/updateUser', [AuthMiddleWare.verifyToken], this.updateUser);
         this.router.post("/getWalletItemInfo", this.getWalletItemInfo)
         this.router.get("/getTokenAssets/:chainId/:walletAddress", this.getTokenAssets);
         this.router.get("/getWalletMapping/:chainId/:userEmail", this.getWalletMappingInfo);
+        this.router.post("/forceSyncWalletData", this.forceSyncWalletData);
     }
 
     getWalletItemInfo = async (req: Request, res: Response) => {
@@ -95,93 +94,6 @@ export default class AuthController extends BaseController {
         }
     }
 
-    // getNonce = async (req: Request, res: Response) => {
-    //     let getNonceInput: GeNonceInput = req.body;
-    //     try {
-    //         if (isNullOrEmptyString(getNonceInput.walletAddress)) {
-    //             throw new Error(ErrorCode.ParamsIsInvalid);
-    //         }
-    //         let nonce = genRandomString(6).toUpperCase();
-    //         const userRepo = DI.em.fork().getRepository(User);
-    //         let user: User = await userRepo.findOne({
-    //             walletAddress: getNonceInput.walletAddress
-    //         });
-    //         logger.info('user', user);
-    //         if (user) {
-    //             user.nonce = nonce;
-    //             await userRepo.persistAndFlush(user);
-    //         } else {
-    //             user = userRepo.create({
-    //                 nonce: nonce,
-    //                 walletAddress: getNonceInput.walletAddress,
-    //                 username: '',
-    //                 password: ''
-    //             });
-    //             await userRepo.persistAndFlush(user);
-    //             logger.info('new user', user);
-    //         }
-
-    //         buildResponse(getNonceInput.refNo, res, SUCCESS, { nonce })
-    //     } catch (err) {
-    //         HandleErrorException(getNonceInput, res, err + "");
-    //     }
-    // }
-
-    updateUser = async (req: Request, res: Response) => {
-        let input: UpdateUserInput = req.body;
-        try {
-            if (isNullOrEmptyString(input.walletAddress)
-                || isNullOrEmptyString(input.email)
-                || isNullOrEmptyString(input.username)
-            ) {
-                throw new Error(ErrorCode.ParamsIsInvalid);
-
-            }
-            let userRepo = DI.em.fork().getRepository(User);
-
-            let emailExist = await userRepo.findOne({
-                email: input.email
-            });
-            if (emailExist) {
-                throw new Error(ErrorCode.EmailIsExist);
-
-            }
-            let userExist = await userRepo.findOne({
-                username: input.username
-            });
-            if (userExist) {
-                throw new Error(ErrorCode.UserNameIsExist);
-
-            }
-            let user = await userRepo.findOne({
-                walletAddress: input.walletAddress
-            })
-
-            if (!user) {
-                throw new Error(ErrorCode.WalletAddressIsNotExist);
-            }
-            let salt = await bcrypt.genSalt(10);
-            let passwordPlainText = genRandomString(9);
-            let hashPassword = await bcrypt.hash(passwordPlainText, salt);
-            let newUser = userRepo.create({
-                username: input.username,
-                email: input.email,
-                password: hashPassword
-            });
-            await userRepo.persistAndFlush(newUser);
-
-            buildResponse(input.refNo, res, SUCCESS, {
-                user: {
-                    username: input.username,
-                    email: input.email,
-                    walletAddress: input.walletAddress
-                }
-            })
-        } catch (err) {
-            HandleErrorException(input, res, err + "");
-        }
-    }
-
     getTokenAssets = async (req: any, res: any) => {
         try {
             let walletAddress = req.params.walletAddress;
@@ -207,6 +119,28 @@ export default class AuthController extends BaseController {
                 items = await getErc721OfAssetByUser(walletAddress, chainId);
             }
             buildResponse("", res, SUCCESS, { walletAddress, aplus, items });
+        } catch (err) {
+            logger.error(err);
+            HandleErrorException({ refNo: null }, res, err + "");
+        }
+    }
+    
+    forceSyncWalletData = async (req: any, res: any) => {
+        try {
+            let refNo = req.body.refNo;
+            let walletAddress = req.body.walletAddress;
+            let token = parseInt(req.body.token);
+            let chainId = parseInt(req.body.chainId);
+            let signature = req.body.signature;
+            let signatureStr = "refNo:" + refNo + ";walletAddress:" + walletAddress + ";token:" + token + ";chainId:" + chainId;
+            logger.info("signatureStr " + signatureStr);
+            logger.info("verify " + RSAUtil.getInstance().verifiedMessage(signatureStr, signature));
+            logger.info("signature " + signature);
+            if (!RSAUtil.getInstance().verifiedMessage(signatureStr, signature)) {
+                throw new Error(ErrorCode.SignatureInvalid);
+            }
+            await syncErc20Token(walletAddress, token, chainId);
+            buildResponse(refNo, res, SUCCESS, { refNo, walletAddress, token, chainId, signature });
         } catch (err) {
             logger.error(err);
             HandleErrorException({ refNo: null }, res, err + "");

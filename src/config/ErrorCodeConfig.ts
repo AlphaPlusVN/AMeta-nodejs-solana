@@ -31,7 +31,9 @@ export enum ErrorCode {
 
     PaymentMethodNotSupported = 'PaymentMethodNotSupported',
     AmountNotEnough = 'AmountNotEnough',
-    
+
+    SignatureInvalid = 'SignatureVerifiedFail',
+
 }
 
 export const HandleErrorException = (input: any, res: Response, error: string) => {
@@ -107,8 +109,12 @@ export const getError = (error: ErrorCode): ResponseDic => {
             msg: 'Invalid Box type',
 
         }; break;
-        
-       
+
+        case ErrorCode.SignatureInvalid: errorDetail = {
+            responseCode: '109',
+            msg: "Signature Invalid"
+        };
+            break;
         default: errorDetail = {
             responseCode: '999',
             msg: 'Unknown Error'

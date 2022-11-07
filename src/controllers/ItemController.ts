@@ -18,7 +18,7 @@ export default class ItemController extends BaseController {
 
     getItemMetadata = async (req: any, res: any) => {
         let tokenId = parseInt(req.params.tokenId);
-        let address:string = req.params.address;
+        let address: string = req.params.address;
         const itemMetadataRepo = DI.em.fork().getRepository(SCNFTMetadata);
         let metadata = await itemMetadataRepo.findOne({ contractAddress: address.toLowerCase(), tokenId });
         if (metadata) {
