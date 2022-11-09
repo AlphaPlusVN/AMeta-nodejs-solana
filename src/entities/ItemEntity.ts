@@ -69,16 +69,16 @@ export class Item extends BaseEntity {
     @Property({ default: 100 }) nextStarPoint: number = 100;
     @Property({ default: 0 }) currentLevelPoint: number = 0;
     @Property({ default: 0 }) currentStarPoint: number = 0;
-    @Property() levelUpradeRequires: Array<ResourceItem>;
-    @Property() starUpradeRequires: Array<ResourceItem>;
+    @Property() levelUpradeRequires: Array<ResourceItem> = new Array();
+    @Property() starUpradeRequires: Array<ResourceItem> = new Array();
     @Property() skill: Array<ItemSkill>;
     @Property() code: string;
     @Property() color: string = "0";
     @Property({ default: 0 }) lockedToTime: number | 0;
     @Property() walletOwner: string;
     @Property() tokenId: number;
-    @Property() tribe: string;
-    @Property() tribeGroup: Array<string>;
+    @Property() tribe?: string;
+    @Property() tribeGroup?: Array<string> = new Array<string>();
 }
 
 
