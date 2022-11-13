@@ -5,26 +5,22 @@ import logger from './logger';
 import { PoolSellBox } from './PoolSellBoxPublicABI';
 
 export namespace BscUtil {
-
-    // const BSC_ENDPOINT = 'https://data-seed-prebsc-1-s1.binance.org:8545'; //test
-    // const BOX_CONTRACT_ADDRESS = "0xca8B840932c0Aa34B9E425774c15074B56877fF2"; //test
-    // const POOL_SELL_BOX_ADDRESS = "0xcF23F0750A9EA36b4E40912C5C8f4056dA54954e"; //test
     const BSC_ENDPOINT = 'https://bsc-dataseed.binance.org/'; //main
     const BOX_CONTRACT_ADDRESS = "0xC42AB9A75D391Be6C4c94f7e53c4d374aBabDA24"; //main
     const POOL_SELL_BOX_ADDRESS = "0xEddDC76025001cD276862D523046837f703b2f85"; //main
-    export const NFT_ADDRESS = "0xC4582ae1aF4b40F6F311e6946f3dbaEBB316DB93";
+    export const NFT_ADDRESS = "0xC4582ae1aF4b40F6F311e6946f3dbaEBB316DB93"; //main
     export const APLUS_ADDRESS = "0xb445B2d8831a602aE4684EC4f9316ef2091bFe37";//main
 
-    // const BSC_ENDPOINT = 'https://data-seed-prebsc-1-s2.binance.org:8545'; //test
+    // const BSC_ENDPOINT = 'https://data-seed-prebsc-1-s3.binance.org:8545'; //test
     // const BOX_CONTRACT_ADDRESS = "0xca8B840932c0Aa34B9E425774c15074B56877fF2"; //test
     // const POOL_SELL_BOX_ADDRESS = "0xcF23F0750A9EA36b4E40912C5C8f4056dA54954e"; //test
     // export const NFT_ADDRESS = "0x02BA6C503fa44bfF2fd8Ecc4de76703080e4bBe4"; //TEST
-    const GAME_ASSETS_ADDR = "0x8F75BfF08b2afe5C11f1EbAB9A2e3d197a627963";
+    const GAME_ASSETS_ADDR = "0x8F75BfF08b2afe5C11f1EbAB9A2e3d197a627963";//test
     // export const APLUS_ADDRESS = "0x80d04bd9F6f296cd7059208134f4A685cedC3291";//TEST
 
     
 
-    const provider = new ethers.providers.JsonRpcProvider(BSC_ENDPOINT);
+    export const provider = new ethers.providers.JsonRpcProvider(BSC_ENDPOINT);
     const defaultChainId = ChainId.BSC_TEST;
     export const BoxContract = new ethers.Contract(
         BOX_CONTRACT_ADDRESS,
