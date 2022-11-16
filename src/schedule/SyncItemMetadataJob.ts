@@ -66,7 +66,7 @@ async function bscSynchData() {
 async function karSynchData() {
     const boxCtKar = KardiaUtils.BoxContract;
     let eventFilter = boxCtKar.filters.OpenBox();
-    let endBlock = await BscUtil.provider.getBlockNumber();
+    let endBlock = await KardiaUtils.provider.getBlockNumber();
     const systemParamRepo = DI.em.fork().getRepository(SystemParam);
     let karLastBlockConfig = await getSystemConfigParam(SystemParamCode.KAR_LAST_BLOCK_SCAN);
     let karLastTokenIdconfig = await getSystemConfigParam(SystemParamCode.KAR_LAST_TOKENID_SCAN);
