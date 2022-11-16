@@ -1,6 +1,7 @@
-import { ethers } from "ethers";
+import { ethers, providers } from "ethers";
 import { mintBoxBatchTrigger, mintBoxTrigger, openBoxEventTrigger } from "../service/ContractEventHandler";
 import { PoolSellBox } from "./PoolSellBoxPublicABI";
+import { ChainId } from './EnumObjs';
 export namespace KardiaUtils {
     export const KAR_APLUS_CONTRACT_ADDRESS = "0x9a79f1247D66F2119955cD322e62745095De6F2F";
     export const KAR_APLUS_OWNER = "0x7cb298F7511F1182f29e88FcCd2fF0509B58ef7a";
@@ -13,9 +14,10 @@ export namespace KardiaUtils {
     export const BOX_CONTRACT_ADDRESS = "0xAB72D4d28178c9f1AE628160a047201ec6582B5F"; //test
     const POOL_SELL_BOX_ADDRESS = "0x2c9FF4b226B36D1e180E728fb342D74f82D32b4E"; //test
 
-    const NFT_ADDRESS = "0x2DDCB116Fb46eFe8855156300c027533fD32a556";//test
+    export const NFT_ADDRESS = "0x2DDCB116Fb46eFe8855156300c027533fD32a556";//test
 
-    const provider = new ethers.providers.JsonRpcProvider(KAR_RPC_ENDPOINT);
+    export const provider = new ethers.providers.JsonRpcProvider(KAR_RPC_ENDPOINT, providers.getNetwork({ chainId: ChainId.KAR_TEST, name: "KAI" }));
+
 
     export const BoxContract = new ethers.Contract(
         BOX_CONTRACT_ADDRESS,
@@ -70,7 +72,7 @@ export namespace KardiaUtils {
             const [owner, tokenId, collectionId, boxType] = args;
             console.log("txHash " + transactionHash);
             console.log(JSON.stringify(args));
-            await openBoxEventTrigger(owner, tokenId.toNumber(), collectionId.toNumber(), boxType.toNumber(), NFT_ADDRESS);
+            await openBoxEventTrigger(owner, tokenId.toNumber(), boxType.toNumber(), NFT_ADDRESS);
         });
     }
 

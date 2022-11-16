@@ -1,4 +1,4 @@
-import { ethers, BigNumber, Wallet } from 'ethers';
+import { ethers, BigNumber, Wallet, providers } from 'ethers';
 import { depositErc20Trigger, depositErc721Trigger, linkWalletTrigger, mintBoxBatchTrigger, mintBoxTrigger, openBoxEventTrigger, unLinkWalletTrigger } from '../service/ContractEventHandler';
 import { ChainId } from "./EnumObjs";
 import logger from './logger';
@@ -17,7 +17,7 @@ export namespace BscUtil {
     // const BOX_CONTRACT_ADDRESS = "0xC42AB9A75D391Be6C4c94f7e53c4d374aBabDA24"; //main
     // const POOL_SELL_BOX_ADDRESS = "0xEddDC76025001cD276862D523046837f703b2f85"; //main
 
-    const provider = new ethers.providers.JsonRpcProvider(BSC_ENDPOINT);
+    export const provider = new ethers.providers.JsonRpcProvider(BSC_ENDPOINT, providers.getNetwork({ chainId: ChainId.BSC_TEST, name: "bsc-testnet" }));
     const defaultChainId = ChainId.BSC_TEST;
     export const BoxContract = new ethers.Contract(
         BOX_CONTRACT_ADDRESS,
@@ -72,7 +72,7 @@ export namespace BscUtil {
             const [owner, tokenId, collectionId, boxType] = args;
             logger.info("txHash " + transactionHash);
             logger.info(JSON.stringify(args));
-            await openBoxEventTrigger(owner, tokenId.toNumber(), collectionId.toNumber(), boxType.toNumber(), NFT_ADDRESS);
+            await openBoxEventTrigger(owner, tokenId.toNumber(), boxType.toNumber(), NFT_ADDRESS);
         });
     }
 

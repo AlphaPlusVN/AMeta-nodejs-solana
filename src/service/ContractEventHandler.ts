@@ -99,11 +99,11 @@ export async function mintBoxTrigger(tokenId: number, to: string, boxType: numbe
     }
 }
 
-export async function openBoxEventTrigger(owner: string, boxId: number, nftTokenId: number, boxType: number, contractAddress: string) {
+export async function openBoxEventTrigger(owner: string, nftTokenId: number, boxType: number, contractAddress: string) {
     const SILVER = 1;
     const GOLD = 2;
     const DIAMOND = 3;
-    console.log("open box event trigger");
+    console.log("open box trigger " + nftTokenId);
     try {
         let boxCode = "";
         switch (boxType) {

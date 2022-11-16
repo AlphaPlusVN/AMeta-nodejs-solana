@@ -1,30 +1,30 @@
 
-export class Constants
-{
+export class Constants {
     static readonly STATUS_NO = 0;
     static readonly STATUS_YES = 1;
-    static readonly ADDRESS_0 ="0x0000000000000000000000000000000000000000";
+    static readonly ADDRESS_0 = "0x0000000000000000000000000000000000000000";
     public static readonly SYSTEM_ADMIN = "SYS_ADMIN";
 }
 
-export class TokenCode
-{
-    static readonly AMETA:string = "AMETA";
-    static readonly STARTER_BOX:string = "STARTER_BOX";
+export class TokenCode {
+    static readonly AMETA: string = "AMETA";
+    static readonly STARTER_BOX: string = "STARTER_BOX";
 }
 
-export class ChainCode
-{
+export class ChainCode {
     static readonly KARDIACHAIN = "KAR";
     static readonly OKC = "OKC";
 }
-
+    
 export class SystemParamCode {
     public static readonly USER_CODE = "USER_CODE";
     public static readonly FISHING_TRASH = "FISHING_TRASH";
     public static readonly FISHING_RATE = "FISHING_RATE";
     public static readonly TRANSACTION_NUMBER = "TRANSACTION_NUMBER";
-
+    public static readonly BSC_LAST_BLOCK_SCAN = "BSC_LAST_BLOCK_SCAN";
+    public static readonly KAR_LAST_BLOCK_SCAN = "KAR_LAST_BLOCK_SCAN";
+    public static readonly BSC_LAST_TOKENID_SCAN = "BSC_LAST_TOKENID_SCAN";
+    public static readonly KAR_LAST_TOKENID_SCAN = "KAR_LAST_TOKENID_SCAN";
 }
 
 export class TransType {
