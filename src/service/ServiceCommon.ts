@@ -1,9 +1,8 @@
+import { BigNumber, Contract, ethers } from 'ethers';
 import { BscUtil } from '../commons/BSCUtils';
-import { KardiaUtils } from "../commons/KardiaUtils";
 import { ChainId } from '../commons/EnumObjs';
-import { BigNumber, Contract } from "ethers";
+import { KardiaUtils } from "../commons/KardiaUtils";
 import logger from "../commons/logger";
-import { User } from '../entities/User';
 import { DI } from '../configdb/database.config';
 import { SystemParam } from '../entities/SystemParam';
 
@@ -97,6 +96,22 @@ export function getNFTContractByChainId(chainId: number) {
         default: return null;
     }
     return nftContract;
+}
+
+export function getProviderByChainId(chainId: number) {
+    let provider: ethers.providers.JsonRpcProvider;
+    switch (chainId) {
+        case ChainId.KAR_MAIN:
+        case ChainId.KAR_TEST:
+            provider = KardiaUtils.provider;
+            break;
+        case ChainId.BSC_MAIN:
+        case ChainId.BSC_TEST:
+            provider = BscUtil.provider;
+            break;
+        default: return null;
+    }
+    return provider;
 }
 
 export async function getSystemConfigParam(key: string) {

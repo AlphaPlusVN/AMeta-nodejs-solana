@@ -5,6 +5,7 @@ import { BscUtil } from "./commons/BSCUtils";
 import { KardiaUtils } from "./commons/KardiaUtils";
 import logger from "./commons/logger";
 import { connect } from './configdb/database.config';
+import { initSchedule } from "./schedule/ScheduleConfig";
 
 config({ path: path.join(__dirname, "../config.env") });
 
@@ -41,10 +42,11 @@ class App {
     connect().then(async () => {
       logger.info("Database connected!");
     });
+
     BscUtil.boxEventListener();
     BscUtil.gameAssetsEventListener();
     KardiaUtils.boxEventListener();
-
+    initSchedule();
   };
 }
 
