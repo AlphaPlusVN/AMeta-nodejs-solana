@@ -3,6 +3,7 @@ import { BscUtil } from '../commons/BSCUtils';
 import { ChainId } from '../commons/EnumObjs';
 import { KardiaUtils } from "../commons/KardiaUtils";
 import logger from "../commons/logger";
+import { OnusUtils } from '../commons/OnusUtils';
 import { DI } from '../configdb/database.config';
 import { SystemParam } from '../entities/SystemParam';
 
@@ -77,6 +78,10 @@ export function getBoxContractByChainId(chainId: number) {
         case ChainId.BSC_TEST:
             boxContract = BscUtil.BoxContract;
             break;
+        case ChainId.ONUS_MAIN:
+        case ChainId.ONUS_TEST:
+            boxContract = OnusUtils.BoxContract;
+            break;
         default: return null;
     }
     return boxContract;
@@ -93,6 +98,10 @@ export function getNFTContractByChainId(chainId: number) {
         case ChainId.BSC_TEST:
             nftContract = BscUtil.NFTContract;
             break;
+        case ChainId.ONUS_MAIN:
+        case ChainId.ONUS_TEST:
+            nftContract = OnusUtils.NFTContract;
+            break;
         default: return null;
     }
     return nftContract;
@@ -108,6 +117,10 @@ export function getProviderByChainId(chainId: number) {
         case ChainId.BSC_MAIN:
         case ChainId.BSC_TEST:
             provider = BscUtil.provider;
+            break;
+        case ChainId.ONUS_MAIN:
+        case ChainId.ONUS_TEST:
+            provider = OnusUtils.provider;
             break;
         default: return null;
     }

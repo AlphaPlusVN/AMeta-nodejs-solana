@@ -3,6 +3,7 @@ import { getAddress } from 'ethers/lib/utils';
 import { BscUtil } from '../commons/BSCUtils';
 import { ChainId } from '../commons/EnumObjs';
 import logger from '../commons/logger';
+import { OnusUtils } from '../commons/OnusUtils';
 import { DI } from '../configdb/database.config';
 import { Item } from '../entities/ItemEntity';
 import { SCNFTMetadata } from '../entities/NFTMetadataMapping';
@@ -17,6 +18,10 @@ export function getAplusAddressByChainId(chainId: number) {
         case ChainId.BSC_MAIN:
         case ChainId.BSC_TEST:
             address = BscUtil.APLUS_ADDRESS;
+            break;
+        case ChainId.ONUS_MAIN:
+        case ChainId.ONUS_TEST:
+            address = OnusUtils.APLUS_ADDRESS;
             break;
         default: address = BscUtil.APLUS_ADDRESS;
             break;
@@ -35,6 +40,10 @@ export function getGameAssetsContractByChain(chainId: number) {
         case ChainId.BSC_TEST:
             contract = BscUtil.gameAssetsContract;
             break;
+        case ChainId.ONUS_MAIN:
+        case ChainId.ONUS_TEST:
+            contract = OnusUtils.gameAssetsContract;
+            break;
         default:
             contract = BscUtil.gameAssetsContract;
             break;
@@ -51,6 +60,10 @@ export async function getOwnerContractByChain(chainId: number) {
         case ChainId.BSC_MAIN:
         case ChainId.BSC_TEST:
             wallet = await BscUtil.getOwner();
+            break;
+        case ChainId.ONUS_MAIN:
+        case ChainId.ONUS_TEST:
+            wallet = await OnusUtils.getOwner();
             break;
         default:
             wallet = await BscUtil.getOwner();
@@ -69,6 +82,10 @@ export function getNFTAddressByChainId(chainId: number) {
         case ChainId.BSC_MAIN:
         case ChainId.BSC_TEST:
             address = BscUtil.NFT_ADDRESS;
+            break;
+        case ChainId.ONUS_MAIN:
+        case ChainId.ONUS_TEST:
+            address = OnusUtils.NFT_ADDRESS;
             break;
         default: address = BscUtil.NFT_ADDRESS;
             break;
