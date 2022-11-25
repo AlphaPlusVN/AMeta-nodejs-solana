@@ -5,7 +5,7 @@ import logger from './logger';
 import { PoolSellBox } from './PoolSellBoxPublicABI';
 
 export namespace BscUtil {
-    const BSC_ENDPOINT = 'https://bsc-dataseed.binance.org/'; //main
+    const BSC_ENDPOINT = 'https://bsc-dataseed3.binance.org/'; //main
     const BOX_CONTRACT_ADDRESS = "0xC42AB9A75D391Be6C4c94f7e53c4d374aBabDA24"; //main
     const POOL_SELL_BOX_ADDRESS = "0xEddDC76025001cD276862D523046837f703b2f85"; //main
     export const NFT_ADDRESS = "0xC4582ae1aF4b40F6F311e6946f3dbaEBB316DB93"; //main
