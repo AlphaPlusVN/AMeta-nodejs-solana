@@ -19,6 +19,7 @@ var RUNNING_STATE = 0;
 const syncDataEvent = async () => {
     //bsc
     if (RUNNING_STATE == 0) {
+        logger.info("sync metadata");
         RUNNING_STATE = 1;
         await bscSynchData();
         await karSynchData()
@@ -49,7 +50,9 @@ async function bscSynchData() {
                 boxType: boxType.toNumber(),
                 owner,
             }));
-            datas.push(data);
+            if (data.length > 0) {
+                datas = datas.concat(data);
+            }
         }
         //get metadata
         logger.info("scan bsc datablock length " + datas.length);
@@ -62,12 +65,17 @@ async function bscSynchData() {
         let lastTokenId: number = 0;
         //scan block
         for (let data of datas) {
-            logger.info(JSON.stringify(data));
-            if (data.collectionId > lastTokenId) {
-                lastTokenId = data.collectionId;
-            }
-            if (!nftMetadataMap.has(data.collectionId)) {
-                await openBoxEventTrigger(data.owner, data.collectionId, data.boxType, BscUtil.NFT_ADDRESS);
+            try {
+                logger.info(JSON.stringify(data));
+                if (data.collectionId > lastTokenId) {
+                    lastTokenId = data.collectionId;
+                }
+                if (!nftMetadataMap.has(data.collectionId)) {
+                    await openBoxEventTrigger(data.owner, data.collectionId, data.boxType, BscUtil.NFT_ADDRESS);
+                }
+            } catch (e) {
+                logger.error(e);
+                continue;
             }
         }
         bscLastBlockConfig.value = currentBlock;
@@ -101,7 +109,9 @@ async function karSynchData() {
             boxType: boxType.toNumber(),
             owner,
         }));
-        datas.push(data);
+        if (data.length > 0) {
+            datas = datas.concat(data);
+        }
     }
     //get metadata
     logger.info("scan kar datablock length " + datas.length);
