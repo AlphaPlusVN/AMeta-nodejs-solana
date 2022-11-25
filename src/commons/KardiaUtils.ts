@@ -15,7 +15,7 @@ export namespace KardiaUtils {
     // const POOL_SELL_BOX_ADDRESS = "0x2c9FF4b226B36D1e180E728fb342D74f82D32b4E"; //test
     // export const NFT_ADDRESS = "0x2DDCB116Fb46eFe8855156300c027533fD32a556";//test
 
-    export const provider = new ethers.providers.JsonRpcProvider(KAR_RPC_ENDPOINT, providers.getNetwork({ chainId: ChainId.KAR_TEST, name: "KAI" }));
+    export const provider = new ethers.providers.JsonRpcProvider(KAR_RPC_ENDPOINT, providers.getNetwork({ chainId: ChainId.KAR_MAIN, name: "KAI" }));
 
     export const BoxContract = new ethers.Contract(
         BOX_CONTRACT_ADDRESS,
