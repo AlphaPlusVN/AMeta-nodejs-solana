@@ -35,7 +35,8 @@ export async function scanBscNFTJob() {
                     scanData.chainId = ChainId.BSC_MAIN;
                     scanData.contractAddress = getNFTContractByChainId(scanData.chainId).address;
                     scanData.walletOwner = address;
-                    scanData.dataType = 1;
+                    scanData.dataType = 2;
+                    scanData.tokenId = i;
                     scanList.push(scanData);
                 }
             } catch (e) {
@@ -64,7 +65,8 @@ export async function scanKarNFTJob() {
                 if (address != Constants.ADDRESS_0) {
                     scanData.chainId = ChainId.KAR_MAIN;
                     scanData.contractAddress = getNFTContractByChainId(scanData.chainId).address;
-                    scanData.dataType = 1;
+                    scanData.dataType = 2;
+                    scanData.tokenId = i;
                     scanData.walletOwner = address;
                     scanList.push(scanData);
                 }
