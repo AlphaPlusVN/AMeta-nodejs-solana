@@ -13,6 +13,7 @@ import { SystemParam } from '../entities/SystemParam';
 import { TransactionHistory, TransactionGold, TransactionToken, TransactionItem } from '../entities/TransactionHistory';
 import { UserBalanceHistory } from '../entities/UserBalanceHistory';
 import { BoxOpenHistory } from '../entities/BoxOpenHistory';
+import { SmartContractDataScan } from '../entities/DataScanUser';
 
 /** 
  * Mikro ORM Connection options object
@@ -22,7 +23,7 @@ import { BoxOpenHistory } from '../entities/BoxOpenHistory';
 const options: Options = {
   type: 'mongo',
   entities: [User, MarKetConfig, MktBoxesForSale, MktTransaction, WalletCache, TokenAccount, BoxConfig, Item, ItemConfig, ItemSkill, SCNFTMetadata, WalletAccount,
-    SystemParam, TransactionHistory, TransactionGold, TransactionToken, UserBalanceHistory, BoxOpenHistory, TransactionItem]
+    SystemParam, TransactionHistory, TransactionGold, TransactionToken, UserBalanceHistory, BoxOpenHistory, TransactionItem, SmartContractDataScan]
 }; 
 
 export default options;

@@ -17,7 +17,6 @@ export namespace BscUtil {
     // export const NFT_ADDRESS = "0x02BA6C503fa44bfF2fd8Ecc4de76703080e4bBe4"; //TEST
     const GAME_ASSETS_ADDR = "0x8F75BfF08b2afe5C11f1EbAB9A2e3d197a627963";//test
     // export const APLUS_ADDRESS = "0x80d04bd9F6f296cd7059208134f4A685cedC3291";//TEST
-
     export const provider = new ethers.providers.JsonRpcProvider(BSC_ENDPOINT, providers.getNetwork({ chainId: ChainId.BSC_MAIN, name: "bsc-mainnet" }));
     const defaultChainId = ChainId.BSC_MAIN;
     export const BoxContract = new ethers.Contract(
