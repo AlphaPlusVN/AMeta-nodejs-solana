@@ -24,7 +24,7 @@ export async function scanBscNFTJob() {
     logger.info("scan bsc nft job started");
     try {
         let contract = BscUtil.NFTContract;
-        let maxTokenId = 100;
+        let maxTokenId = 111;
         let scanList = new Array<SmartContractDataScan>();
         for (let i = 1; i <= maxTokenId; i++) {
             let scanData = new SmartContractDataScan();
@@ -32,7 +32,7 @@ export async function scanBscNFTJob() {
                 let address = await contract.ownerOf(i);
                 logger.info(address);
                 if (address != Constants.ADDRESS_0) {
-                    scanData.chainId = ChainId.BSC_TEST;
+                    scanData.chainId = ChainId.BSC_MAIN;
                     scanData.contractAddress = getNFTContractByChainId(scanData.chainId).address;
                     scanData.walletOwner = address;
                     scanData.dataType = 1;
@@ -54,7 +54,7 @@ export async function scanKarNFTJob() {
     logger.info("scan kar nft job started");
     try {
         let contract = KardiaUtils.NFTContract;
-        let maxTokenId = 21;
+        let maxTokenId = 80;
         let scanList = new Array<SmartContractDataScan>();
         for (let i = 1; i <= maxTokenId; i++) {
             let scanData = new SmartContractDataScan();
@@ -62,7 +62,7 @@ export async function scanKarNFTJob() {
                 let address = await contract.ownerOf(i);
                 logger.info(address);
                 if (address != Constants.ADDRESS_0) {
-                    scanData.chainId = ChainId.KAR_TEST;
+                    scanData.chainId = ChainId.KAR_MAIN;
                     scanData.contractAddress = getNFTContractByChainId(scanData.chainId).address;
                     scanData.dataType = 1;
                     scanData.walletOwner = address;

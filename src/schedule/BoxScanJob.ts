@@ -16,7 +16,7 @@ export async function scanBoxJob() {
     task.start();
 }
 export async function backupDataOnChain() {
-    // scanBscBoxJob();
+    scanBscBoxJob();
     scanKarBoxJob();
 }
 
@@ -24,7 +24,7 @@ export async function scanBscBoxJob() {
     logger.info("scan bsc box job started");
     try {
         let contract = BscUtil.BoxContract;
-        let maxTokenId = 1641;
+        let maxTokenId = 90;
         let scanList = new Array<SmartContractDataScan>();
         for (let i = 1; i <= maxTokenId; i++) {
             let scanData = new SmartContractDataScan();
@@ -32,7 +32,7 @@ export async function scanBscBoxJob() {
                 let address = await contract.ownerOf(i);
                 logger.info(address);
                 if (address != Constants.ADDRESS_0) {
-                    scanData.chainId = ChainId.BSC_TEST;
+                    scanData.chainId = ChainId.BSC_MAIN;
                     scanData.contractAddress = getBoxContractByChainId(scanData.chainId).address;
                     scanData.walletOwner = address;
                     scanData.dataType = 1;
@@ -54,7 +54,7 @@ export async function scanKarBoxJob() {
     logger.info("scan kar box job started");
     try {
         let contract = KardiaUtils.BoxContract;
-        let maxTokenId = 21;
+        let maxTokenId = 112;
         let scanList = new Array<SmartContractDataScan>();
         for (let i = 1; i <= maxTokenId; i++) {
             let scanData = new SmartContractDataScan();
@@ -62,7 +62,7 @@ export async function scanKarBoxJob() {
                 let address = await contract.ownerOf(i);
                 logger.info(address);
                 if (address != Constants.ADDRESS_0) {
-                    scanData.chainId = ChainId.KAR_TEST;
+                    scanData.chainId = ChainId.KAR_MAIN;
                     scanData.contractAddress = getBoxContractByChainId(scanData.chainId).address;
                     scanData.dataType = 1;
                     scanData.walletOwner = address;

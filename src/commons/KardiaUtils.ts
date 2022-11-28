@@ -6,9 +6,9 @@ export namespace KardiaUtils {
     export const KAR_APLUS_CONTRACT_ADDRESS = "0x9a79f1247D66F2119955cD322e62745095De6F2F";
     export const KAR_APLUS_OWNER = "0x7cb298F7511F1182f29e88FcCd2fF0509B58ef7a";
     const KAR_RPC_ENDPOINT = 'https://rpc.kardiachain.io';
-    export const BOX_CONTRACT_ADDRESS = "0x00EAEAEc82BAF99B3aFdc60930a937696708f730"; //main
+    export const BOX_CONTRACT_ADDRESS = "0x00eaeaec82baf99b3afdc60930a937696708f730"; //main
     const POOL_SELL_BOX_ADDRESS = "0xAB72D4d28178c9f1AE628160a047201ec6582B5F"; //main
-    export const NFT_ADDRESS = "0x3C5314b6A0611D8E8b5a074b0120c02923AA3435";// test
+    export const NFT_ADDRESS = "0x3c5314b6a0611d8e8b5a074b0120c02923aa3435";// test
 
     // const KAR_RPC_ENDPOINT = 'https://dev.kardiachain.io'; //test
     // export const BOX_CONTRACT_ADDRESS = "0xAB72D4d28178c9f1AE628160a047201ec6582B5F"; //test
