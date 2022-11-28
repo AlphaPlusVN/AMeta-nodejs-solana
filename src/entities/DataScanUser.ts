@@ -7,4 +7,5 @@ export class SmartContractDataScan extends BaseEntity {
     @Property() contractAddress: string;
     @Property() walletOwner: string;
     @Property() dataType: number; //0 token //1 box 2//nft
+    @Property() tokenId: number;
 }

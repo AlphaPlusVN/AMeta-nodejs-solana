@@ -35,6 +35,7 @@ export async function scanBscBoxJob() {
                     scanData.chainId = ChainId.BSC_TEST;
                     scanData.contractAddress = getBoxContractByChainId(scanData.chainId).address;
                     scanData.walletOwner = address;
+                    scanData.tokenId = i;
                     scanData.dataType = 1;
                     scanList.push(scanData);
                 }
@@ -65,6 +66,7 @@ export async function scanKarBoxJob() {
                     scanData.chainId = ChainId.KAR_TEST;
                     scanData.contractAddress = getBoxContractByChainId(scanData.chainId).address;
                     scanData.dataType = 1;
+                    scanData.tokenId = i;
                     scanData.walletOwner = address;
                     scanList.push(scanData);
                 }
