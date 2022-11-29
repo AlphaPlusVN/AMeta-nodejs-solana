@@ -12,6 +12,9 @@ import { WalletAccount } from '../entities/WalletAccount';
 import { getAplusAddressByChainId, getErc20OfAssetByUser, getErc721OfAssetByUser, getNFTAddressByChainId } from './GameAssetsService';
 import { saveItemTransaction, saveTokenTransaction, saveTransaction, saveUserBalanceHistory } from './TransactionService';
 import { BoxOpenHistory } from '../entities/BoxOpenHistory';
+import { BscUtil } from '../commons/BSCUtils';
+import { KardiaUtils } from '../commons/KardiaUtils';
+import { OnusUtils } from '../commons/OnusUtils';
 
 export async function mintBoxBatchTrigger(tokenIds: number[], to: string, boxType: number, contractAddress: string) {
     const SILVER = 1;
@@ -345,4 +348,10 @@ export async function depositErc721Trigger(email: string, walletAddress: string,
     } catch (e) {
         logger.error(e);
     }
+}
+export async function initConstructEvent() {
+    BscUtil.boxEventListener();
+    BscUtil.gameAssetsEventListener();
+    KardiaUtils.boxEventListener();
+    OnusUtils.boxEventListener();
 }

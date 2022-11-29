@@ -45,7 +45,7 @@ export default class AuthController extends BaseController {
         this.router.get("/getWalletMapping/:chainId/:userEmail", this.getWalletMappingInfo);
         this.router.post("/forceSyncWalletData", this.forceSyncWalletData);
     }
-
+    
     getWalletItemInfo = async (req: Request, res: Response) => {
         try {
             const refNo = req.body.refNo;

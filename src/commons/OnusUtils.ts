@@ -43,7 +43,7 @@ export namespace OnusUtils {
     );
 
     export async function boxEventListener() {
-        logger.info("listen box event of BSC " + BOX_CONTRACT_ADDRESS);
+        logger.info("listen box event of onus " + BOX_CONTRACT_ADDRESS);
         BoxContract.on("Mint", async (...params) => {
             logger.info("Mint event")
             const eventData = params[params.length - 1];

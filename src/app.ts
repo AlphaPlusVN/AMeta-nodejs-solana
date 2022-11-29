@@ -6,6 +6,7 @@ import { KardiaUtils } from "./commons/KardiaUtils";
 import logger from "./commons/logger";
 import { connect } from './configdb/database.config';
 import { initSchedule } from "./schedule/ScheduleConfig";
+import { initConstructEvent } from "./service/ContractEventHandler";
 
 config({ path: path.join(__dirname, "../config.env") });
 
@@ -43,9 +44,7 @@ class App {
       logger.info("Database connected!");
     });
 
-    BscUtil.boxEventListener();
-    BscUtil.gameAssetsEventListener();
-    KardiaUtils.boxEventListener();
+    initConstructEvent();
     initSchedule();
   };
 }
