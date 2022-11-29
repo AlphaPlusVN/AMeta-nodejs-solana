@@ -72,7 +72,7 @@ export namespace KardiaUtils {
             const [owner, tokenId, collectionId, boxType] = args;
             console.log("txHash " + transactionHash);
             console.log(JSON.stringify(args));
-            await openBoxEventTrigger(owner, tokenId.toNumber(), boxType.toNumber(), NFT_ADDRESS);
+            await openBoxEventTrigger(owner, collectionId.toNumber(), boxType.toNumber(), NFT_ADDRESS);
         });
     }
 
