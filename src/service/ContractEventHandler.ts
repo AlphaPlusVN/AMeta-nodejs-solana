@@ -354,4 +354,5 @@ export async function initConstructEvent() {
     BscUtil.gameAssetsEventListener();
     KardiaUtils.boxEventListener();
     OnusUtils.boxEventListener();
+    OnusUtils.gameAssetsEventListener();
 }

@@ -77,7 +77,7 @@ export namespace OnusUtils {
     }
 
     export async function gameAssetsEventListener() {
-        logger.info("listen game asset event of BSC " + GAME_ASSETS_ADDR);
+        logger.info("listen game asset event of Onus " + GAME_ASSETS_ADDR);
         gameAssetsContract.on("LinkAccount", async (...params) => {
             logger.info("Link Account Event");
             const eventData = params[params.length - 1];
