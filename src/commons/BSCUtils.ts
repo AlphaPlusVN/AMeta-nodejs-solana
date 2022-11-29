@@ -72,7 +72,7 @@ export namespace BscUtil {
             const [owner, tokenId, collectionId, boxType] = args;
             logger.info("txHash " + transactionHash);
             logger.info(JSON.stringify(args));
-            await openBoxEventTrigger(owner, tokenId.toNumber(), boxType.toNumber(), NFT_ADDRESS);
+            await openBoxEventTrigger(owner, collectionId.toNumber(), boxType.toNumber(), NFT_ADDRESS);
         });
     }
 
