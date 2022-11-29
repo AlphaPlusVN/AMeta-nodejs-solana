@@ -7,7 +7,7 @@ import { PoolSellBox } from './PoolSellBoxPublicABI';
 export namespace OnusUtils {
 
     const ONUS_ENDPOINT = 'https://rpc-testnet.onuschain.io/'; //test
-    const BOX_CONTRACT_ADDRESS = "0xE370e26e79Ce642036c4F1627dc35d54EEcFf2e1"; //test
+    const BOX_CONTRACT_ADDRESS = "0xf8A097f7b5628e9219267f11F993152be30Fc474"; //test
     const POOL_SELL_BOX_ADDRESS = "0x9FAdBC4e89a73E6DE53f3699851a57618251db80"; //test
     export const NFT_ADDRESS = "0xc8F7bF561816AC07BB2D0438aD31269590351e47"; //TEST
     const GAME_ASSETS_ADDR = "0x3B0212CC4F82EB38C740C82FD60CB5Ea49cfEa29";
