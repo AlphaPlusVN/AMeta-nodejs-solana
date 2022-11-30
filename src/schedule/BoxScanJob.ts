@@ -16,7 +16,7 @@ export async function scanBoxJob() {
     task.start();
 }
 export async function backupDataOnChain() {
-    // scanBscBoxJob();
+    scanBscBoxJob();
     scanKarBoxJob();
 }
 
@@ -24,7 +24,7 @@ export async function scanBscBoxJob() {
     logger.info("scan bsc box job started");
     try {
         let contract = BscUtil.BoxContract;
-        let maxTokenId = 1641;
+        let maxTokenId = 100;
         let scanList = new Array<SmartContractDataScan>();
         for (let i = 1; i <= maxTokenId; i++) {
             let scanData = new SmartContractDataScan();
