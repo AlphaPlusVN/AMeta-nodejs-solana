@@ -1,7 +1,7 @@
 import logger from "../commons/logger";
 import { scanBoxJob } from "./BoxScanJob";
 import { scanNFTJob } from "./NFTScanJob";
-import { syncItemMetadataJob } from "./SyncItemMetadataJob";
+import { swapNFTJob } from "./SwapMetadataJob";
 export async function initSchedule() {
     // syncItemMetadataJob().then(() => {
     //     logger.info("Init sync Item Metadata Job");
@@ -13,5 +13,9 @@ export async function initSchedule() {
 
     scanNFTJob().then(() => {
         logger.info("Init sync scan NFT smartContract Job");
+    });
+
+    swapNFTJob().then(() => {
+        logger.info("Init sync swap NFT smartContract Job");
     });
 }

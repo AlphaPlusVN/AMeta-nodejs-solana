@@ -1,4 +1,4 @@
-import { ethers, providers } from "ethers";
+import { ethers, providers, Wallet } from 'ethers';
 import { mintBoxBatchTrigger, mintBoxTrigger, openBoxEventTrigger } from "../service/ContractEventHandler";
 import { PoolSellBox } from "./PoolSellBoxPublicABI";
 import { ChainId } from './EnumObjs';
@@ -51,7 +51,7 @@ export namespace KardiaUtils {
             const { transactionHash, blockNumber, args } = eventData;
             const [tokenId, boxType, to] = args;
             console.log("txHash " + transactionHash);
-            await mintBoxTrigger(tokenId.toNumber(), to, boxType.toNumber(), BOX_CONTRACT_ADDRESS);
+            // await mintBoxTrigger(tokenId.toNumber(), to, boxType.toNumber(), BOX_CONTRACT_ADDRESS);
         });
         BoxContract.on("MintBatch", async (...params) => {
             console.log("Mint batch event")
@@ -63,7 +63,7 @@ export namespace KardiaUtils {
             for (let tokenId of tokenIds) {
                 listTokenId.push(tokenId.toNumber());
             }
-            await mintBoxBatchTrigger(listTokenId, to, boxType.toNumber(), BOX_CONTRACT_ADDRESS);
+            // await mintBoxBatchTrigger(listTokenId, to, boxType.toNumber(), BOX_CONTRACT_ADDRESS);
         });
         BoxContract.on("OpenBox", async (...params) => {
             console.log("OpenBox event")
@@ -102,4 +102,18 @@ export namespace KardiaUtils {
         let parsed = JSON.parse(fs.readFileSync(jsonFile));
         return parsed;
     }
+
+    export async function getOwner() {
+        const signer = await new Wallet(getPrivateKey());
+        let account = signer.connect(provider);
+        return account;
+    }
+
+    export function getPrivateKey() {
+        const fs = require('fs');
+        let jsonFile = __dirname + "/ga_private.pem";
+        let parsed: Buffer = fs.readFileSync(jsonFile);
+        return parsed.toString();
+    }
+
 }

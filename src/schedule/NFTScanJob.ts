@@ -24,7 +24,7 @@ export async function scanBscNFTJob() {
     logger.info("scan bsc nft job started");
     try {
         let contract = BscUtil.NFTContract;
-        let maxTokenId = 100;
+        let maxTokenId = 1600;
         let scanList = new Array<SmartContractDataScan>();
         for (let i = 1; i <= maxTokenId; i++) {
             let scanData = new SmartContractDataScan();

@@ -7,7 +7,7 @@ import { PoolSellBox } from './PoolSellBoxPublicABI';
 export namespace OnusUtils {
 
     const ONUS_ENDPOINT = 'https://rpc-testnet.onuschain.io/'; //test
-    const BOX_CONTRACT_ADDRESS = "0xf8A097f7b5628e9219267f11F993152be30Fc474"; //test
+    const BOX_CONTRACT_ADDRESS = "0xf8a097f7b5628e9219267f11f993152be30fc474"; //test
     const POOL_SELL_BOX_ADDRESS = "0x9FAdBC4e89a73E6DE53f3699851a57618251db80"; //test
     export const NFT_ADDRESS = "0xc8F7bF561816AC07BB2D0438aD31269590351e47"; //TEST
     const GAME_ASSETS_ADDR = "0x3B0212CC4F82EB38C740C82FD60CB5Ea49cfEa29";
@@ -50,7 +50,7 @@ export namespace OnusUtils {
             const { transactionHash, blockNumber, args } = eventData;
             const [tokenId, boxType, to] = args;
             logger.info("txHash " + transactionHash);
-            await mintBoxTrigger(tokenId.toNumber(), to, boxType.toNumber(), BOX_CONTRACT_ADDRESS.toLowerCase());
+            // await mintBoxTrigger(tokenId.toNumber(), to, boxType.toNumber(), BOX_CONTRACT_ADDRESS.toLowerCase());
         });
         BoxContract.on("MintBatch", async (...params) => {
             logger.info("Mint batch event")
@@ -62,7 +62,7 @@ export namespace OnusUtils {
             for (let tokenId of tokenIds) {
                 listTokenId.push(tokenId.toNumber());
             }
-            await mintBoxBatchTrigger(listTokenId, to, boxType.toNumber(), BOX_CONTRACT_ADDRESS);
+            // await mintBoxBatchTrigger(listTokenId, to, boxType.toNumber(), BOX_CONTRACT_ADDRESS);
         });
 
         BoxContract.on("OpenBox", async (...params) => {

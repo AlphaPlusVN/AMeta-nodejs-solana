@@ -50,7 +50,7 @@ export namespace BscUtil {
             const { transactionHash, blockNumber, args } = eventData;
             const [tokenId, boxType, to] = args;
             logger.info("txHash " + transactionHash);
-            await mintBoxTrigger(tokenId.toNumber(), to, boxType.toNumber(), BOX_CONTRACT_ADDRESS.toLowerCase());
+            // await mintBoxTrigger(tokenId.toNumber(), to, boxType.toNumber(), BOX_CONTRACT_ADDRESS.toLowerCase());
         });
         BoxContract.on("MintBatch", async (...params) => {
             logger.info("Mint batch event")
@@ -62,7 +62,7 @@ export namespace BscUtil {
             for (let tokenId of tokenIds) {
                 listTokenId.push(tokenId.toNumber());
             }
-            await mintBoxBatchTrigger(listTokenId, to, boxType.toNumber(), BOX_CONTRACT_ADDRESS);
+            // await mintBoxBatchTrigger(listTokenId, to, boxType.toNumber(), BOX_CONTRACT_ADDRESS);
         });
 
         BoxContract.on("OpenBox", async (...params) => {
