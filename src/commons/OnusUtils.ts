@@ -25,6 +25,12 @@ export namespace OnusUtils {
         provider
     );
 
+    export const AplusContract = new ethers.Contract(
+        APLUS_ADDRESS,
+        getAplusABI(), // abi
+        provider
+    );
+
     export const PoolSellBoxContract = new ethers.Contract(
         POOL_SELL_BOX_ADDRESS,
         PoolSellBox._abi, // abi
@@ -143,6 +149,13 @@ export namespace OnusUtils {
     export function getGameAssetsABI() {
         const fs = require('fs');
         let jsonFile = __dirname + "/GameAssetsABI.json";
+        let parsed = JSON.parse(fs.readFileSync(jsonFile));
+        return parsed;
+    }
+
+    export function getAplusABI() {
+        const fs = require('fs');
+        let jsonFile = __dirname + "/AplusABI.json";
         let parsed = JSON.parse(fs.readFileSync(jsonFile));
         return parsed;
     }
